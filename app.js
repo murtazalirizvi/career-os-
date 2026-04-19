@@ -135,12 +135,15 @@ async function submitAuth() {
     }
     sessionStorage.setItem("cos_token", data.session.access_token);
     sessionStorage.setItem("cos_candidate", data.user.candidate_id);
+    // Hide modal and show app
     document.getElementById("auth-modal").style.display = "none";
+    document.getElementById("landing-page").style.display = "none";
+    document.getElementById("app-shell").style.display = "block";
     document.querySelectorAll("[id*='candidate']").forEach((el) => {
       if (el.tagName === "INPUT") el.value = data.user.candidate_id;
     });
   } catch {
-    errEl.textContent = "Cannot connect to server.";
+    errEl.textContent = "Cannot connect to server. Make sure the backend is running on port 8000.";
     errEl.style.display = "block";
   }
 }
@@ -230,9 +233,13 @@ function navigateTo(viewName) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  if (!sessionStorage.getItem("cos_token")) {
-    const modal = document.getElementById("auth-modal");
-    if (modal) modal.style.display = "flex";
+  // Never auto-show auth modal — user must come through the landing page CTA
+  // Only auto-skip to app if already authenticated
+  if (sessionStorage.getItem("cos_token")) {
+    const landing = document.getElementById("landing-page");
+    const app = document.getElementById("app-shell");
+    if (landing) landing.style.display = "none";
+    if (app) app.style.display = "block";
   }
   lucide.createIcons();
 
