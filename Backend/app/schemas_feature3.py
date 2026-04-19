@@ -10,6 +10,8 @@ class Feature3MarketSnapshotRequest(BaseModel):
 	region: str = Field(default="PK")
 	remote_only: bool = Field(default=False)
 	search_terms: List[str] = Field(default_factory=list)
+	# Chunk 4 enhancements
+	salary_currency: str = Field(default="USD", pattern="^(USD|PKR|GBP)$", description="Currency for salary data: USD|PKR|GBP")
 
 
 class Feature3MarketSnapshotResponse(BaseModel):
@@ -23,6 +25,9 @@ class Feature3MarketSnapshotResponse(BaseModel):
 	salary_to_skill_map: Dict[str, Dict[str, float]]
 	remote_opportunity_filter: Dict[str, Any]
 	source_meta: Dict[str, Any]
+	# Chunk 4 enhancements
+	salary_currency: str = "USD"
+	market_commentary: str = ""
 	created_at: datetime
 
 
@@ -140,3 +145,45 @@ class Feature3HistoricalGapsResponse(BaseModel):
 	candidate_id: str
 	monthly_snapshots: List[Dict[str, Any]]
 	trend: Dict[str, float]
+
+
+# Chunk 4: New schemas for full-run and trending skills
+
+class Feature3FullRunRequest(BaseModel):
+	"""Request for complete skill arbitrage analysis (market → gap → sprint → ROI)."""
+	candidate_id: str = Field(min_length=2, max_length=120)
+	target_role: str = Field(default="Software Engineer")
+	region: str = Field(default="PK")
+	remote_only: bool = Field(default=False)
+	current_skills: List[str] = Field(default_factory=list)
+	years_experience: float = Field(default=1.5, ge=0, le=40)
+	github_username: str = Field(default="")
+	salary_currency: str = Field(default="USD", pattern="^(USD|PKR|GBP)$")
+	primary_skill_for_sprint: Optional[str] = None
+	current_salary_usd: float = Field(default=12000, ge=0)
+	target_path: str = Field(default="fullstack")
+
+
+class Feature3FullRunResponse(BaseModel):
+	"""Composite response containing all four analysis results."""
+	market_snapshot: Feature3MarketSnapshotResponse
+	gap_snapshot: Feature3GapAnalysisResponse
+	skill_sprint: Feature3SprintResponse
+	roi_report: Feature3RoiResponse
+	execution_time_seconds: float
+
+
+class Feature3TrendingSkillItem(BaseModel):
+	"""Individual trending skill with statistics."""
+	skill_name: str
+	job_count: int
+	growth_percentage: float
+	average_salary: float
+	currency: str
+
+
+class Feature3TrendingSkillsResponse(BaseModel):
+	"""Top trending skills across recent market snapshots."""
+	trending_skills: List[Feature3TrendingSkillItem]
+	analysis_period_days: int
+	snapshot_count: int

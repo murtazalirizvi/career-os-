@@ -103,6 +103,10 @@ class Feature3MarketSnapshot(SQLModel, table=True):
     remote_market_json: str
     source_meta_json: str
 
+    # Chunk 4 enhancements
+    salary_currency: str = Field(default="USD", index=True, description="Currency for salary data: USD|PKR|GBP")
+    market_commentary_json: str = Field(default="{}", description="Gemini-generated market insights")
+
     created_at: datetime = Field(default_factory=utc_now, index=True)
 
 
