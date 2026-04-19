@@ -96,10 +96,14 @@ function handleApiError(error, featureName) {
 function switchAuthTab(mode) {
   _authMode = mode;
   document.getElementById("auth-fullname").style.display = mode === "register" ? "block" : "none";
-  document.getElementById("tab-login").style.background =
-    mode === "login" ? "rgba(99,102,241,0.2)" : "transparent";
-  document.getElementById("tab-register").style.background =
-    mode === "register" ? "rgba(99,102,241,0.2)" : "transparent";
+  const loginTab = document.getElementById("tab-login");
+  const regTab = document.getElementById("tab-register");
+  if (loginTab) {
+    loginTab.classList.toggle("active", mode === "login");
+  }
+  if (regTab) {
+    regTab.classList.toggle("active", mode === "register");
+  }
 }
 
 async function submitAuth() {
@@ -231,6 +235,31 @@ window.addEventListener("DOMContentLoaded", () => {
     if (modal) modal.style.display = "flex";
   }
   lucide.createIcons();
+
+  // Spotlight mouse tracking
+  const spotlight = document.getElementById("spotlight");
+  if (spotlight) {
+    document.addEventListener("mousemove", (e) => {
+      spotlight.style.left = e.clientX + "px";
+      spotlight.style.top = e.clientY + "px";
+    });
+  }
+
+  // Logout button
+  document.getElementById("logout-btn")?.addEventListener("click", () => {
+    const token = sessionStorage.getItem("cos_token");
+    if (token) {
+      fetch(`${API_BASE}/api/auth/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access_token: token })
+      }).catch(() => {});
+    }
+    sessionStorage.removeItem("cos_token");
+    sessionStorage.removeItem("cos_candidate");
+    document.getElementById("app-shell").style.display = "none";
+    document.getElementById("landing-page").style.display = "flex";
+  });
 });
 
 const nodes = {
