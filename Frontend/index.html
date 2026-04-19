@@ -54,6 +54,10 @@
                 <span class="icon-wrap"><i data-lucide="book-open-text" class="w-4 h-4"></i></span>
                 <span class="text-sm font-medium text-white/80 whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Narrative</span>
               </button>
+              <button class="nav-btn w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 spring-gentle" data-view="job-tracker">
+                <span class="icon-wrap"><i data-lucide="kanban" class="w-4 h-4"></i></span>
+                <span class="text-sm font-medium text-white/80 whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Jobs</span>
+              </button>
             </div>
 
             <div class="space-y-2">
@@ -585,6 +589,128 @@
                 </section>
               </div>
             </section>
+
+            <!-- ═══════════════════════════════════════════════════════════
+                 JOB TRACKER — Kanban board (Wishlist / Applied / Interviewing / Offered)
+                 ═══════════════════════════════════════════════════════════ -->
+            <section id="job-tracker-view" class="h-full hidden workspace-shell">
+              <header class="mb-3 md:mb-4 lg:mb-5 workspace-header flex items-center justify-between">
+                <div>
+                  <h1 class="text-2xl md:text-3xl font-bold tracking-tighter text-hero">Job Tracker</h1>
+                  <p class="text-sm text-white/60 mt-1">Your personal Kanban pipeline — drag cards or use the status menu to move applications forward.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="jt-add-btn" class="px-4 py-2 text-sm rounded-xl gradient-primary text-white active:scale-95 transition-transform spring-gentle flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add Job
+                  </button>
+                  <button id="jt-refresh-btn" class="px-4 py-2 text-sm rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-95 transition-transform">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </header>
+
+              <!-- Kanban board -->
+              <div id="jt-board" class="jt-board">
+                <div class="jt-column" data-status="Wishlist">
+                  <div class="jt-col-header">
+                    <span class="jt-col-dot" style="background:#6366f1"></span>
+                    <span class="jt-col-title">Wishlist</span>
+                    <span class="jt-col-count" id="jt-count-Wishlist">0</span>
+                  </div>
+                  <div class="jt-cards" id="jt-col-Wishlist"></div>
+                </div>
+                <div class="jt-column" data-status="Applied">
+                  <div class="jt-col-header">
+                    <span class="jt-col-dot" style="background:#f59e0b"></span>
+                    <span class="jt-col-title">Applied</span>
+                    <span class="jt-col-count" id="jt-count-Applied">0</span>
+                  </div>
+                  <div class="jt-cards" id="jt-col-Applied"></div>
+                </div>
+                <div class="jt-column" data-status="Interviewing">
+                  <div class="jt-col-header">
+                    <span class="jt-col-dot" style="background:#06b6d4"></span>
+                    <span class="jt-col-title">Interviewing</span>
+                    <span class="jt-col-count" id="jt-count-Interviewing">0</span>
+                  </div>
+                  <div class="jt-cards" id="jt-col-Interviewing"></div>
+                </div>
+                <div class="jt-column" data-status="Offered">
+                  <div class="jt-col-header">
+                    <span class="jt-col-dot" style="background:#10b981"></span>
+                    <span class="jt-col-title">Offered</span>
+                    <span class="jt-col-count" id="jt-count-Offered">0</span>
+                  </div>
+                  <div class="jt-cards" id="jt-col-Offered"></div>
+                </div>
+              </div>
+
+              <!-- Rejected strip -->
+              <div class="jt-rejected-strip">
+                <div class="jt-col-header mb-2">
+                  <span class="jt-col-dot" style="background:#ef4444"></span>
+                  <span class="jt-col-title text-white/60">Rejected</span>
+                  <span class="jt-col-count" id="jt-count-Rejected">0</span>
+                </div>
+                <div class="jt-cards jt-cards-row" id="jt-col-Rejected"></div>
+              </div>
+            </section>
+
+            <!-- Add / Edit Job Modal -->
+            <div id="jt-modal" class="jt-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="jt-modal-title">
+              <div class="jt-modal-box">
+                <div class="flex items-center justify-between mb-4">
+                  <h2 id="jt-modal-title" class="text-lg font-bold text-white">Add Job</h2>
+                  <button id="jt-modal-close" class="text-white/50 hover:text-white transition-colors" aria-label="Close">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                  </button>
+                </div>
+
+                <input type="hidden" id="jt-edit-id" value="" />
+
+                <div class="space-y-3">
+                  <div>
+                    <label class="jt-label" for="jt-company">Company *</label>
+                    <input id="jt-company" type="text" class="jt-input" placeholder="e.g. Stripe" />
+                  </div>
+                  <div>
+                    <label class="jt-label" for="jt-position">Position *</label>
+                    <input id="jt-position" type="text" class="jt-input" placeholder="e.g. Senior Frontend Engineer" />
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="jt-label" for="jt-status">Status</label>
+                      <select id="jt-status" class="jt-input">
+                        <option value="Wishlist">Wishlist</option>
+                        <option value="Applied">Applied</option>
+                        <option value="Interviewing">Interviewing</option>
+                        <option value="Offered">Offered</option>
+                        <option value="Rejected">Rejected</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="jt-date">Date Applied</label>
+                      <input id="jt-date" type="date" class="jt-input" />
+                    </div>
+                  </div>
+                  <div>
+                    <label class="jt-label" for="jt-salary">Salary Range</label>
+                    <input id="jt-salary" type="text" class="jt-input" placeholder="e.g. $120k–$150k" />
+                  </div>
+                  <div>
+                    <label class="jt-label" for="jt-notes">Notes</label>
+                    <textarea id="jt-notes" class="jt-input jt-textarea" placeholder="Recruiter name, referral, next steps…"></textarea>
+                  </div>
+                </div>
+
+                <p id="jt-modal-error" class="text-xs text-red-400 mt-2" style="display:none;"></p>
+
+                <div class="flex gap-3 mt-5">
+                  <button id="jt-modal-save" class="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold active:scale-95 transition-transform">Save</button>
+                  <button id="jt-modal-cancel" class="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white text-sm active:scale-95 transition-transform">Cancel</button>
+                </div>
+              </div>
+            </div>
 
             <section id="feature5-workspace" class="h-full hidden workspace-shell">
               <header class="mb-3 md:mb-4 lg:mb-5 flex items-center justify-between workspace-header">

@@ -6,6 +6,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
+from .api.jobs import router as jobs_router
 from .api.feature1 import router as feature1_router
 from .api.feature2 import router as feature2_router
 from .api.feature3 import router as feature3_router
@@ -15,6 +16,7 @@ from .api.metrics import router as metrics_router
 from .api.auth import router as auth_router
 from .api.core import router as core_router
 from .db import create_db_and_tables
+from . import models_jobs  # noqa: F401 — ensures Job table is registered with SQLModel metadata
 
 app = FastAPI(
     title="Career-OS Backend",
@@ -49,6 +51,7 @@ def health():
     return {"status": "ok"}
 
 
+app.include_router(jobs_router)
 app.include_router(feature1_router)
 app.include_router(feature2_router)
 app.include_router(feature3_router)
