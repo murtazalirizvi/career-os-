@@ -1,0 +1,1279 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career OS — Product Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f1a;
+    --bg3: #13131f;
+    --card: #16161f;
+    --border: #1e1e2e;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --indigo: #6366f1;
+    --purple: #a855f7;
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --cyan: #06b2d4;
+    --rose: #f43f5e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .nav-brand {
+    font-weight: 700;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, var(--indigo), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-right: auto;
+    white-space: nowrap;
+  }
+  .nav-links {
+    display: flex;
+    gap: 0.25rem;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-links a:hover { color: var(--text); background: var(--border); }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 5rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: var(--indigo);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.25rem;
+    background: linear-gradient(135deg, #fff 30%, var(--indigo) 70%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    font-size: 1.2rem;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+  }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--indigo), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  h2 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 800;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  .section-intro {
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 680px;
+    margin-bottom: 3rem;
+  }
+
+  /* ── QUICK START ── */
+  .quickstart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2.5rem;
+  }
+  .qs-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .qs-card:hover { transform: translateY(-3px); border-color: var(--indigo); }
+  .qs-step {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  .qs-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .qs-card p { font-size: 0.875rem; color: var(--muted); }
+  .arrow-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  /* ── FEATURE CARDS ── */
+  .feature-section {
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .feature-section:hover { border-color: rgba(99,102,241,0.4); }
+  .feature-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 24px 24px 0 0;
+  }
+  .feature-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .feature-icon {
+    font-size: 2.5rem;
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .feature-meta { flex: 1; }
+  .feature-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .feature-meta h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .feature-meta p { color: var(--muted); font-size: 0.95rem; }
+
+  .feature-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  @media (max-width: 700px) { .feature-body { grid-template-columns: 1fr; } }
+
+  .problem-box {
+    background: rgba(244,63,94,0.07);
+    border: 1px solid rgba(244,63,94,0.2);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .problem-box h4 { color: var(--rose); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.75rem; }
+  .problem-box p { font-size: 0.9rem; color: var(--muted); }
+
+  .steps-box h4 { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--muted); }
+  .steps { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+  .steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+  }
+  .step-dot {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .flow-box {
+    margin-top: 1.75rem;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+  }
+  .flow-box h4 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+  }
+  .flow-node {
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .flow-arrow { color: var(--muted); font-size: 1rem; }
+
+  .outputs-box {
+    margin-top: 1.25rem;
+  }
+  .outputs-box h4 { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--muted); }
+  .output-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .tag {
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  /* ── JOB TRACKER ── */
+  .kanban {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .kanban-col {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+  }
+  .kanban-col-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .kanban-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    color: var(--muted);
+  }
+
+  /* ── CONNECTIONS ── */
+  .connections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+  .connection-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: border-color 0.2s;
+  }
+  .connection-card:hover { border-color: var(--indigo); }
+  .connection-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .connection-card p { font-size: 0.875rem; color: var(--muted); }
+  .conn-arrow { font-size: 1.5rem; margin-bottom: 0.75rem; }
+
+  /* ── X-FACTORS ── */
+  .xfactors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+  .xfactor-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .xfactor-card:hover { transform: translateY(-3px); border-color: var(--purple); }
+  .xfactor-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: 0.06;
+  }
+  .xf-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .xfactor-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .xfactor-card p { font-size: 0.875rem; color: var(--muted); }
+  .vs-badge {
+    display: inline-block;
+    background: rgba(168,85,247,0.12);
+    border: 1px solid rgba(168,85,247,0.25);
+    color: var(--purple);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+  footer strong { color: var(--text); }
+
+  /* ── UTILITIES ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0 2rem;
+  }
+
+  /* color helpers */
+  .c-indigo { color: var(--indigo); }
+  .c-purple { color: var(--purple); }
+  .c-emerald { color: var(--emerald); }
+  .c-amber { color: var(--amber); }
+  .c-cyan { color: var(--cyan); }
+  .c-rose { color: var(--rose); }
+
+  .bg-indigo { background: rgba(99,102,241,0.12); }
+  .bg-purple { background: rgba(168,85,247,0.12); }
+  .bg-emerald { background: rgba(16,185,129,0.12); }
+  .bg-amber { background: rgba(245,158,11,0.12); }
+  .bg-cyan { background: rgba(6,178,212,0.12); }
+  .bg-rose { background: rgba(244,63,94,0.12); }
+
+  .border-indigo { border-color: rgba(99,102,241,0.35) !important; }
+  .border-purple { border-color: rgba(168,85,247,0.35) !important; }
+  .border-emerald { border-color: rgba(16,185,129,0.35) !important; }
+  .border-amber { border-color: rgba(245,158,11,0.35) !important; }
+  .border-cyan { border-color: rgba(6,178,212,0.35) !important; }
+
+  .grad-indigo { background: linear-gradient(135deg, var(--indigo), var(--purple)); }
+  .grad-emerald { background: linear-gradient(135deg, var(--emerald), var(--cyan)); }
+  .grad-amber { background: linear-gradient(135deg, var(--amber), var(--rose)); }
+  .grad-cyan { background: linear-gradient(135deg, var(--cyan), var(--indigo)); }
+  .grad-purple { background: linear-gradient(135deg, var(--purple), var(--rose)); }
+
+  .top-indigo::before { background: linear-gradient(90deg, var(--indigo), var(--purple)); }
+  .top-emerald::before { background: linear-gradient(90deg, var(--emerald), var(--cyan)); }
+  .top-amber::before { background: linear-gradient(90deg, var(--amber), var(--rose)); }
+  .top-cyan::before { background: linear-gradient(90deg, var(--cyan), var(--indigo)); }
+  .top-purple::before { background: linear-gradient(90deg, var(--purple), var(--rose)); }
+  .top-teal::before { background: linear-gradient(90deg, var(--emerald), var(--indigo)); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     NAV
+══════════════════════════════════════════════════════════ -->
+<nav>
+  <span class="nav-brand">⚡ Career OS</span>
+  <ul class="nav-links">
+    <li><a href="#quickstart">Quick Start</a></li>
+    <li><a href="#lens">Lens Engine</a></li>
+    <li><a href="#rebound">Interview Rebound</a></li>
+    <li><a href="#arbitrage">Skill Arbitrage</a></li>
+    <li><a href="#persona">Persona Coach</a></li>
+    <li><a href="#narrative">Narrative Architect</a></li>
+    <li><a href="#tracker">Job Tracker</a></li>
+    <li><a href="#connections">How It Connects</a></li>
+    <li><a href="#xfactors">X-Factors</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-badge">AI-Powered Career Intelligence Platform</div>
+  <h1>Career OS</h1>
+  <p>The operating system for your software engineering career. AI-driven tools that analyze, coach, and accelerate — from resume to offer letter.</p>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">5</div>
+      <div class="stat-label">AI Feature Engines</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">360°</div>
+      <div class="stat-label">Career Coverage</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">90-Day</div>
+      <div class="stat-label">Skill Sprint Plans</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">Mock Interview Personas</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     QUICK START
+══════════════════════════════════════════════════════════ -->
+<section id="quickstart">
+  <div class="section-label c-indigo">Getting Started</div>
+  <h2>Recommended Workflow</h2>
+  <p class="section-intro">New to Career OS? Follow this 4-step sequence to get maximum value from day one.</p>
+
+  <div class="quickstart-grid">
+    <div class="qs-card">
+      <div class="qs-step grad-indigo" style="color:#fff;">1</div>
+      <h3>🔍 Audit Your Resume</h3>
+      <p>Upload your PDF to <strong>Lens Engine</strong>. Get ATS scores, visual heatmaps, and AI coaching before you apply anywhere.</p>
+    </div>
+    <div class="qs-card">
+      <div class="qs-step grad-emerald" style="color:#fff;">2</div>
+      <h3>📈 Find Your Skill Gaps</h3>
+      <p>Run <strong>Skill Arbitrage</strong> for your target role and region. Get a 90-day sprint plan with ROI-ranked skills to learn.</p>
+    </div>
+    <div class="qs-card">
+      <div class="qs-step grad-amber" style="color:#fff;">3</div>
+      <h3>🎭 Practice Interviews</h3>
+      <p>Use <strong>Persona Coach</strong> to rehearse with AI interviewers. Track filler words, get real-time hints, and build confidence.</p>
+    </div>
+    <div class="qs-card">
+      <div class="qs-step grad-cyan" style="color:#fff;">4</div>
+      <h3>📋 Track Applications</h3>
+      <p>Move jobs through the <strong>Job Tracker</strong> Kanban. Log contacts, notes, and get follow-up alerts before deadlines slip.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:2rem; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:1.5rem 2rem;">
+    <div style="font-size:0.75rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:1rem;">After Each Interview</div>
+    <div class="flow-diagram">
+      <div class="flow-node bg-indigo border-indigo" style="border:1px solid; color:var(--indigo);">Finish Interview</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node bg-purple border-purple" style="border:1px solid; color:var(--purple);">Paste Notes into Rebound</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node bg-emerald border-emerald" style="border:1px solid; color:var(--emerald);">Get Autopsy Report</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node bg-amber border-amber" style="border:1px solid; color:var(--amber);">Follow Week-Long Drill Plan</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node bg-cyan border-cyan" style="border:1px solid; color:var(--cyan);">Ace the Next Round</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     FEATURE 1 — LENS ENGINE
+══════════════════════════════════════════════════════════ -->
+<section id="lens" style="max-width:1100px; margin:0 auto; padding:5rem 2rem;">
+  <div class="section-label c-indigo">Feature 1</div>
+  <h2>Lens Engine</h2>
+  <p class="section-intro">Your resume's first impression is everything. Lens Engine gives you the recruiter's-eye view before you hit send.</p>
+
+  <div class="feature-section top-indigo">
+    <div class="feature-header">
+      <div class="feature-icon bg-indigo" style="border:1px solid rgba(99,102,241,0.3);">🔬</div>
+      <div class="feature-meta">
+        <div class="feature-num c-indigo">Feature 01 · Resume Intelligence</div>
+        <h3>Lens Engine</h3>
+        <p>Multi-dimensional resume analysis: visual layout scoring, ATS compatibility, semantic job-match, and benchmark comparison against top candidates — all powered by Gemini AI.</p>
+      </div>
+    </div>
+
+    <div class="feature-body">
+      <div>
+        <div class="problem-box">
+          <h4>🚨 The Problem</h4>
+          <p>Most engineers submit resumes blind — no idea if the ATS will parse it, whether the layout hurts readability, or how it stacks up against other applicants for the same role.</p>
+        </div>
+        <div class="outputs-box" style="margin-top:1.25rem;">
+          <h4>Outputs You Get</h4>
+          <div class="output-tags">
+            <span class="tag bg-indigo border-indigo c-indigo">ATS Score</span>
+            <span class="tag bg-indigo border-indigo c-indigo">Visual Layout Score</span>
+            <span class="tag bg-indigo border-indigo c-indigo">Semantic Match %</span>
+            <span class="tag bg-indigo border-indigo c-indigo">Benchmark Rank</span>
+            <span class="tag bg-indigo border-indigo c-indigo">Heatmap</span>
+            <span class="tag bg-indigo border-indigo c-indigo">Gemini Coaching</span>
+          </div>
+        </div>
+      </div>
+      <div class="steps-box">
+        <h4>How to Use It</h4>
+        <ul class="steps">
+          <li>
+            <span class="step-dot grad-indigo" style="color:#fff;">1</span>
+            <span>Navigate to <strong>Lens Engine</strong> in the sidebar</span>
+          </li>
+          <li>
+            <span class="step-dot grad-indigo" style="color:#fff;">2</span>
+            <span>Upload your resume as a <strong>PDF file</strong></span>
+          </li>
+          <li>
+            <span class="step-dot grad-indigo" style="color:#fff;">3</span>
+            <span>Paste the <strong>job description</strong> you're targeting (optional but recommended)</span>
+          </li>
+          <li>
+            <span class="step-dot grad-indigo" style="color:#fff;">4</span>
+            <span>Click <strong>Analyze</strong> — AI processes layout, ATS tags, and semantic alignment</span>
+          </li>
+          <li>
+            <span class="step-dot grad-indigo" style="color:#fff;">5</span>
+            <span>Review your <strong>score breakdown</strong> and heatmap highlighting weak zones</span>
+          </li>
+          <li>
+            <span class="step-dot grad-indigo" style="color:#fff;">6</span>
+            <span>Read <strong>Gemini coaching recommendations</strong> and apply targeted fixes</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-box">
+      <h4>Processing Pipeline</h4>
+      <div class="flow-diagram">
+        <div class="flow-node bg-indigo" style="border:1px solid rgba(99,102,241,0.3); color:var(--indigo);">PDF Upload</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Visual Parser</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">ATS Tokenizer</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Semantic Embeddings</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Benchmark DB</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node bg-purple" style="border:1px solid rgba(168,85,247,0.3); color:var(--purple);">Gemini Coaching</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node bg-emerald" style="border:1px solid rgba(16,185,129,0.3); color:var(--emerald);">Score Report</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     FEATURE 2 — INTERVIEW REBOUND
+══════════════════════════════════════════════════════════ -->
+<section id="rebound" style="max-width:1100px; margin:0 auto; padding:5rem 2rem;">
+  <div class="section-label c-purple">Feature 2</div>
+  <h2>Interview Rebound</h2>
+  <p class="section-intro">Turn every interview — win or loss — into structured learning. Rebound converts your raw notes into a surgical autopsy with a recovery plan.</p>
+
+  <div class="feature-section top-purple">
+    <div class="feature-header">
+      <div class="feature-icon bg-purple" style="border:1px solid rgba(168,85,247,0.3);">🧠</div>
+      <div class="feature-meta">
+        <div class="feature-num c-purple">Feature 02 · Post-Interview Intelligence</div>
+        <h3>Interview Rebound</h3>
+        <p>Paste your interview notes or upload an audio transcript. AI generates a multi-dimensional autopsy: technical depth, behavioral signals, strategic positioning — plus a week-long drill plan targeting your weakest area.</p>
+      </div>
+    </div>
+
+    <div class="feature-body">
+      <div>
+        <div class="problem-box">
+          <h4>🚨 The Problem</h4>
+          <p>After a tough interview, most engineers either spiral into self-doubt or move on without learning anything. Neither helps. You need a structured debrief that turns the experience into a concrete improvement plan.</p>
+        </div>
+        <div class="outputs-box" style="margin-top:1.25rem;">
+          <h4>Outputs You Get</h4>
+          <div class="output-tags">
+            <span class="tag bg-purple border-purple c-purple">Technical Score</span>
+            <span class="tag bg-purple border-purple c-purple">Behavioral Score</span>
+            <span class="tag bg-purple border-purple c-purple">Strategic Recovery Score</span>
+            <span class="tag bg-purple border-purple c-purple">Practice Drills</span>
+            <span class="tag bg-purple border-purple c-purple">7-Day Plan</span>
+            <span class="tag bg-purple border-purple c-purple">Audio Transcription</span>
+          </div>
+        </div>
+      </div>
+      <div class="steps-box">
+        <h4>How to Use It</h4>
+        <ul class="steps">
+          <li>
+            <span class="step-dot grad-purple" style="color:#fff;">1</span>
+            <span>Go to <strong>Interview Rebound</strong> right after your interview</span>
+          </li>
+          <li>
+            <span class="step-dot grad-purple" style="color:#fff;">2</span>
+            <span>Paste your <strong>interview notes or transcript</strong> into the text area — or upload an audio file for AssemblyAI transcription</span>
+          </li>
+          <li>
+            <span class="step-dot grad-purple" style="color:#fff;">3</span>
+            <span>Add context: <strong>role, company, interview type</strong> (technical / behavioral / system design)</span>
+          </li>
+          <li>
+            <span class="step-dot grad-purple" style="color:#fff;">4</span>
+            <span>Click <strong>Run Autopsy</strong> — AI scores each dimension and identifies your weakest area</span>
+          </li>
+          <li>
+            <span class="step-dot grad-purple" style="color:#fff;">5</span>
+            <span>Review the <strong>drill exercises</strong> generated specifically for your gaps</span>
+          </li>
+          <li>
+            <span class="step-dot grad-purple" style="color:#fff;">6</span>
+            <span>Follow the <strong>7-day improvement plan</strong> before your next round</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-box">
+      <h4>Autopsy Pipeline</h4>
+      <div class="flow-diagram">
+        <div class="flow-node bg-purple" style="border:1px solid rgba(168,85,247,0.3); color:var(--purple);">Notes / Audio</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">AssemblyAI Transcribe</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Technical Scorer</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Behavioral Scorer</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Strategic Scorer</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node bg-emerald" style="border:1px solid rgba(16,185,129,0.3); color:var(--emerald);">Drill Generator</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node bg-amber" style="border:1px solid rgba(245,158,11,0.3); color:var(--amber);">7-Day Plan</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     FEATURE 3 — SKILL ARBITRAGE
+══════════════════════════════════════════════════════════ -->
+<section id="arbitrage" style="max-width:1100px; margin:0 auto; padding:5rem 2rem;">
+  <div class="section-label c-emerald">Feature 3</div>
+  <h2>Skill Arbitrage</h2>
+  <p class="section-intro">Stop guessing what to learn next. Skill Arbitrage maps the live job market to your current skills and shows you exactly where to invest your time for maximum salary ROI.</p>
+
+  <div class="feature-section top-emerald">
+    <div class="feature-header">
+      <div class="feature-icon bg-emerald" style="border:1px solid rgba(16,185,129,0.3);">📊</div>
+      <div class="feature-meta">
+        <div class="feature-num c-emerald">Feature 03 · Market Intelligence</div>
+        <h3>Skill Arbitrage</h3>
+        <p>Enter your target role and region. AI fetches live job market data, identifies your skill gaps, builds a 90-day sprint plan, and calculates the ROI of learning each skill — with salary data in USD, PKR, and GBP.</p>
+      </div>
+    </div>
+
+    <div class="feature-body">
+      <div>
+        <div class="problem-box">
+          <h4>🚨 The Problem</h4>
+          <p>The tech skill landscape shifts constantly. Engineers waste months learning skills that are already commoditized or irrelevant in their target market. You need data-driven prioritization, not gut feel.</p>
+        </div>
+        <div class="outputs-box" style="margin-top:1.25rem;">
+          <h4>Outputs You Get</h4>
+          <div class="output-tags">
+            <span class="tag bg-emerald border-emerald c-emerald">Skill Gap Map</span>
+            <span class="tag bg-emerald border-emerald c-emerald">90-Day Sprint Plan</span>
+            <span class="tag bg-emerald border-emerald c-emerald">ROI per Skill</span>
+            <span class="tag bg-emerald border-emerald c-emerald">USD / PKR / GBP Salaries</span>
+            <span class="tag bg-emerald border-emerald c-emerald">Market Demand Score</span>
+            <span class="tag bg-emerald border-emerald c-emerald">Learning Resources</span>
+          </div>
+        </div>
+      </div>
+      <div class="steps-box">
+        <h4>How to Use It</h4>
+        <ul class="steps">
+          <li>
+            <span class="step-dot grad-emerald" style="color:#fff;">1</span>
+            <span>Open <strong>Skill Arbitrage</strong> and enter your <strong>target role</strong> (e.g., "Senior Backend Engineer")</span>
+          </li>
+          <li>
+            <span class="step-dot grad-emerald" style="color:#fff;">2</span>
+            <span>Select your <strong>region</strong> — affects salary benchmarks and market demand weighting</span>
+          </li>
+          <li>
+            <span class="step-dot grad-emerald" style="color:#fff;">3</span>
+            <span>List your <strong>current skills</strong> so the AI can calculate your actual gaps</span>
+          </li>
+          <li>
+            <span class="step-dot grad-emerald" style="color:#fff;">4</span>
+            <span>Click <strong>Analyze Market</strong> — AI fetches live job data and runs gap analysis</span>
+          </li>
+          <li>
+            <span class="step-dot grad-emerald" style="color:#fff;">5</span>
+            <span>Review the <strong>ROI-ranked skill list</strong> — highest salary impact per learning hour at the top</span>
+          </li>
+          <li>
+            <span class="step-dot grad-emerald" style="color:#fff;">6</span>
+            <span>Download your <strong>90-day sprint plan</strong> with weekly milestones and resource links</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-box">
+      <h4>Market Analysis Pipeline</h4>
+      <div class="flow-diagram">
+        <div class="flow-node bg-emerald" style="border:1px solid rgba(16,185,129,0.3); color:var(--emerald);">Role + Region</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Live Job Scraper</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Skill Frequency Analysis</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Gap Calculator</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Salary Benchmarks</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node bg-amber" style="border:1px solid rgba(245,158,11,0.3); color:var(--amber);">ROI Ranking</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node bg-cyan" style="border:1px solid rgba(6,178,212,0.3); color:var(--cyan);">90-Day Plan</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     FEATURE 4 — PERSONA COACH
+══════════════════════════════════════════════════════════ -->
+<section id="persona" style="max-width:1100px; margin:0 auto; padding:5rem 2rem;">
+  <div class="section-label c-amber">Feature 4</div>
+  <h2>Persona Coach</h2>
+  <p class="section-intro">Practice against AI interviewers that mirror the real personalities you'll face — from the stone-faced architect to the rushed founder who barely read your resume.</p>
+
+  <div class="feature-section top-amber">
+    <div class="feature-header">
+      <div class="feature-icon bg-amber" style="border:1px solid rgba(245,158,11,0.3);">🎭</div>
+      <div class="feature-meta">
+        <div class="feature-num c-amber">Feature 04 · Mock Interview Simulation</div>
+        <h3>Persona Coach</h3>
+        <p>Choose an interviewer persona and go live. Real-time coaching hints appear as you speak. Filler word tracking, gaze analysis, and post-session reports with a personalized study guide. Supports Hinglish.</p>
+      </div>
+    </div>
+
+    <div class="feature-body">
+      <div>
+        <div class="problem-box">
+          <h4>🚨 The Problem</h4>
+          <p>Practicing with friends gives you softball questions. LeetCode doesn't simulate the social pressure of a real interview. You need adversarial, realistic practice that exposes your actual weak spots under pressure.</p>
+        </div>
+        <div class="outputs-box" style="margin-top:1.25rem;">
+          <h4>Outputs You Get</h4>
+          <div class="output-tags">
+            <span class="tag bg-amber border-amber c-amber">Real-Time Hints</span>
+            <span class="tag bg-amber border-amber c-amber">Filler Word Count</span>
+            <span class="tag bg-amber border-amber c-amber">Gaze Analysis</span>
+            <span class="tag bg-amber border-amber c-amber">Coaching Report</span>
+            <span class="tag bg-amber border-amber c-amber">Study Guide</span>
+            <span class="tag bg-amber border-amber c-amber">Hinglish Support</span>
+          </div>
+        </div>
+
+        <div style="margin-top:1.5rem; background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.25rem;">
+          <div style="font-size:0.75rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:0.75rem;">Available Personas</div>
+          <div style="display:flex; flex-direction:column; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.875rem;">
+              <span style="font-size:1.1rem;">🗿</span>
+              <div><strong>Stone-Faced Architect</strong> <span style="color:var(--muted);">— Minimal feedback, deep technical probing</span></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.875rem;">
+              <span style="font-size:1.1rem;">⚡</span>
+              <div><strong>Rushed Founder</strong> <span style="color:var(--muted);">— Impatient, context-switching, tests clarity</span></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.875rem;">
+              <span style="font-size:1.1rem;">📋</span>
+              <div><strong>Non-Tech HR</strong> <span style="color:var(--muted);">— Behavioral focus, culture fit, soft skills</span></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.875rem;">
+              <span style="font-size:1.1rem;">🔭</span>
+              <div><strong>Deep Diver</strong> <span style="color:var(--muted);">— Follows every thread, tests depth of knowledge</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="steps-box">
+        <h4>How to Use It</h4>
+        <ul class="steps">
+          <li>
+            <span class="step-dot grad-amber" style="color:#fff;">1</span>
+            <span>Open <strong>Persona Coach</strong> and select an interviewer persona</span>
+          </li>
+          <li>
+            <span class="step-dot grad-amber" style="color:#fff;">2</span>
+            <span>Set the <strong>interview type</strong>: technical, behavioral, system design, or mixed</span>
+          </li>
+          <li>
+            <span class="step-dot grad-amber" style="color:#fff;">3</span>
+            <span>Enable <strong>camera and microphone</strong> for gaze tracking and speech analysis</span>
+          </li>
+          <li>
+            <span class="step-dot grad-amber" style="color:#fff;">4</span>
+            <span>Start the session — the AI persona asks questions in character</span>
+          </li>
+          <li>
+            <span class="step-dot grad-amber" style="color:#fff;">5</span>
+            <span>Watch <strong>real-time coaching hints</strong> appear in the sidebar as you answer</span>
+          </li>
+          <li>
+            <span class="step-dot grad-amber" style="color:#fff;">6</span>
+            <span>After the session, review your <strong>coaching report</strong> and generated study guide</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-box">
+      <h4>Session Pipeline</h4>
+      <div class="flow-diagram">
+        <div class="flow-node bg-amber" style="border:1px solid rgba(245,158,11,0.3); color:var(--amber);">Persona Selected</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">AI Question Engine</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Speech + Gaze Analysis</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Real-Time Hints</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Filler Word Tracker</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node bg-purple" style="border:1px solid rgba(168,85,247,0.3); color:var(--purple);">Coaching Report</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node bg-emerald" style="border:1px solid rgba(16,185,129,0.3); color:var(--emerald);">Study Guide</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     FEATURE 5 — NARRATIVE ARCHITECT
+══════════════════════════════════════════════════════════ -->
+<section id="narrative" style="max-width:1100px; margin:0 auto; padding:5rem 2rem;">
+  <div class="section-label c-cyan">Feature 5</div>
+  <h2>Narrative Architect</h2>
+  <p class="section-intro">Your GitHub repos are full of impressive work that nobody knows about. Narrative Architect turns your code into compelling career stories — automatically.</p>
+
+  <div class="feature-section top-cyan">
+    <div class="feature-header">
+      <div class="feature-icon bg-cyan" style="border:1px solid rgba(6,178,212,0.3);">✍️</div>
+      <div class="feature-meta">
+        <div class="feature-num c-cyan">Feature 05 · Story Generation</div>
+        <h3>Narrative Architect</h3>
+        <p>Paste a GitHub repo URL. AI analyzes your code architecture, generates STAR-format interview stories, creates a LinkedIn post, builds a portfolio site, and cross-checks consistency with your resume.</p>
+      </div>
+    </div>
+
+    <div class="feature-body">
+      <div>
+        <div class="problem-box">
+          <h4>🚨 The Problem</h4>
+          <p>Engineers build great things but struggle to articulate them. "I built a microservice" doesn't land. You need structured STAR stories that connect your technical decisions to business outcomes — and most people don't know how to write them.</p>
+        </div>
+        <div class="outputs-box" style="margin-top:1.25rem;">
+          <h4>Outputs You Get</h4>
+          <div class="output-tags">
+            <span class="tag bg-cyan border-cyan c-cyan">STAR Stories</span>
+            <span class="tag bg-cyan border-cyan c-cyan">LinkedIn Post</span>
+            <span class="tag bg-cyan border-cyan c-cyan">Portfolio Site</span>
+            <span class="tag bg-cyan border-cyan c-cyan">Architecture Analysis</span>
+            <span class="tag bg-cyan border-cyan c-cyan">Resume Consistency Check</span>
+            <span class="tag bg-cyan border-cyan c-cyan">Tech Stack Summary</span>
+          </div>
+        </div>
+      </div>
+      <div class="steps-box">
+        <h4>How to Use It</h4>
+        <ul class="steps">
+          <li>
+            <span class="step-dot grad-cyan" style="color:#fff;">1</span>
+            <span>Open <strong>Narrative Architect</strong> and paste your <strong>GitHub repo URL</strong></span>
+          </li>
+          <li>
+            <span class="step-dot grad-cyan" style="color:#fff;">2</span>
+            <span>Optionally upload your <strong>resume PDF</strong> for consistency cross-checking</span>
+          </li>
+          <li>
+            <span class="step-dot grad-cyan" style="color:#fff;">3</span>
+            <span>Click <strong>Analyze Repo</strong> — AI reads your code structure, README, and commit patterns</span>
+          </li>
+          <li>
+            <span class="step-dot grad-cyan" style="color:#fff;">4</span>
+            <span>Review the <strong>STAR stories</strong> generated for each major technical decision</span>
+          </li>
+          <li>
+            <span class="step-dot grad-cyan" style="color:#fff;">5</span>
+            <span>Copy the <strong>LinkedIn post</strong> draft and the portfolio site HTML</span>
+          </li>
+          <li>
+            <span class="step-dot grad-cyan" style="color:#fff;">6</span>
+            <span>Check the <strong>consistency report</strong> — fix any gaps between your code and resume claims</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-box">
+      <h4>Story Generation Pipeline</h4>
+      <div class="flow-diagram">
+        <div class="flow-node bg-cyan" style="border:1px solid rgba(6,178,212,0.3); color:var(--cyan);">GitHub URL</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Code Architecture Parser</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">Tech Stack Extractor</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">STAR Story Generator</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">LinkedIn Post Writer</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node bg-indigo" style="border:1px solid rgba(99,102,241,0.3); color:var(--indigo);">Portfolio Builder</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node bg-emerald" style="border:1px solid rgba(16,185,129,0.3); color:var(--emerald);">Resume Check</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JOB TRACKER
+══════════════════════════════════════════════════════════ -->
+<section id="tracker" style="max-width:1100px; margin:0 auto; padding:5rem 2rem;">
+  <div class="section-label" style="color:var(--emerald);">Job Tracker</div>
+  <h2>Job Tracker</h2>
+  <p class="section-intro">A Kanban pipeline that keeps your entire job search organized — from wishlist to offer. With CRM contacts, append-only notes, and follow-up alerts so nothing falls through the cracks.</p>
+
+  <div class="feature-section top-teal">
+    <div class="feature-header">
+      <div class="feature-icon bg-emerald" style="border:1px solid rgba(16,185,129,0.3);">📋</div>
+      <div class="feature-meta">
+        <div class="feature-num c-emerald">Job Tracker · Application Pipeline</div>
+        <h3>Kanban Job Pipeline</h3>
+        <p>Visual pipeline management with priority levels, contact CRM fields, append-only notes history, CSV export, and due-today follow-up alerts. Never miss a follow-up deadline again.</p>
+      </div>
+    </div>
+
+    <div class="kanban">
+      <div class="kanban-col">
+        <div class="kanban-col-header" style="color:var(--muted);">⭐ Wishlist</div>
+        <div class="kanban-card">Stripe — Senior SWE</div>
+        <div class="kanban-card">Vercel — Platform Eng</div>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header" style="color:var(--indigo);">📤 Applied</div>
+        <div class="kanban-card">Shopify — Backend</div>
+        <div class="kanban-card">Linear — Infra</div>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header" style="color:var(--amber);">🎤 Interviewing</div>
+        <div class="kanban-card">Figma — SWE II</div>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header" style="color:var(--emerald);">🎉 Offered</div>
+        <div class="kanban-card">Notion — Full Stack</div>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header" style="color:var(--rose);">❌ Rejected</div>
+        <div class="kanban-card">Meta — SWE E5</div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-top:2rem;">
+      <div style="background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.25rem;">
+        <div style="font-size:1.5rem; margin-bottom:0.5rem;">🏷️</div>
+        <div style="font-weight:700; font-size:0.9rem; margin-bottom:0.35rem;">Priority Levels</div>
+        <div style="font-size:0.825rem; color:var(--muted);">Tag each job as High, Medium, or Low priority. Filter your pipeline to focus on what matters most.</div>
+      </div>
+      <div style="background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.25rem;">
+        <div style="font-size:1.5rem; margin-bottom:0.5rem;">👤</div>
+        <div style="font-weight:700; font-size:0.9rem; margin-bottom:0.35rem;">Contact CRM</div>
+        <div style="font-size:0.825rem; color:var(--muted);">Store recruiter names, emails, LinkedIn profiles, and last contact date alongside each application.</div>
+      </div>
+      <div style="background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.25rem;">
+        <div style="font-size:1.5rem; margin-bottom:0.5rem;">📝</div>
+        <div style="font-weight:700; font-size:0.9rem; margin-bottom:0.35rem;">Append-Only Notes</div>
+        <div style="font-size:0.825rem; color:var(--muted);">Every note is timestamped and immutable. Build a full history of every interaction with each company.</div>
+      </div>
+      <div style="background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.25rem;">
+        <div style="font-size:1.5rem; margin-bottom:0.5rem;">⏰</div>
+        <div style="font-weight:700; font-size:0.9rem; margin-bottom:0.35rem;">Follow-Up Alerts</div>
+        <div style="font-size:0.825rem; color:var(--muted);">Set follow-up dates. Get due-today alerts so you never ghost a recruiter or miss a deadline.</div>
+      </div>
+      <div style="background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.25rem;">
+        <div style="font-size:1.5rem; margin-bottom:0.5rem;">📊</div>
+        <div style="font-weight:700; font-size:0.9rem; margin-bottom:0.35rem;">CSV Export</div>
+        <div style="font-size:0.825rem; color:var(--muted);">Export your entire pipeline to CSV for offline analysis, sharing with a mentor, or backup.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     HOW IT ALL CONNECTS
+══════════════════════════════════════════════════════════ -->
+<section id="connections" style="max-width:1100px; margin:0 auto; padding:5rem 2rem;">
+  <div class="section-label c-purple">Ecosystem</div>
+  <h2>How It All Connects</h2>
+  <p class="section-intro">Career OS features aren't isolated tools — they form a feedback loop that compounds over time. Each feature feeds into the others.</p>
+
+  <!-- Central diagram -->
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2.5rem; margin-bottom:2rem; text-align:center;">
+    <div style="display:flex; justify-content:center; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:2rem;">
+      <div style="background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); border-radius:12px; padding:0.75rem 1.25rem; color:var(--indigo); font-weight:700; font-size:0.9rem;">🔬 Lens Engine</div>
+      <div style="color:var(--muted); font-size:1.2rem;">⟷</div>
+      <div style="background:rgba(6,178,212,0.12); border:1px solid rgba(6,178,212,0.3); border-radius:12px; padding:0.75rem 1.25rem; color:var(--cyan); font-weight:700; font-size:0.9rem;">✍️ Narrative Architect</div>
+      <div style="color:var(--muted); font-size:1.2rem;">⟷</div>
+      <div style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:0.75rem 1.25rem; color:var(--emerald); font-weight:700; font-size:0.9rem;">📊 Skill Arbitrage</div>
+    </div>
+    <div style="display:flex; justify-content:center; gap:3rem; color:var(--muted); font-size:1.5rem; margin-bottom:2rem;">
+      <span>↕</span><span>↕</span><span>↕</span>
+    </div>
+    <div style="display:flex; justify-content:center; align-items:center; gap:1rem; flex-wrap:wrap;">
+      <div style="background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); border-radius:12px; padding:0.75rem 1.25rem; color:var(--purple); font-weight:700; font-size:0.9rem;">🧠 Interview Rebound</div>
+      <div style="color:var(--muted); font-size:1.2rem;">⟷</div>
+      <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); border-radius:12px; padding:0.75rem 1.25rem; color:var(--amber); font-weight:700; font-size:0.9rem;">🎭 Persona Coach</div>
+      <div style="color:var(--muted); font-size:1.2rem;">⟷</div>
+      <div style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:0.75rem 1.25rem; color:var(--emerald); font-weight:700; font-size:0.9rem;">📋 Job Tracker</div>
+    </div>
+  </div>
+
+  <div class="connections-grid">
+    <div class="connection-card">
+      <div class="conn-arrow">🔬 → ✍️</div>
+      <h4>Lens Engine → Narrative Architect</h4>
+      <p>Lens identifies resume gaps. Narrative Architect fills them by generating STAR stories from your GitHub repos that directly address those gaps.</p>
+    </div>
+    <div class="connection-card">
+      <div class="conn-arrow">📊 → 🔬</div>
+      <h4>Skill Arbitrage → Lens Engine</h4>
+      <p>After learning the skills Arbitrage recommends, re-run Lens Engine to verify your updated resume reflects the new skills and scores higher on ATS.</p>
+    </div>
+    <div class="connection-card">
+      <div class="conn-arrow">🎭 → 🧠</div>
+      <h4>Persona Coach → Interview Rebound</h4>
+      <p>Practice sessions in Persona Coach reveal your weak areas. After real interviews, Rebound confirms whether those same weaknesses showed up — closing the loop.</p>
+    </div>
+    <div class="connection-card">
+      <div class="conn-arrow">🧠 → 📊</div>
+      <h4>Interview Rebound → Skill Arbitrage</h4>
+      <p>Rebound's technical score breakdown shows exactly which topics you failed on. Feed those gaps back into Skill Arbitrage to get a targeted learning sprint.</p>
+    </div>
+    <div class="connection-card">
+      <div class="conn-arrow">📋 → 🧠</div>
+      <h4>Job Tracker → Interview Rebound</h4>
+      <p>Every interview logged in the tracker links to a Rebound autopsy. Your notes history becomes a searchable record of every company's interview style.</p>
+    </div>
+    <div class="connection-card">
+      <div class="conn-arrow">✍️ → 🔬</div>
+      <h4>Narrative Architect → Lens Engine</h4>
+      <p>Narrative Architect's consistency check flags mismatches between your GitHub work and resume claims. Fix them in Lens Engine for a coherent, verifiable profile.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     X-FACTORS
+══════════════════════════════════════════════════════════ -->
+<section id="xfactors" style="max-width:1100px; margin:0 auto; padding:5rem 2rem;">
+  <div class="section-label c-purple">Differentiation</div>
+  <h2>X-Factors</h2>
+  <p class="section-intro">What makes Career OS different from LinkedIn, Glassdoor, or a generic AI chatbot? Here's what you won't find anywhere else.</p>
+
+  <div class="xfactors-grid">
+    <div class="xfactor-card">
+      <div class="vs-badge">vs LinkedIn</div>
+      <div class="xf-icon">🎯</div>
+      <h4>Actionable, Not Passive</h4>
+      <p>LinkedIn shows you jobs. Career OS tells you exactly what to fix, learn, and practice to actually get them — with scores, plans, and drills, not just listings.</p>
+    </div>
+    <div class="xfactor-card">
+      <div class="vs-badge">vs Glassdoor</div>
+      <div class="xf-icon">🔬</div>
+      <h4>Personalized Intelligence</h4>
+      <p>Glassdoor gives you crowd-sourced salary averages. Career OS calculates your specific ROI based on your current skills, target role, and region — in USD, PKR, and GBP.</p>
+    </div>
+    <div class="xfactor-card">
+      <div class="vs-badge">vs ChatGPT</div>
+      <div class="xf-icon">🔄</div>
+      <h4>Closed Feedback Loop</h4>
+      <p>A generic AI gives you one-shot answers. Career OS features feed into each other — your interview failures inform your skill plan, which updates your resume, which improves your stories.</p>
+    </div>
+    <div class="xfactor-card">
+      <div class="vs-badge">vs Pramp / Interviewing.io</div>
+      <div class="xf-icon">🎭</div>
+      <h4>Adversarial Personas</h4>
+      <p>Peer mock interviews are too polite. Career OS simulates the Stone-Faced Architect and the Rushed Founder — the interviewers who actually stress-test you.</p>
+    </div>
+    <div class="xfactor-card">
+      <div class="vs-badge">vs Resume Builders</div>
+      <div class="xf-icon">📐</div>
+      <h4>Multi-Dimensional Scoring</h4>
+      <p>Resume builders check formatting. Lens Engine scores visual layout, ATS compatibility, semantic job-match, AND benchmarks you against real candidates — four dimensions at once.</p>
+    </div>
+    <div class="xfactor-card">
+      <div class="vs-badge">vs Portfolio Sites</div>
+      <div class="xf-icon">✨</div>
+      <h4>Story-First, Not Code-First</h4>
+      <p>A portfolio shows your code. Narrative Architect generates the STAR stories, LinkedIn posts, and portfolio site from your code — turning technical work into career capital automatically.</p>
+    </div>
+    <div class="xfactor-card">
+      <div class="vs-badge">vs Spreadsheets</div>
+      <div class="xf-icon">📋</div>
+      <h4>Intelligent Job Tracking</h4>
+      <p>A spreadsheet is passive. The Job Tracker has follow-up alerts, append-only notes history, CRM contacts, and CSV export — it actively prevents you from dropping the ball.</p>
+    </div>
+    <div class="xfactor-card">
+      <div class="vs-badge">Unique</div>
+      <div class="xf-icon">🌐</div>
+      <h4>Hinglish + Multi-Currency</h4>
+      <p>Built for South Asian engineers globally. Persona Coach supports Hinglish, and Skill Arbitrage shows salaries in USD, PKR, and GBP — no other platform does this.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════════════ -->
+<footer>
+  <div style="font-size:2rem; margin-bottom:0.75rem;">⚡</div>
+  <div style="font-size:1.1rem; font-weight:700; margin-bottom:0.5rem; color:var(--text);">Career OS</div>
+  <div style="margin-bottom:1.5rem;">AI-powered career intelligence for software engineers</div>
+  <div style="display:flex; justify-content:center; gap:2rem; flex-wrap:wrap; font-size:0.8rem;">
+    <a href="#quickstart" style="color:var(--muted); text-decoration:none;">Quick Start</a>
+    <a href="#lens" style="color:var(--muted); text-decoration:none;">Lens Engine</a>
+    <a href="#rebound" style="color:var(--muted); text-decoration:none;">Interview Rebound</a>
+    <a href="#arbitrage" style="color:var(--muted); text-decoration:none;">Skill Arbitrage</a>
+    <a href="#persona" style="color:var(--muted); text-decoration:none;">Persona Coach</a>
+    <a href="#narrative" style="color:var(--muted); text-decoration:none;">Narrative Architect</a>
+    <a href="#tracker" style="color:var(--muted); text-decoration:none;">Job Tracker</a>
+  </div>
+  <div style="margin-top:2rem; font-size:0.75rem; color:rgba(148,163,184,0.5);">
+    Running on <strong style="color:rgba(148,163,184,0.7);">localhost:5502</strong> · Career OS Product Guide
+  </div>
+</footer>
+
+<script>
+  // Highlight active nav link on scroll
+  const sections = document.querySelectorAll('section[id], div.hero');
+  const navLinks = document.querySelectorAll('.nav-links a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(link => {
+          link.style.color = '';
+          link.style.background = '';
+          if (link.getAttribute('href') === '#' + id) {
+            link.style.color = 'var(--text)';
+            link.style.background = 'var(--border)';
+          }
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Smooth scroll for all anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+</body>
+</html>
