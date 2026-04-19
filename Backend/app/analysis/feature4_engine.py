@@ -72,9 +72,10 @@ class Feature4PersonaPlayEngine:
         key = (selected_persona or persona_mode or "stone_faced").strip().lower()
         return PERSONAS.get(key, PERSONAS["stone_faced"])
 
-    def opening_questions(self, persona: PersonaProfile, role_name: str) -> List[Dict[str, Any]]:
+    def opening_questions(self, persona: PersonaProfile, role_name: str,
+                          target_company: str = "", language: str = "english") -> List[Dict[str, Any]]:
         # Try Gemini for dynamic, role-specific questions first
-        ai_questions = self._gemini_opening_questions(persona, role_name)
+        ai_questions = self._gemini_opening_questions(persona, role_name, target_company, language)
         if ai_questions:
             return ai_questions
 
@@ -107,17 +108,26 @@ class Feature4PersonaPlayEngine:
             },
         ]
 
-    def _gemini_opening_questions(self, persona: PersonaProfile, role_name: str) -> List[Dict[str, Any]]:
+    def _gemini_opening_questions(self, persona: PersonaProfile, role_name: str,
+                                   target_company: str = "", language: str = "english") -> List[Dict[str, Any]]:
         """Generate dynamic, persona-specific interview questions using Gemini."""
         if not gemini_client.is_available():
             return []
 
+        company_ctx = f" at {target_company}" if target_company else ""
+        lang_instruction = (
+            "Write all questions in Hinglish (mix of Hindi and English, Roman script)."
+            if language.lower() == "hinglish"
+            else "Write all questions in English."
+        )
+
         prompt = (
             f"You are a {persona.label} interviewer. Style: {persona.style}. Pressure level: {persona.pressure}/10.\n"
-            f"Generate 5 interview questions for a {role_name} candidate.\n"
+            f"Generate 5 interview questions for a {role_name}{company_ctx} candidate.\n"
             "Questions must be progressively harder and match the interviewer persona.\n"
             "Include: 1 baseline project question, 1 trade-off question, 1 scale scenario, "
             "1 behavioral question, 1 curveball.\n"
+            f"{lang_instruction}\n"
             "Format: one question per line, numbered 1-5. No extra text."
         )
 
@@ -224,7 +234,17 @@ class Feature4PersonaPlayEngine:
             return "Add explicit downside + mitigation. Interviewers reward transparent trade-off thinking."
         return "Good control. Keep answers in STAR + trade-off format."
 
-    def next_question(self, persona: PersonaProfile, turn_index: int, deep_logic: Dict[str, Any]) -> Dict[str, Any]:
+    def next_question(self, persona: PersonaProfile, turn_index: int, deep_logic: Dict[str, Any],
+                      utterance: str = "", role_name: str = "", target_company: str = "",
+                      language: str = "english") -> Dict[str, Any]:
+        """Generate next question — Gemini-powered when available, else cycle through hardcoded set."""
+        # Try Gemini for a contextual follow-up based on the actual answer
+        if gemini_client.is_available() and utterance.strip():
+            ai_q = self._gemini_next_question(persona, utterance, role_name, target_company, language)
+            if ai_q:
+                return ai_q
+
+        # Fallback: cycle through hardcoded questions
         cycle = [
             ("tradeoff_trigger", deep_logic["tradeoff_trigger"]),
             ("scale_up_scenario", deep_logic["scale_up_scenario"]),
@@ -234,6 +254,39 @@ class Feature4PersonaPlayEngine:
         ]
         kind, question = cycle[turn_index % len(cycle)]
         return {"type": kind, "question": question, "persona_tone": persona.style}
+
+    def _gemini_next_question(self, persona: PersonaProfile, utterance: str,
+                               role_name: str, target_company: str, language: str) -> Dict[str, Any]:
+        """Use Gemini to generate a contextual follow-up question based on the candidate's answer."""
+        company_ctx = f" at {target_company}" if target_company else ""
+        lang_instruction = (
+            "Respond in Hinglish (mix of Hindi and English, Roman script)."
+            if language.lower() == "hinglish"
+            else "Respond in English."
+        )
+
+        prompt = (
+            f"You are a {persona.label} interviewer conducting a {role_name}{company_ctx} interview.\n"
+            f"Interviewer style: {persona.style}. Pressure: {persona.pressure}/10.\n\n"
+            f"The candidate just said:\n\"{utterance[:400]}\"\n\n"
+            f"Generate ONE sharp follow-up question that:\n"
+            f"1. Probes a gap or assumption in their answer\n"
+            f"2. Matches the {persona.label} persona style\n"
+            f"3. Is specific to {role_name} context\n"
+            f"{lang_instruction}\n"
+            f"Return ONLY the question text, no preamble."
+        )
+
+        raw = gemini_client.generate(prompt, temperature=0.5, max_tokens=150)
+        if not raw or len(raw.strip()) < 10:
+            return {}
+
+        return {
+            "type": "ai_followup",
+            "question": raw.strip(),
+            "persona_tone": persona.style,
+            "ai_generated": True,
+        }
 
     def summarize_realtime(self, signals: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         if not signals:
@@ -265,6 +318,7 @@ class Feature4PersonaPlayEngine:
         persona: PersonaProfile,
         turns: Sequence[Dict[str, Any]],
         previous_summaries: Sequence[Dict[str, Any]],
+        language: str = "english",
     ) -> Dict[str, Any]:
         signals = [t["realtime"] for t in turns]
         summary = self.summarize_realtime(signals)
@@ -291,8 +345,8 @@ class Feature4PersonaPlayEngine:
             "overall": round(overall, 2),
         }
 
-        # Gemini: AI-powered coaching report
-        ai_coaching = self._gemini_coaching_report(persona, turns, scorecard)
+        # Gemini: AI-powered coaching report (language-aware)
+        ai_coaching = self._gemini_coaching_report(persona, turns, scorecard, language=language)
 
         return {
             "scorecard": scorecard,
@@ -309,6 +363,7 @@ class Feature4PersonaPlayEngine:
         persona: PersonaProfile,
         turns: Sequence[Dict[str, Any]],
         scorecard: Dict[str, Any],
+        language: str = "english",
     ) -> Dict[str, Any]:
         """Generate a detailed AI coaching report using Gemini."""
         if not gemini_client.is_available() or not turns:
@@ -323,12 +378,19 @@ class Feature4PersonaPlayEngine:
 
         transcript_text = "\n\n".join(transcript_lines)
 
+        lang_instruction = (
+            "Write your coaching report in Hinglish (mix of Hindi and English, Roman script)."
+            if language.lower() == "hinglish"
+            else "Write your coaching report in English."
+        )
+
         prompt = (
             f"You are reviewing a mock interview with a {persona.label} interviewer.\n"
             f"Overall score: {scorecard['overall']:.1f}/100\n"
             f"Logic depth: {scorecard['logic_depth']:.1f}/100\n"
             f"Behavioral control: {scorecard['behavioral_control']:.1f}/100\n\n"
             f"Interview transcript:\n{transcript_text}\n\n"
+            f"{lang_instruction}\n"
             "Write a coaching report with these sections:\n"
             "STRENGTHS: (2 specific things done well)\n"
             "CRITICAL_GAPS: (2 most important things to fix)\n"

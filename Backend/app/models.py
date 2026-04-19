@@ -194,6 +194,10 @@ class Feature4MockSession(SQLModel, table=True):
     synthesis_json: str
     ai_coaching_report_json: str = Field(default="{}")  # 1.6: persisted Gemini coaching report
 
+    # Chunk 5 enhancements
+    target_company: str = Field(default="", index=True, description="Company name for tailored interview style")
+    language: str = Field(default="english", index=True, description="Session language: english|hinglish")
+
     status: str = Field(default="active", index=True)
     created_at: datetime = Field(default_factory=utc_now, index=True)
     updated_at: datetime = Field(default_factory=utc_now, index=True)

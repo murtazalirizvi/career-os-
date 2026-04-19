@@ -12,6 +12,8 @@ class Feature4CreateSessionRequest(BaseModel):
     language: str = Field(default="english", description="english|hinglish")
     include_video: bool = Field(default=True)
     environment_theme: str = Field(default="zoom")
+    # Chunk 5 enhancements
+    target_company: str = Field(default="", description="Company name for tailored interview style (e.g. Google, startup)")
 
 
 class Feature4SessionResponse(BaseModel):
@@ -23,6 +25,9 @@ class Feature4SessionResponse(BaseModel):
     realtime_summary: Dict[str, Any]
     status: str
     created_at: datetime
+    # Chunk 5 enhancements
+    target_company: str = ""
+    language: str = "english"
 
 
 class Feature4TurnRequest(BaseModel):
@@ -105,3 +110,19 @@ class Feature4SessionHistoryItem(BaseModel):
 class Feature4SessionHistoryResponse(BaseModel):
     candidate_id: str
     sessions: List[Feature4SessionHistoryItem]
+
+
+# Chunk 5: New schemas
+
+class Feature4TurnTextRequest(BaseModel):
+    """Simplified turn endpoint — text only, browser-friendly defaults for all signal params."""
+    utterance: str = Field(min_length=1, description="Candidate's spoken answer as text")
+
+
+class Feature4StudyGuideResponse(BaseModel):
+    """Gemini-generated study guide from session transcript."""
+    session_id: int
+    role_name: str
+    target_company: str
+    sections: Dict[str, Any]   # topics, weak_areas, resources, practice_questions
+    generated_at: datetime
