@@ -46,6 +46,7 @@ class Feature2InterviewResponse(BaseModel):
     behavioral: Dict[str, Any]
     strategic_actions: Dict[str, Any]
     analytics_snapshot: Dict[str, Any]
+    ai_insights: Dict[str, Any] = {}   # 1.4: Gemini autopsy coaching
     created_at: datetime
 
 
@@ -91,3 +92,4 @@ class Feature2QuickDebriefResponse(BaseModel):
     extracted_hardest_question: str
     top_failure_themes: List[str]
     immediate_next_actions: List[str]
+    ai_coaching_summary: str = ""      # Gemini quick coaching bullets

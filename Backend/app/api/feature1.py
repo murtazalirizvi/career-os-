@@ -75,6 +75,16 @@ def analyze_resume(
     if not (resume_pdf.filename or "").lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF resumes are supported for Feature 1 analysis.")
 
+    # 1.3: Validate file size — reject PDFs over 5 MB before processing
+    MAX_PDF_BYTES = 5 * 1024 * 1024  # 5 MB
+    content = resume_pdf.file.read()
+    if len(content) > MAX_PDF_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Resume PDF exceeds the 5 MB limit ({len(content) // 1024} KB uploaded). Please compress or trim the file.",
+        )
+    resume_pdf.file.seek(0)  # reset so save_upload can read it again
+
     saved = save_upload(resume_pdf, candidate_id)
 
     engine = Feature1Engine(
@@ -103,6 +113,7 @@ def analyze_resume(
         hotzones_json=dump_json(result["hot_zones"]),
         metrics_json=dump_json(result["metrics"]),
         recommendations_json=dump_json(result["recommendations"]),
+        raw_resume_text=result.get("raw_resume_text", "")[:8000],  # 2.3: store for cross-feature reuse
     )
 
     session.add(row)

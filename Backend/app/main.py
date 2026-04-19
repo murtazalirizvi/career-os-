@@ -10,8 +10,9 @@ if _env_path.exists():
             _key, _, _val = _line.partition("=")
             os.environ.setdefault(_key.strip(), _val.strip())
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -43,7 +44,8 @@ _raw = os.getenv(
     "http://localhost:5500,http://127.0.0.1:5500,"
     "http://localhost:5173,http://127.0.0.1:5173,"
     "http://localhost:3000,http://127.0.0.1:3000,"
-    "http://localhost:8080,http://127.0.0.1:8080"
+    "http://localhost:8080,http://127.0.0.1:8080,"
+    "http://localhost:8000,http://127.0.0.1:8000"   # 1.8: Swagger UI self-calls
 )
 ALLOWED_ORIGINS = [o.strip() for o in _raw.split(",") if o.strip()]
 allow_credentials = "*" not in ALLOWED_ORIGINS
@@ -55,6 +57,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ── 1.7: Global exception handler — never leak tracebacks to the browser ─────
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    import traceback
+    import logging
+    logging.getLogger("career_os").error(
+        "Unhandled exception on %s %s: %s",
+        request.method,
+        request.url.path,
+        traceback.format_exc(),
+    )
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An internal server error occurred.", "code": "INTERNAL_ERROR"},
+    )
+
+
+# ── 1.8: Security headers middleware ─────────────────────────────────────────
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 
 @app.on_event("startup")

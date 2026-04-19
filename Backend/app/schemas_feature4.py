@@ -51,6 +51,7 @@ class Feature4FinalizeResponse(BaseModel):
     senior_answer_alternatives: List[Dict[str, str]]
     badges: Dict[str, Any]
     pass_status: Dict[str, Any]
+    ai_coaching_report: Dict[str, Any] = {}   # 1.6: Gemini coaching report
 
 
 class Feature4SynthesisRequest(BaseModel):

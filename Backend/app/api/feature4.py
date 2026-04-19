@@ -181,6 +181,7 @@ def finalize_session(session_id: int, session: Session = Depends(get_session)):
     payload = engine.finalize_feedback(persona, turns, previous_summaries)
 
     row.coach_json = dump_json(payload)
+    row.ai_coaching_report_json = dump_json(payload.get("ai_coaching_report", {}))  # 1.6
     row.status = "completed"
     row.updated_at = datetime.now(timezone.utc)
     session.add(row)

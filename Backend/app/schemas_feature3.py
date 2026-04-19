@@ -35,17 +35,18 @@ class Feature3GapAnalysisRequest(BaseModel):
 
 
 class Feature3GapAnalysisResponse(BaseModel):
-	gap_snapshot_id: int
-	candidate_id: str
-	market_snapshot_id: int
-	match_score: float
-	gap_to_top10_score: float
-	radar_chart: Dict[str, Any]
-	roadmap_to_90: Dict[str, Any]
-	niche_recommendations: List[Dict[str, Any]]
-	github_project_validation: Dict[str, Any]
-	historical_gap_tracking: Dict[str, Any]
-	created_at: datetime
+    gap_snapshot_id: int
+    candidate_id: str
+    market_snapshot_id: int
+    match_score: float
+    gap_to_top10_score: float
+    radar_chart: Dict[str, Any]
+    roadmap_to_90: Dict[str, Any]
+    niche_recommendations: List[Dict[str, Any]]
+    github_project_validation: Dict[str, Any]
+    historical_gap_tracking: Dict[str, Any]
+    ai_learning_path: Dict[str, Any] = {}   # 1.5: Gemini 30-day learning plan
+    created_at: datetime
 
 
 class Feature3SprintCreateRequest(BaseModel):

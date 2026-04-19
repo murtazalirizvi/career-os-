@@ -70,6 +70,7 @@ def _to_response(row: Feature2InterviewAutopsy) -> Feature2InterviewResponse:
         behavioral=json.loads(row.behavioral_json),
         strategic_actions=json.loads(row.strategic_actions_json),
         analytics_snapshot=json.loads(row.analytics_snapshot_json),
+        ai_insights=json.loads(row.ai_insights_json) if row.ai_insights_json else {},
         created_at=row.created_at,
     )
 
@@ -119,6 +120,7 @@ def create_interview_autopsy(req: Feature2CreateInterviewRequest, session: Sessi
         score_json=json.dumps(result["score"], ensure_ascii=True),
         transcript_source="assemblyai" if assembly_used else "vtt" if req.transcript_vtt else "text" if transcript_text else "voice_notes",
         raw_transcript_excerpt=(transcript_text or req.transcript_vtt or req.interview_notes)[:2000],
+        ai_insights_json=json.dumps(result.get("ai_insights", {}), ensure_ascii=True),  # 1.4
     )
 
     session.add(row)

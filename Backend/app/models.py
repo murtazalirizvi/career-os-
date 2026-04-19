@@ -30,6 +30,7 @@ class Feature1Analysis(SQLModel, table=True):
     hotzones_json: str
     metrics_json: str
     recommendations_json: str
+    raw_resume_text: str = Field(default="")  # 1.3/2.3: stored for cross-feature reuse
 
     created_at: datetime = Field(default_factory=utc_now, index=True)
 
@@ -64,6 +65,7 @@ class Feature2InterviewAutopsy(SQLModel, table=True):
 
     transcript_source: str = "voice_notes"
     raw_transcript_excerpt: str = ""
+    ai_insights_json: str = Field(default="{}")  # 1.4: persisted Gemini autopsy
 
     created_at: datetime = Field(default_factory=utc_now, index=True)
 
@@ -112,6 +114,7 @@ class Feature3GapSnapshot(SQLModel, table=True):
 
     match_score: float = Field(index=True)
     gap_to_top10_score: float
+    ai_learning_path_json: str = Field(default="{}")  # 1.5: persisted Gemini learning path
 
     created_at: datetime = Field(default_factory=utc_now, index=True)
 
@@ -178,6 +181,7 @@ class Feature4MockSession(SQLModel, table=True):
     deep_logic_json: str
     coach_json: str
     synthesis_json: str
+    ai_coaching_report_json: str = Field(default="{}")  # 1.6: persisted Gemini coaching report
 
     status: str = Field(default="active", index=True)
     created_at: datetime = Field(default_factory=utc_now, index=True)

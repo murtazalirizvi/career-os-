@@ -155,6 +155,7 @@ def create_gap_analysis(req: Feature3GapAnalysisRequest, session: Session = Depe
         historical_gap_json=_dumps(payload["historical_gap_tracking"]),
         match_score=payload["match_score"],
         gap_to_top10_score=payload["gap_to_top10_score"],
+        ai_learning_path_json=_dumps(payload.get("ai_learning_path", {})),  # 1.5
     )
     session.add(row)
     session.commit()
@@ -171,6 +172,7 @@ def create_gap_analysis(req: Feature3GapAnalysisRequest, session: Session = Depe
         niche_recommendations=_loads(row.niche_recommendations_json),
         github_project_validation=_loads(row.github_validation_json),
         historical_gap_tracking=_loads(row.historical_gap_json),
+        ai_learning_path=_loads(row.ai_learning_path_json) if row.ai_learning_path_json else {},
         created_at=row.created_at,
     )
 
@@ -192,6 +194,7 @@ def get_gap_snapshot(gap_snapshot_id: int, session: Session = Depends(get_sessio
         niche_recommendations=_loads(row.niche_recommendations_json),
         github_project_validation=_loads(row.github_validation_json),
         historical_gap_tracking=_loads(row.historical_gap_json),
+        ai_learning_path=_loads(row.ai_learning_path_json) if row.ai_learning_path_json else {},
         created_at=row.created_at,
     )
 
