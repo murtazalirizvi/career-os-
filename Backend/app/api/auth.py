@@ -155,8 +155,13 @@ def register(payload: RegisterRequest, db: Session = Depends(get_session)):
 
 
 @router.post("/login", response_model=AuthEnvelope)
-@limiter.limit("5/minute")
 def login(request: Request, payload: LoginRequest, db: Session = Depends(get_session)):
+    # Rate-limit: 5 attempts per minute per IP (checked inline to avoid slowapi
+    # decorator stripping the body type annotation in FastAPI's dependency resolver)
+    try:
+        limiter._check_request_limit(request, login, False)
+    except Exception:
+        raise HTTPException(status_code=429, detail="Too many login attempts. Try again in a minute.")
     user = db.exec(
         select(UserAccount).where(UserAccount.email == payload.email)
     ).first()
