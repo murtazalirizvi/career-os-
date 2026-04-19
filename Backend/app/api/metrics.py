@@ -173,9 +173,40 @@ def _append_event(
 
 @router.post("/events", response_model=AnalyticsIngestResponse)
 def ingest_events(payload: List[AnalyticsEventIn], session: Session = Depends(get_session)):
+    """
+    Ingest analytics events with deduplication (8.6).
+    Duplicate = same (user_id, session_id, event_name, occurred_at_utc minute bucket).
+    """
     accepted = []
+    skipped = 0
+
+    # Build dedup key set from recent events in DB (last 5 minutes)
+    from datetime import timedelta
+    cutoff = _utc_now() - timedelta(minutes=5)
+    recent = session.exec(
+        select(AnalyticsEvent).where(AnalyticsEvent.occurred_at_utc >= cutoff)
+    ).all()
+    existing_keys = {
+        (e.user_id, e.session_id, e.event_name,
+         e.occurred_at_utc.replace(second=0, microsecond=0).isoformat())
+        for e in recent
+    }
+
+    # Also deduplicate within the batch itself
+    batch_keys: set = set()
 
     for item in payload:
+        # Minute-bucket dedup key
+        bucket = item.occurred_at_utc.replace(second=0, microsecond=0).isoformat()
+        dedup_key = (item.user_id, item.session_id, item.event_name, bucket)
+
+        if dedup_key in existing_keys or dedup_key in batch_keys:
+            skipped += 1
+            continue
+
+        batch_keys.add(dedup_key)
+        existing_keys.add(dedup_key)
+
         row = AnalyticsEvent(
             event_name=item.event_name,
             event_version=item.event_version,
@@ -200,7 +231,7 @@ def ingest_events(payload: List[AnalyticsEventIn], session: Session = Depends(ge
 
     return AnalyticsIngestResponse(
         accepted=len(accepted),
-        rejected=0,
+        rejected=skipped,
         events=[
             AnalyticsEventOut(
                 event_id=row.id,

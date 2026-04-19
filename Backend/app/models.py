@@ -298,6 +298,18 @@ class UserAccount(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=utc_now, index=True)
 
 
+class UserProfile(SQLModel, table=True):
+    """Centralised user profile — avoids repeated input across features (8.2)."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(index=True, unique=True, foreign_key="useraccount.id")
+    candidate_id: str = Field(index=True)
+    target_role: str = Field(default="")
+    years_experience: float = Field(default=0.0)
+    current_skills_json: str = Field(default="[]")
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
+
+
 class UserSessionToken(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(index=True, foreign_key="useraccount.id")
