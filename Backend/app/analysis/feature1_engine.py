@@ -3,12 +3,14 @@ from __future__ import annotations
 import json
 import math
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List
 
 import cv2
 import numpy as np
 
+from . import gemini_client
 from .benchmark import benchmark_score
 from .pdf_utils import detect_nonstandard_fonts, extract_text_and_layout, render_page_gray
 from .text_nlp import (
@@ -26,6 +28,24 @@ EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 PHONE_RE = re.compile(r"(\+?\d[\d\s\-\(\)]{7,}\d)")
 YEARS_RE = re.compile(r"(\d+(?:\.\d+)?)\s*\+?\s*(?:years|yrs)", re.I)
 
+# ── 2.5: LRU cache for parsed resume text (avoids re-parsing same PDF) ────────
+# Keyed by (candidate_id, resume_path_str) — holds up to 10 entries in memory.
+@lru_cache(maxsize=10)
+def _cached_resume_text(resume_path_str: str) -> tuple[str, tuple]:
+    """
+    Parse a PDF and return (text, layout_blocks_tuple).
+    Cached so repeated calls for the same file skip PyMuPDF entirely.
+    """
+    path = Path(resume_path_str)
+    text, blocks = extract_text_and_layout(path)
+    return text, tuple(json.dumps(b, ensure_ascii=True) for b in blocks)
+
+
+def _get_resume_text_and_blocks(resume_path: Path) -> tuple[str, List[Dict]]:
+    text, blocks_json_tuple = _cached_resume_text(str(resume_path))
+    blocks = [json.loads(b) for b in blocks_json_tuple]
+    return text, blocks
+
 
 class Feature1Engine:
     def __init__(self, resume_pdf_path: Path, job_description: str, job_category: str) -> None:
@@ -34,7 +54,8 @@ class Feature1Engine:
         self.job_category = job_category
 
     def run(self) -> Dict[str, Any]:
-        resume_text, layout_blocks = extract_text_and_layout(self.resume_pdf_path)
+        # 2.5: Use LRU cache for PDF parsing — skips re-parse on repeated calls
+        resume_text, layout_blocks = _get_resume_text_and_blocks(self.resume_pdf_path)
         gray = render_page_gray(self.resume_pdf_path)
 
         visual_result = self._analyze_visual_hierarchy(gray, layout_blocks)
@@ -52,6 +73,21 @@ class Feature1Engine:
         combined_recommendations = []
         for source in (visual_result, ats_result, semantic_result, benchmark_result):
             combined_recommendations.extend(source.get("recommendations", []))
+
+        heuristic_recs = self._prioritize_recommendations(combined_recommendations)
+
+        # 2.1: Gemini-powered natural language coaching on top of heuristic recs
+        ai_recommendations = self._gemini_recommendations(
+            resume_text=resume_text,
+            heuristic_recs=heuristic_recs,
+            scores={
+                "overall": round(overall, 2),
+                "visual": visual_result["score"],
+                "ats": ats_result["score"],
+                "semantic": semantic_result["score"],
+                "benchmark": benchmark_result["score"],
+            },
+        )
 
         return {
             "score": {
@@ -74,7 +110,8 @@ class Feature1Engine:
                 "benchmark": benchmark_result["metrics"],
             },
             "hot_zones": visual_result["hot_zones"],
-            "recommendations": self._prioritize_recommendations(combined_recommendations),
+            "recommendations": heuristic_recs,
+            "ai_recommendations": ai_recommendations,
             "raw_resume_text": resume_text,
         }
 
@@ -302,6 +339,123 @@ class Feature1Engine:
                 seen.add(normalized)
                 deduped.append(rec.strip())
         return deduped[:20]
+
+    def _gemini_recommendations(
+        self,
+        resume_text: str,
+        heuristic_recs: List[str],
+        scores: Dict[str, float],
+    ) -> List[str]:
+        """
+        2.1: Use Gemini to rewrite terse heuristic recommendations into
+        actionable, natural-language coaching paragraphs.
+        Falls back to empty list if Gemini is unavailable.
+        """
+        if not gemini_client.is_available() or not resume_text.strip():
+            return []
+
+        recs_text = "\n".join(f"- {r}" for r in heuristic_recs[:8])
+        prompt = (
+            f"You are a professional resume coach. A candidate's resume scored:\n"
+            f"  Overall: {scores['overall']:.1f}/100\n"
+            f"  Visual hierarchy: {scores['visual']:.1f}/100\n"
+            f"  ATS integrity: {scores['ats']:.1f}/100\n"
+            f"  Semantic match: {scores['semantic']:.1f}/100\n"
+            f"  Competitive benchmark: {scores['benchmark']:.1f}/100\n\n"
+            f"Heuristic issues detected:\n{recs_text}\n\n"
+            f"Resume excerpt (first 1200 chars):\n\"\"\"{resume_text[:1200]}\"\"\"\n\n"
+            "Write exactly 5 coaching recommendations. Each must be:\n"
+            "- One clear, actionable sentence (max 25 words)\n"
+            "- Specific to this resume's actual content\n"
+            "- Prioritized by impact on recruiter callback rate\n"
+            "Format: numbered list 1-5. No headers, no extra text."
+        )
+
+        raw = gemini_client.generate(prompt, temperature=0.3, max_tokens=400)
+        if not raw:
+            return []
+
+        lines = [
+            re.sub(r"^\d+[\.\)]\s*", "", ln).strip()
+            for ln in raw.splitlines()
+            if ln.strip() and len(ln.strip()) > 10
+        ]
+        return [ln for ln in lines if ln][:5]
+
+
+# ── 2.2: Standalone JD quality scorer ────────────────────────────────────────
+
+def score_job_description(jd_text: str) -> Dict[str, Any]:
+    """
+    Analyse a job description and return a quality score + actionable feedback.
+    Used by POST /api/feature1/analyze-jd.
+    """
+    if not jd_text or not jd_text.strip():
+        return {
+            "quality_score": 0,
+            "grade": "empty",
+            "issues": ["Job description is empty."],
+            "word_count": 0,
+            "ai_feedback": "",
+        }
+
+    words = jd_text.split()
+    word_count = len(words)
+    issues: List[str] = []
+    score = 100
+
+    # Length checks
+    if word_count < 80:
+        issues.append("JD is too short (< 80 words) — semantic matching will be unreliable.")
+        score -= 30
+    elif word_count < 150:
+        issues.append("JD is brief (< 150 words) — add responsibilities and required skills.")
+        score -= 15
+
+    # Skill signal
+    tech_pattern = re.compile(
+        r"\b(python|javascript|typescript|react|node|sql|aws|docker|kubernetes|"
+        r"fastapi|django|postgres|redis|kafka|graphql|terraform|ci|cd|testing|"
+        r"llm|machine learning|data|api|backend|frontend|fullstack)\b",
+        re.I,
+    )
+    skill_hits = tech_pattern.findall(jd_text)
+    if len(skill_hits) < 3:
+        issues.append("JD mentions fewer than 3 recognisable technical skills — add specific stack requirements.")
+        score -= 20
+
+    # Responsibility signal
+    if not re.search(r"\b(responsibilit|you will|you'll|duties|role involves)\b", jd_text, re.I):
+        issues.append("JD lacks a responsibilities section — candidates can't self-screen effectively.")
+        score -= 15
+
+    # Seniority signal
+    if not re.search(r"\b(\d+\+?\s*years?|senior|junior|mid|lead|staff|principal)\b", jd_text, re.I):
+        issues.append("JD doesn't specify seniority level or years of experience required.")
+        score -= 10
+
+    score = max(0, min(100, score))
+    grade = "excellent" if score >= 85 else "good" if score >= 65 else "fair" if score >= 45 else "poor"
+
+    # Gemini enhancement
+    ai_feedback = ""
+    if gemini_client.is_available():
+        prompt = (
+            f"You are a hiring manager reviewing this job description:\n\n"
+            f"\"\"\"{jd_text[:1500]}\"\"\"\n\n"
+            "In 2 sentences, explain the single biggest weakness of this JD "
+            "and how to fix it to attract better candidates. Be direct and specific."
+        )
+        ai_feedback = gemini_client.generate(prompt, temperature=0.3, max_tokens=150)
+
+    return {
+        "quality_score": score,
+        "grade": grade,
+        "word_count": word_count,
+        "skill_hits": list(set(s.lower() for s in skill_hits)),
+        "issues": issues,
+        "ai_feedback": ai_feedback,
+    }
 
 
 def dump_json(value: Any) -> str:

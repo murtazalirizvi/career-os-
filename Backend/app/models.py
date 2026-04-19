@@ -30,6 +30,7 @@ class Feature1Analysis(SQLModel, table=True):
     hotzones_json: str
     metrics_json: str
     recommendations_json: str
+    ai_recommendations_json: str = Field(default="[]")  # 2.1: Gemini coaching recs
     raw_resume_text: str = Field(default="")  # 1.3/2.3: stored for cross-feature reuse
 
     created_at: datetime = Field(default_factory=utc_now, index=True)

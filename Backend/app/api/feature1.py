@@ -4,10 +4,10 @@ import json
 from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile
 from sqlmodel import Session, select
 
-from ..analysis.feature1_engine import Feature1Engine, dump_json
+from ..analysis.feature1_engine import Feature1Engine, dump_json, score_job_description
 from ..db import get_session
 from ..models import Feature1Analysis, Feature1VersionTag
 from ..schemas import (
@@ -17,6 +17,8 @@ from ..schemas import (
     Feature1ReportResponse,
     Feature1VersionSummary,
     HeatZone,
+    JDAnalyzeRequest,
+    JDAnalyzeResponse,
     ReadyToApplyResponse,
 )
 from ..services.reporting import write_markdown_report
@@ -25,18 +27,23 @@ from ..services.storage import save_upload
 router = APIRouter(prefix="/api/feature1", tags=["Feature 1: Hiring Manager Lens"])
 
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
 def _next_version_number(session: Session, candidate_id: str) -> int:
-    q = select(Feature1Analysis).where(Feature1Analysis.candidate_id == candidate_id).order_by(Feature1Analysis.version_number.desc())
+    q = (
+        select(Feature1Analysis)
+        .where(Feature1Analysis.candidate_id == candidate_id)
+        .order_by(Feature1Analysis.version_number.desc())
+    )
     latest = session.exec(q).first()
-    if latest is None:
-        return 1
-    return latest.version_number + 1
+    return 1 if latest is None else latest.version_number + 1
 
 
 def _to_response(row: Feature1Analysis) -> Feature1AnalysisResponse:
     metrics = json.loads(row.metrics_json)
     hot_zones = [HeatZone(**item) for item in json.loads(row.hotzones_json)]
     recommendations = json.loads(row.recommendations_json)
+    ai_recs = json.loads(row.ai_recommendations_json) if row.ai_recommendations_json else []
 
     return Feature1AnalysisResponse(
         analysis_id=row.id,
@@ -59,10 +66,13 @@ def _to_response(row: Feature1Analysis) -> Feature1AnalysisResponse:
         metrics=metrics,
         hot_zones=hot_zones,
         recommendations=recommendations,
+        ai_recommendations=ai_recs,
         ready_to_apply=row.overall_score >= 90.0,
         created_at=row.created_at,
     )
 
+
+# ── Routes ────────────────────────────────────────────────────────────────────
 
 @router.post("/analyze", response_model=Feature1AnalysisResponse)
 def analyze_resume(
@@ -73,17 +83,17 @@ def analyze_resume(
     session: Session = Depends(get_session),
 ):
     if not (resume_pdf.filename or "").lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF resumes are supported for Feature 1 analysis.")
+        raise HTTPException(status_code=400, detail="Only PDF resumes are supported.")
 
-    # 1.3: Validate file size — reject PDFs over 5 MB before processing
-    MAX_PDF_BYTES = 5 * 1024 * 1024  # 5 MB
+    # 1.3: Validate file size — reject PDFs over 5 MB
+    MAX_PDF_BYTES = 5 * 1024 * 1024
     content = resume_pdf.file.read()
     if len(content) > MAX_PDF_BYTES:
         raise HTTPException(
             status_code=413,
-            detail=f"Resume PDF exceeds the 5 MB limit ({len(content) // 1024} KB uploaded). Please compress or trim the file.",
+            detail=f"Resume PDF exceeds the 5 MB limit ({len(content) // 1024} KB uploaded).",
         )
-    resume_pdf.file.seek(0)  # reset so save_upload can read it again
+    resume_pdf.file.seek(0)
 
     saved = save_upload(resume_pdf, candidate_id)
 
@@ -113,13 +123,43 @@ def analyze_resume(
         hotzones_json=dump_json(result["hot_zones"]),
         metrics_json=dump_json(result["metrics"]),
         recommendations_json=dump_json(result["recommendations"]),
-        raw_resume_text=result.get("raw_resume_text", "")[:8000],  # 2.3: store for cross-feature reuse
+        ai_recommendations_json=dump_json(result.get("ai_recommendations", [])),  # 2.1
+        raw_resume_text=result.get("raw_resume_text", "")[:8000],                 # 2.3
     )
 
     session.add(row)
     session.commit()
     session.refresh(row)
 
+    return _to_response(row)
+
+
+# 2.2: JD quality analyser — no resume needed
+@router.post("/analyze-jd", response_model=JDAnalyzeResponse)
+def analyze_jd(req: JDAnalyzeRequest):
+    """
+    Score a job description for quality before running resume analysis.
+    Returns a 0-100 quality score, grade, detected issues, and Gemini feedback.
+    """
+    result = score_job_description(req.jd_text)
+    return JDAnalyzeResponse(**result)
+
+
+# 2.4: Latest analysis shortcut — no need to list all versions first
+@router.get("/candidate/{candidate_id}/latest", response_model=Feature1AnalysisResponse)
+def get_latest_analysis(candidate_id: str, session: Session = Depends(get_session)):
+    """Return the most recent analysis for a candidate without listing all versions."""
+    q = (
+        select(Feature1Analysis)
+        .where(Feature1Analysis.candidate_id == candidate_id)
+        .order_by(Feature1Analysis.version_number.desc())
+    )
+    row = session.exec(q).first()
+    if row is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No analysis found for candidate '{candidate_id}'.",
+        )
     return _to_response(row)
 
 
