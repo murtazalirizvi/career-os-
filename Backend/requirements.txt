@@ -1,12 +1,28 @@
+# ── Web framework ──────────────────────────────────────────────
 fastapi==0.115.0
-uvicorn==0.30.6
-sqlmodel==0.0.22
+uvicorn[standard]==0.30.6
 python-multipart==0.0.9
+
+# ── Database ────────────────────────────────────────────────────
+sqlmodel==0.0.22
+
+# ── Auth ────────────────────────────────────────────────────────
+passlib[bcrypt]>=1.7.4
+python-jose[cryptography]>=3.3.0
+
+# ── Rate limiting ───────────────────────────────────────────────
+slowapi>=0.1.9
+
+# ── PDF / CV processing ─────────────────────────────────────────
 PyMuPDF>=1.24.0
+reportlab==4.2.5
+
+# ── ML / Vision ─────────────────────────────────────────────────
 numpy==2.1.1
 opencv-python-headless==4.10.0.84
-pytest==8.3.3
+
+# ── HTTP client (tests) ─────────────────────────────────────────
 httpx==0.28.1
-reportlab==4.2.5
-passlib[bcrypt]>=1.7.4
-slowapi>=0.1.9
+
+# ── Testing ─────────────────────────────────────────────────────
+pytest==8.3.3
