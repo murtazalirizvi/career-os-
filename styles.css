@@ -689,3 +689,356 @@ a:focus-visible {
     height: 130px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   JOB TRACKER — Midnight Professional Kanban
+   Palette: --bg #0b0e14 · --card #151921 · --border #262c36
+            --accent #6366f1 · --text-dim #94a3b8
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --jt-bg:      #0b0e14;
+  --jt-card:    #151921;
+  --jt-border:  #262c36;
+  --jt-accent:  #6366f1;
+  --jt-dim:     #94a3b8;
+}
+
+/* ── Board layout ─────────────────────────────────────────────────────────── */
+
+.jt-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.875rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+.jt-board::-webkit-scrollbar { height: 4px; }
+.jt-board::-webkit-scrollbar-track { background: transparent; }
+.jt-board::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 999px; }
+
+.jt-column {
+  display: flex;
+  flex-direction: column;
+  background: rgba(21, 25, 33, 0.6);
+  border: 1px solid var(--jt-border);
+  border-radius: 1rem;
+  padding: 0.75rem;
+  min-width: 220px;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.jt-col-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+  flex-shrink: 0;
+}
+
+.jt-col-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.jt-col-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  flex: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.jt-col-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--jt-dim);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--jt-border);
+  border-radius: 999px;
+  padding: 0.05rem 0.45rem;
+}
+
+.jt-cards {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0) transparent;
+}
+
+.jt-cards:hover {
+  scrollbar-color: rgba(255,255,255,0.18) transparent;
+}
+
+.jt-cards::-webkit-scrollbar { width: 3px; }
+.jt-cards::-webkit-scrollbar-track { background: transparent; }
+.jt-cards::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
+
+/* Rejected strip — horizontal row below the board */
+.jt-rejected-strip {
+  margin-top: 0.75rem;
+  background: rgba(239,68,68,0.04);
+  border: 1px solid rgba(239,68,68,0.18);
+  border-radius: 1rem;
+  padding: 0.65rem 0.75rem;
+  flex-shrink: 0;
+}
+
+.jt-cards-row {
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  overflow-y: visible !important;
+  overflow-x: auto;
+  max-height: 120px;
+}
+
+/* ── Job card ─────────────────────────────────────────────────────────────── */
+
+@keyframes jtFadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.jt-card {
+  background: var(--jt-card);
+  border: 1px solid var(--jt-border);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.7rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  animation: jtFadeInUp 0.28s ease both;
+  cursor: default;
+  min-width: 0;
+}
+
+.jt-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(99,102,241,0.22);
+  border-color: rgba(99,102,241,0.35);
+}
+
+.jt-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.jt-card-company {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.jt-card-delete {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.25);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+  box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.05);
+}
+
+.jt-card-delete:hover { color: #f87171; }
+
+.jt-card-position {
+  font-size: 0.74rem;
+  color: var(--jt-dim);
+  margin-bottom: 0.45rem;
+  word-break: break-word;
+}
+
+.jt-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.jt-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.67rem;
+  color: var(--jt-dim);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--jt-border);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+
+.jt-card-notes {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.4;
+  margin-bottom: 0.45rem;
+  word-break: break-word;
+}
+
+.jt-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.1rem;
+}
+
+.jt-status-select {
+  flex: 1;
+  font-size: 0.68rem;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--jt-border);
+  border-radius: 0.45rem;
+  color: rgba(255,255,255,0.75);
+  padding: 0.2rem 0.4rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.jt-status-select:focus { border-color: rgba(99,102,241,0.6); }
+
+.jt-card-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--jt-border);
+  border-radius: 0.45rem;
+  color: rgba(255,255,255,0.55);
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.05);
+  white-space: nowrap;
+}
+
+.jt-card-edit:hover {
+  background: rgba(99,102,241,0.15);
+  color: #a5b4fc;
+  border-color: rgba(99,102,241,0.4);
+}
+
+/* ── Empty state ──────────────────────────────────────────────────────────── */
+
+.jt-empty {
+  font-size: 0.74rem;
+  color: rgba(255,255,255,0.25);
+  text-align: center;
+  padding: 1.5rem 0.5rem;
+  border: 1px dashed rgba(255,255,255,0.1);
+  border-radius: 0.65rem;
+}
+
+/* ── Skeleton loader ──────────────────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.jt-skeleton {
+  height: 80px;
+  border-radius: 0.75rem;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.09) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border: 1px solid var(--jt-border);
+}
+
+/* ── Modal ────────────────────────────────────────────────────────────────── */
+
+.jt-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(12px);
+  z-index: 998;
+  align-items: center;
+  justify-content: center;
+}
+
+.jt-modal-box {
+  background: var(--jt-card);
+  border: 1px solid var(--jt-border);
+  border-radius: 1.25rem;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.12);
+  animation: jtFadeInUp 0.22s ease both;
+}
+
+.jt-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--jt-dim);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.jt-input {
+  width: 100%;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--jt-border);
+  border-radius: 0.6rem;
+  color: rgba(255,255,255,0.9);
+  font-size: 0.82rem;
+  padding: 0.55rem 0.75rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+  font-family: inherit;
+}
+
+.jt-input:focus { border-color: rgba(99,102,241,0.65); }
+
+.jt-textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .jt-board {
+    grid-template-columns: repeat(2, 1fr);
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: none;
+  }
+  .jt-column { max-height: 360px; }
+}
+
+@media (max-width: 640px) {
+  .jt-board {
+    grid-template-columns: 1fr;
+  }
+  .jt-column { max-height: 280px; }
+  .jt-modal-box { margin: 1rem; padding: 1.25rem; }
+}

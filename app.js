@@ -882,12 +882,15 @@ function applyViewState(viewName) {
   const showArbitrage = viewName === "arbitrage";
   const showPersona = viewName === "persona-play";
   const showNarrative = viewName === "narrative";
+  const showJobTracker = viewName === "job-tracker";
   nodes.dashboardView.classList.toggle("hidden", !showDashboard);
-  nodes.commandCenterView.classList.toggle("hidden", showDashboard || showLens || showArbitrage || showPersona || showNarrative);
+  nodes.commandCenterView.classList.toggle("hidden", showDashboard || showLens || showArbitrage || showPersona || showNarrative || showJobTracker);
   nodes.lensWorkspace.classList.toggle("hidden", !showLens);
   nodes.feature3Workspace.classList.toggle("hidden", !showArbitrage);
   nodes.feature4Workspace.classList.toggle("hidden", !showPersona);
   nodes.feature5Workspace.classList.toggle("hidden", !showNarrative);
+  const jtView = document.getElementById("job-tracker-view");
+  if (jtView) jtView.classList.toggle("hidden", !showJobTracker);
 }
 
 function animateWavePath() {
@@ -2738,3 +2741,315 @@ function init() {
 }
 
 init();
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JOB TRACKER MODULE
+// Kanban board backed by /api/jobs — JWT auth via existing apiFetch helper.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const JT = (() => {
+  // ── State ────────────────────────────────────────────────────────────────
+  const state = {
+    jobs: [],          // JobRead[]
+    loading: false,
+  };
+
+  const STATUSES = ["Wishlist", "Applied", "Interviewing", "Offered", "Rejected"];
+
+  // ── DOM refs (resolved lazily so the module is safe to load before DOM) ──
+  const el = (id) => document.getElementById(id);
+
+  // ── API helpers ──────────────────────────────────────────────────────────
+
+  /**
+   * Thin wrapper around the existing apiFetch that handles 401 by showing
+   * the auth modal instead of crashing the board.
+   */
+  async function jtFetch(path, options = {}) {
+    const res = await apiFetch(`${API_BASE}${path}`, options);
+    if (res.status === 401) {
+      const modal = el("auth-modal");
+      if (modal) modal.style.display = "flex";
+      throw new Error("401 Unauthorized");
+    }
+    return res;
+  }
+
+  async function fetchJobs() {
+    state.loading = true;
+    renderBoard();
+    try {
+      const res = await jtFetch("/api/jobs");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      state.jobs = await res.json();
+    } catch (err) {
+      console.error("[JT] fetchJobs:", err);
+    } finally {
+      state.loading = false;
+      renderBoard();
+    }
+  }
+
+  async function createJob(payload) {
+    const res = await jtFetch("/api/jobs", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail ?? `HTTP ${res.status}`);
+    }
+    const job = await res.json();
+    state.jobs = [...state.jobs, job];
+    renderBoard();
+    return job;
+  }
+
+  async function updateJob(id, patch) {
+    const res = await jtFetch(`/api/jobs/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail ?? `HTTP ${res.status}`);
+    }
+    const updated = await res.json();
+    state.jobs = state.jobs.map((j) => (j.id === id ? updated : j));
+    renderBoard();
+    return updated;
+  }
+
+  async function deleteJob(id) {
+    const res = await jtFetch(`/api/jobs/${id}`, { method: "DELETE" });
+    if (!res.ok && res.status !== 204) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    state.jobs = state.jobs.filter((j) => j.id !== id);
+    renderBoard();
+  }
+
+  // ── Rendering ────────────────────────────────────────────────────────────
+
+  const STATUS_COLORS = {
+    Wishlist:     { dot: "#6366f1", badge: "rgba(99,102,241,0.18)",  text: "#a5b4fc" },
+    Applied:      { dot: "#f59e0b", badge: "rgba(245,158,11,0.18)",  text: "#fcd34d" },
+    Interviewing: { dot: "#06b6d4", badge: "rgba(6,182,212,0.18)",   text: "#67e8f9" },
+    Offered:      { dot: "#10b981", badge: "rgba(16,185,129,0.18)",  text: "#6ee7b7" },
+    Rejected:     { dot: "#ef4444", badge: "rgba(239,68,68,0.18)",   text: "#fca5a5" },
+  };
+
+  function buildCard(job) {
+    const col = STATUS_COLORS[job.status] ?? STATUS_COLORS.Wishlist;
+    const dateStr = job.date_applied
+      ? new Date(job.date_applied + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+      : null;
+
+    const card = document.createElement("article");
+    card.className = "jt-card";
+    card.dataset.id = job.id;
+    card.innerHTML = `
+      <div class="jt-card-header">
+        <div class="jt-card-company">${escHtml(job.company)}</div>
+        <button class="jt-card-delete" data-action="delete" data-id="${job.id}" aria-label="Delete job" title="Delete">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5 pointer-events-none"></i>
+        </button>
+      </div>
+      <div class="jt-card-position">${escHtml(job.position)}</div>
+      <div class="jt-card-meta">
+        ${dateStr ? `<span class="jt-meta-chip"><i data-lucide="calendar" class="w-3 h-3"></i>${dateStr}</span>` : ""}
+        ${job.salary ? `<span class="jt-meta-chip"><i data-lucide="banknote" class="w-3 h-3"></i>${escHtml(job.salary)}</span>` : ""}
+      </div>
+      ${job.notes ? `<p class="jt-card-notes">${escHtml(job.notes.slice(0, 90))}${job.notes.length > 90 ? "…" : ""}</p>` : ""}
+      <div class="jt-card-footer">
+        <select class="jt-status-select" data-action="status" data-id="${job.id}" aria-label="Change status">
+          ${STATUSES.map((s) => `<option value="${s}"${s === job.status ? " selected" : ""}>${s}</option>`).join("")}
+        </select>
+        <button class="jt-card-edit" data-action="edit" data-id="${job.id}" aria-label="Edit job">
+          <i data-lucide="pencil" class="w-3.5 h-3.5 pointer-events-none"></i> Edit
+        </button>
+      </div>
+    `;
+    return card;
+  }
+
+  function renderBoard() {
+    if (state.loading) {
+      STATUSES.forEach((s) => {
+        const col = el(`jt-col-${s}`);
+        if (col) col.innerHTML = `<div class="jt-skeleton"></div><div class="jt-skeleton"></div>`;
+      });
+      return;
+    }
+
+    // Group by status
+    const grouped = {};
+    STATUSES.forEach((s) => { grouped[s] = []; });
+    state.jobs.forEach((j) => {
+      if (grouped[j.status]) grouped[j.status].push(j);
+    });
+
+    STATUSES.forEach((status) => {
+      const col = el(`jt-col-${status}`);
+      const countEl = el(`jt-count-${status}`);
+      if (!col) return;
+
+      const jobs = grouped[status];
+      if (countEl) countEl.textContent = jobs.length;
+
+      col.innerHTML = "";
+      if (!jobs.length) {
+        col.innerHTML = `<p class="jt-empty">No jobs here yet.</p>`;
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      jobs.forEach((job) => {
+        const card = buildCard(job);
+        frag.appendChild(card);
+      });
+      col.appendChild(frag);
+    });
+
+    // Re-init lucide icons for newly created elements
+    if (window.lucide) lucide.createIcons();
+  }
+
+  // ── Modal ────────────────────────────────────────────────────────────────
+
+  function openModal(job = null) {
+    const modal = el("jt-modal");
+    const title = el("jt-modal-title");
+    const errEl = el("jt-modal-error");
+
+    el("jt-edit-id").value = job ? job.id : "";
+    el("jt-company").value = job ? job.company : "";
+    el("jt-position").value = job ? job.position : "";
+    el("jt-status").value = job ? job.status : "Wishlist";
+    el("jt-date").value = job?.date_applied ?? "";
+    el("jt-salary").value = job?.salary ?? "";
+    el("jt-notes").value = job?.notes ?? "";
+
+    if (title) title.textContent = job ? "Edit Job" : "Add Job";
+    if (errEl) errEl.style.display = "none";
+
+    modal.style.display = "flex";
+    el("jt-company").focus();
+  }
+
+  function closeModal() {
+    el("jt-modal").style.display = "none";
+  }
+
+  async function saveModal() {
+    const errEl = el("jt-modal-error");
+    const company = el("jt-company").value.trim();
+    const position = el("jt-position").value.trim();
+
+    if (!company || !position) {
+      errEl.textContent = "Company and Position are required.";
+      errEl.style.display = "block";
+      return;
+    }
+
+    const payload = {
+      company,
+      position,
+      status: el("jt-status").value,
+      date_applied: el("jt-date").value || null,
+      salary: el("jt-salary").value.trim() || null,
+      notes: el("jt-notes").value.trim() || null,
+    };
+
+    const editId = el("jt-edit-id").value;
+    try {
+      if (editId) {
+        await updateJob(Number(editId), payload);
+      } else {
+        await createJob(payload);
+      }
+      closeModal();
+    } catch (err) {
+      errEl.textContent = err.message ?? "Failed to save job.";
+      errEl.style.display = "block";
+    }
+  }
+
+  // ── Event delegation ─────────────────────────────────────────────────────
+
+  function onBoardClick(e) {
+    const action = e.target.closest("[data-action]")?.dataset?.action;
+    const id = Number(e.target.closest("[data-action]")?.dataset?.id);
+    if (!action || !id) return;
+
+    if (action === "delete") {
+      if (confirm("Delete this job?")) deleteJob(id);
+    }
+    if (action === "edit") {
+      const job = state.jobs.find((j) => j.id === id);
+      if (job) openModal(job);
+    }
+  }
+
+  function onBoardChange(e) {
+    if (e.target.dataset.action !== "status") return;
+    const id = Number(e.target.dataset.id);
+    const status = e.target.value;
+    updateJob(id, { status }).catch((err) => {
+      console.error("[JT] status update failed:", err);
+    });
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+
+  function init() {
+    const board = el("jt-board");
+    const rejectedStrip = document.querySelector(".jt-rejected-strip .jt-cards");
+
+    if (board) {
+      board.addEventListener("click", onBoardClick);
+      board.addEventListener("change", onBoardChange);
+    }
+    if (rejectedStrip) {
+      rejectedStrip.addEventListener("click", onBoardClick);
+      rejectedStrip.addEventListener("change", onBoardChange);
+    }
+
+    el("jt-add-btn")?.addEventListener("click", () => openModal());
+    el("jt-refresh-btn")?.addEventListener("click", fetchJobs);
+    el("jt-modal-save")?.addEventListener("click", saveModal);
+    el("jt-modal-cancel")?.addEventListener("click", closeModal);
+    el("jt-modal-close")?.addEventListener("click", closeModal);
+
+    // Close modal on backdrop click
+    el("jt-modal")?.addEventListener("click", (e) => {
+      if (e.target === el("jt-modal")) closeModal();
+    });
+
+    // Close modal on Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && el("jt-modal")?.style.display !== "none") closeModal();
+    });
+
+    // Load jobs when the view becomes active
+    AppState.subscribe((s) => {
+      if (s.view === "job-tracker" && !state.loading) fetchJobs();
+    });
+  }
+
+  return { init, fetchJobs };
+})();
+
+// ── Utility: HTML escape ──────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  JT.init();
+});
