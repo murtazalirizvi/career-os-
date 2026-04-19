@@ -22,6 +22,11 @@ class Feature2CreateInterviewRequest(BaseModel):
     interview_outcome: str = Field(default="rejected")
     rejection_reason_hint: str = Field(default="")
     advanced_round_reached: bool = Field(default=False)
+    
+    # Chunk 3 enhancements
+    interview_date: Optional[datetime] = Field(default=None, description="Actual interview date (ISO 8601). Defaults to current date if omitted.")
+    company_stage: str = Field(default="scaleup", pattern="^(startup|scaleup|enterprise)$", description="Company maturity: startup|scaleup|enterprise")
+    webhook_url: Optional[str] = Field(default=None, description="Webhook URL for async transcription completion notification")
 
 
 class Feature2ScoreCard(BaseModel):
@@ -48,6 +53,11 @@ class Feature2InterviewResponse(BaseModel):
     analytics_snapshot: Dict[str, Any]
     ai_insights: Dict[str, Any] = {}   # 1.4: Gemini autopsy coaching
     created_at: datetime
+    
+    # Chunk 3 enhancements
+    interview_date: datetime
+    company_stage: str
+    transcription_status: str
 
 
 class Feature2TrendPoint(BaseModel):
@@ -93,3 +103,27 @@ class Feature2QuickDebriefResponse(BaseModel):
     top_failure_themes: List[str]
     immediate_next_actions: List[str]
     ai_coaching_summary: str = ""      # Gemini quick coaching bullets
+
+
+# Chunk 3: New response schemas for AI regeneration and practice drills
+
+class Feature2RegenerateAIResponse(BaseModel):
+    interview_id: int
+    ai_insights: Dict[str, Any]
+    regenerated_at: datetime
+
+
+class Feature2PracticeDrillResponse(BaseModel):
+    interview_id: int
+    weakness_category: str  # "technical"|"behavioral"|"strategic"
+    weakness_score: float
+    questions: List[str]  # Exactly 3 questions
+    generated_at: datetime
+
+
+class Feature2WebhookPayload(BaseModel):
+    """AssemblyAI webhook payload structure."""
+    transcript_id: str
+    status: str  # "completed" | "error"
+    text: Optional[str] = None
+    error: Optional[str] = None

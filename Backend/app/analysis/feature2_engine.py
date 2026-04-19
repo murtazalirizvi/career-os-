@@ -66,6 +66,7 @@ class Feature2Engine:
         advanced_round_reached: bool,
         rejection_reason_hint: str,
         interview_outcome: str,
+        company_stage: str = "scaleup",  # Chunk 3 enhancement
     ) -> None:
         self.interview_notes = interview_notes.strip()
         self.transcript_text = transcript_text.strip()
@@ -79,6 +80,7 @@ class Feature2Engine:
         self.advanced_round_reached = advanced_round_reached
         self.rejection_reason_hint = rejection_reason_hint.strip().lower()
         self.interview_outcome = interview_outcome.strip().lower()
+        self.company_stage = company_stage.strip().lower()  # Chunk 3 enhancement
 
     def run(self) -> Dict[str, Any]:
         parsed = self._ingest_transcript()
@@ -154,7 +156,7 @@ class Feature2Engine:
     def _ingestion_analysis(self, parsed: ParsedTranscript, full_text: str) -> Dict[str, Any]:
         challenge_question = self.hardest_question_hint or self._extract_hardest_question(full_text)
 
-        vibe_score = self._culture_vibe_score(self.culture_vibe, self.interviewer_friendliness)
+        vibe_score = self._culture_vibe_score(self.culture_vibe, self.interviewer_friendliness, self.company_stage)
         lifecycle = self.lifecycle_stage.lower() if self.lifecycle_stage else self.interview_round.lower()
 
         return {
@@ -333,14 +335,34 @@ class Feature2Engine:
 
         return result
 
-    def _culture_vibe_score(self, vibe: str, friendliness: int) -> float:
+    def _culture_vibe_score(self, vibe: str, friendliness: int, company_stage: str = "scaleup") -> float:
+        """
+        Calculate culture vibe score with company stage adjustment.
+        
+        Adjustments:
+        - startup: +10 points (higher tolerance for informal culture)
+        - enterprise: +10 points for structured process expectations
+        """
         vibe_bias = {
             "friendly": 20,
             "neutral": 0,
             "cold": -10,
             "hostile": -20,
         }.get(vibe, 0)
-        return float(max(0, min(100, 50 + vibe_bias + friendliness * 4)))
+        
+        base_score = 50 + vibe_bias + friendliness * 4
+        
+        # Company stage adjustments
+        if company_stage == "startup":
+            # Startups: increase tolerance for informal/chaotic culture
+            if vibe in ["neutral", "cold"]:
+                base_score += 10
+        elif company_stage == "enterprise":
+            # Enterprise: increase expectations for structured process
+            if vibe in ["friendly", "neutral"]:
+                base_score += 10
+        
+        return float(max(0, min(100, base_score)))
 
     def _extract_hardest_question(self, text: str) -> str:
         questions = [q.strip() for q in QUESTION_PATTERN.findall(text)]
@@ -517,6 +539,16 @@ class Feature2Engine:
             "insufficient_signal": "Record a full debrief within 15 minutes after your next interview.",
         }
         return [action_map[t] for t in themes if t in action_map]
+
+    def _identify_weakest_dimension(self, scores: Dict[str, float]) -> Dict[str, Any]:
+        """Identify the lowest scoring dimension for targeted practice."""
+        dimensions = {
+            "technical": scores.get("technical_accuracy", 0.0),
+            "behavioral": scores.get("behavioral_quality", 0.0),
+            "strategic": scores.get("strategic_recovery_readiness", 0.0)
+        }
+        weakest = min(dimensions.items(), key=lambda x: x[1])
+        return {"category": weakest[0], "score": weakest[1]}
 
 
 def trend_from_rows(rows: Sequence[Any]) -> Dict[str, Any]:

@@ -68,6 +68,12 @@ class Feature2InterviewAutopsy(SQLModel, table=True):
     raw_transcript_excerpt: str = ""
     ai_insights_json: str = Field(default="{}")  # 1.4: persisted Gemini autopsy
 
+    # Chunk 3 enhancements
+    interview_date: datetime = Field(default_factory=utc_now, index=True, description="Actual interview date (distinct from created_at)")
+    company_stage: str = Field(default="scaleup", index=True, description="Company maturity: startup|scaleup|enterprise")
+    transcription_status: str = Field(default="completed", index=True, description="Status: transcribing|completed|transcription_failed")
+    assembly_transcript_id: Optional[str] = Field(default=None, index=True, description="AssemblyAI transcript ID for webhook correlation")
+
     created_at: datetime = Field(default_factory=utc_now, index=True)
 
 
