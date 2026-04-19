@@ -10,6 +10,8 @@ from typing import Any, Dict, List, Sequence, Set, Tuple
 
 import httpx
 
+from . import gemini_client
+
 SKILL_LEXICON = {
     "react",
     "typescript",
@@ -517,6 +519,9 @@ class SkillGapEngine:
         github_validation = self._validate_github_projects(github_username, target_skills)
         history = self._historical_gap_tracking(historical_rows, match_score)
 
+        # Gemini: AI-powered personalized learning path
+        ai_learning_path = self._gemini_learning_path(current, missing[:6], years_experience)
+
         return {
             "current_skills": current,
             "target_skills": target_skills,
@@ -528,6 +533,38 @@ class SkillGapEngine:
             "niche_recommendations": niche,
             "github_project_validation": github_validation,
             "historical_gap_tracking": history,
+            "ai_learning_path": ai_learning_path,
+        }
+
+    def _gemini_learning_path(
+        self,
+        current_skills: Sequence[str],
+        missing_skills: Sequence[str],
+        years_experience: float,
+    ) -> Dict[str, Any]:
+        """Generate a personalized AI learning path using Gemini."""
+        if not gemini_client.is_available() or not missing_skills:
+            return {}
+
+        prompt = (
+            f"You are a senior engineering career coach. A developer has {years_experience:.1f} years experience.\n"
+            f"Current skills: {', '.join(list(current_skills)[:10])}\n"
+            f"Top missing skills for market demand: {', '.join(missing_skills)}\n\n"
+            "Create a focused 30-day learning plan. For each of the top 3 missing skills provide:\n"
+            "- One free resource (title + URL)\n"
+            "- One mini-project idea (1 sentence)\n"
+            "- One interview talking point (1 sentence)\n\n"
+            "Format as plain text with skill names as headers. Be specific and actionable."
+        )
+
+        raw = gemini_client.generate(prompt, temperature=0.3, max_tokens=600)
+        if not raw:
+            return {}
+
+        return {
+            "generated": True,
+            "plan": raw,
+            "skills_covered": list(missing_skills[:3]),
         }
 
     def _match_score(self, current: Sequence[str], target: Sequence[str], years_experience: float) -> float:

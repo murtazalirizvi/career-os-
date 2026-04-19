@@ -7,6 +7,8 @@ from datetime import datetime, timedelta, timezone
 from statistics import mean
 from typing import Any, Dict, List, Sequence, Tuple
 
+from . import gemini_client
+
 TECH_KEYWORDS = {
     "api",
     "rest",
@@ -94,6 +96,9 @@ class Feature2Engine:
             "topic_signals": technical.get("topic_hits", []),
         }
 
+        # Gemini enhancement: richer AI-powered autopsy on top of heuristics
+        ai_insights = self._gemini_autopsy(full_text, ingestion, technical, behavioral)
+
         return {
             "ingestion": ingestion,
             "technical": technical,
@@ -101,16 +106,33 @@ class Feature2Engine:
             "strategic_actions": strategic,
             "score": score,
             "analytics_snapshot": snapshot,
+            "ai_insights": ai_insights,
         }
 
     def quick_debrief(self, debrief_text: str) -> Dict[str, Any]:
         challenge = self._extract_hardest_question(debrief_text)
         failures = self._infer_failure_themes(debrief_text)
         next_actions = self._immediate_actions_from_themes(failures)
+
+        # Gemini quick debrief enhancement
+        ai_debrief = ""
+        if gemini_client.is_available() and debrief_text.strip():
+            prompt = (
+                f"You are an expert interview coach. A candidate wrote this post-interview debrief:\n\n"
+                f"\"\"\"{debrief_text[:1500]}\"\"\"\n\n"
+                "In 3 concise bullet points (max 20 words each), identify:\n"
+                "1. The single biggest technical gap revealed\n"
+                "2. The single biggest behavioral gap revealed\n"
+                "3. The #1 action to take in the next 24 hours\n"
+                "Format: plain bullet lines starting with a dash."
+            )
+            ai_debrief = gemini_client.generate(prompt, temperature=0.3, max_tokens=256)
+
         return {
             "extracted_hardest_question": challenge,
             "top_failure_themes": failures,
             "immediate_next_actions": next_actions,
+            "ai_coaching_summary": ai_debrief,
         }
 
     def _ingest_transcript(self) -> ParsedTranscript:
@@ -266,6 +288,50 @@ class Feature2Engine:
             "confidence_risk": round(confidence_risk, 2),
             "overall_autopsy_score": round(overall, 2),
         }
+
+    def _gemini_autopsy(
+        self,
+        full_text: str,
+        ingestion: Dict[str, Any],
+        technical: Dict[str, Any],
+        behavioral: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        Use Gemini to generate richer, context-aware interview coaching.
+        Falls back to empty dict if Gemini is unavailable.
+        """
+        if not gemini_client.is_available() or not full_text.strip():
+            return {}
+
+        prompt = (
+            f"You are a senior engineering interview coach. Analyze this interview debrief:\n\n"
+            f"Interview round: {self.interview_round}\n"
+            f"Company vibe: {self.culture_vibe}\n"
+            f"Outcome: {self.interview_outcome}\n"
+            f"Hardest question: {ingestion.get('challenge_question', 'unknown')}\n"
+            f"Technical score: {technical.get('score', 0):.1f}/100\n"
+            f"Behavioral score: {behavioral.get('score', 0):.1f}/100\n\n"
+            f"Transcript/Notes excerpt:\n\"\"\"{full_text[:2000]}\"\"\"\n\n"
+            "Provide a structured coaching response with these exact sections:\n"
+            "DIAGNOSIS: (2 sentences on root cause of weak performance)\n"
+            "PERFECT_ANSWER: (ideal 3-sentence answer to the hardest question)\n"
+            "WEEK_PLAN: (3 specific daily actions for the next 3 days)\n"
+            "MINDSET: (1 sentence reframe to build resilience)\n"
+            "Keep each section concise and actionable."
+        )
+
+        raw = gemini_client.generate(prompt, temperature=0.35, max_tokens=512)
+        if not raw:
+            return {}
+
+        result: Dict[str, str] = {}
+        for section in ["DIAGNOSIS", "PERFECT_ANSWER", "WEEK_PLAN", "MINDSET"]:
+            pattern = re.compile(rf"{section}:\s*(.*?)(?=(?:DIAGNOSIS|PERFECT_ANSWER|WEEK_PLAN|MINDSET):|$)", re.S)
+            match = pattern.search(raw)
+            if match:
+                result[section.lower()] = match.group(1).strip()
+
+        return result
 
     def _culture_vibe_score(self, vibe: str, friendliness: int) -> float:
         vibe_bias = {

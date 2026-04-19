@@ -1,4 +1,14 @@
 import os
+from pathlib import Path
+
+# Load .env file if present (before any other imports that read env vars)
+_env_path = Path(__file__).resolve().parent.parent / ".env"
+if _env_path.exists():
+    for _line in _env_path.read_text(encoding="utf-8").splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith("#") and "=" in _line:
+            _key, _, _val = _line.partition("=")
+            os.environ.setdefault(_key.strip(), _val.strip())
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

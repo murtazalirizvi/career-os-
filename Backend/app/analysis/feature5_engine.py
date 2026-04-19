@@ -788,7 +788,7 @@ class Feature5NarrativeEngine:
             "Return plain bullet lines only, max 18 words each."
         )
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
         body = {"contents": [{"parts": [{"text": prompt}]}]}
 
         try:

@@ -9,6 +9,8 @@ from datetime import datetime, timedelta, timezone
 from statistics import mean
 from typing import Any, Dict, List, Sequence
 
+from . import gemini_client
+
 FILLER_RE = re.compile(r"\b(um+|uh+|like|you know|basically|actually)\b", re.I)
 NEGATIVE_RE = re.compile(r"\b(stuck|panic|anxious|freeze|hopeless|desperate)\b", re.I)
 POSITIVE_RE = re.compile(r"\b(calm|curious|clear|confident|structured|focused)\b", re.I)
@@ -71,6 +73,12 @@ class Feature4PersonaPlayEngine:
         return PERSONAS.get(key, PERSONAS["stone_faced"])
 
     def opening_questions(self, persona: PersonaProfile, role_name: str) -> List[Dict[str, Any]]:
+        # Try Gemini for dynamic, role-specific questions first
+        ai_questions = self._gemini_opening_questions(persona, role_name)
+        if ai_questions:
+            return ai_questions
+
+        # Fallback to hardcoded questions
         return [
             {
                 "type": "baseline",
@@ -97,6 +105,36 @@ class Feature4PersonaPlayEngine:
                 "question": "Before we continue, what compensation range are you targeting and why?",
                 "persona_tone": persona.style,
             },
+        ]
+
+    def _gemini_opening_questions(self, persona: PersonaProfile, role_name: str) -> List[Dict[str, Any]]:
+        """Generate dynamic, persona-specific interview questions using Gemini."""
+        if not gemini_client.is_available():
+            return []
+
+        prompt = (
+            f"You are a {persona.label} interviewer. Style: {persona.style}. Pressure level: {persona.pressure}/10.\n"
+            f"Generate 5 interview questions for a {role_name} candidate.\n"
+            "Questions must be progressively harder and match the interviewer persona.\n"
+            "Include: 1 baseline project question, 1 trade-off question, 1 scale scenario, "
+            "1 behavioral question, 1 curveball.\n"
+            "Format: one question per line, numbered 1-5. No extra text."
+        )
+
+        raw = gemini_client.generate(prompt, temperature=0.6, max_tokens=400)
+        if not raw:
+            return []
+
+        lines = [re.sub(r"^\d+[\.\)]\s*", "", ln).strip() for ln in raw.splitlines() if ln.strip()]
+        lines = [ln for ln in lines if len(ln) > 15][:5]
+
+        if len(lines) < 3:
+            return []
+
+        types = ["baseline", "tradeoff_trigger", "scale_up_scenario", "behavioral_trap", "negotiation_curveball"]
+        return [
+            {"type": types[i], "question": q, "persona_tone": persona.style}
+            for i, q in enumerate(lines)
         ]
 
     def analyze_realtime(
@@ -253,6 +291,9 @@ class Feature4PersonaPlayEngine:
             "overall": round(overall, 2),
         }
 
+        # Gemini: AI-powered coaching report
+        ai_coaching = self._gemini_coaching_report(persona, turns, scorecard)
+
         return {
             "scorecard": scorecard,
             "transcript_breakdown": transcript,
@@ -260,7 +301,57 @@ class Feature4PersonaPlayEngine:
             "senior_answer_alternatives": alternatives,
             "badges": badges,
             "pass_status": pass_status,
+            "ai_coaching_report": ai_coaching,
         }
+
+    def _gemini_coaching_report(
+        self,
+        persona: PersonaProfile,
+        turns: Sequence[Dict[str, Any]],
+        scorecard: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Generate a detailed AI coaching report using Gemini."""
+        if not gemini_client.is_available() or not turns:
+            return {}
+
+        # Build a compact transcript summary for Gemini
+        transcript_lines = []
+        for i, t in enumerate(turns[:5], 1):
+            q = t.get("question", {}).get("question", "")[:100]
+            a = t.get("utterance", "")[:200]
+            transcript_lines.append(f"Q{i}: {q}\nA{i}: {a}")
+
+        transcript_text = "\n\n".join(transcript_lines)
+
+        prompt = (
+            f"You are reviewing a mock interview with a {persona.label} interviewer.\n"
+            f"Overall score: {scorecard['overall']:.1f}/100\n"
+            f"Logic depth: {scorecard['logic_depth']:.1f}/100\n"
+            f"Behavioral control: {scorecard['behavioral_control']:.1f}/100\n\n"
+            f"Interview transcript:\n{transcript_text}\n\n"
+            "Write a coaching report with these sections:\n"
+            "STRENGTHS: (2 specific things done well)\n"
+            "CRITICAL_GAPS: (2 most important things to fix)\n"
+            "BEST_ANSWER_REWRITE: (rewrite the weakest answer in senior engineer style, max 4 sentences)\n"
+            "NEXT_SESSION_FOCUS: (1 specific drill to do before the next mock)\n"
+            "Keep each section to 2-3 sentences max."
+        )
+
+        raw = gemini_client.generate(prompt, temperature=0.3, max_tokens=600)
+        if not raw:
+            return {}
+
+        result: Dict[str, str] = {}
+        for section in ["STRENGTHS", "CRITICAL_GAPS", "BEST_ANSWER_REWRITE", "NEXT_SESSION_FOCUS"]:
+            pattern = re.compile(
+                rf"{section}:\s*(.*?)(?=(?:STRENGTHS|CRITICAL_GAPS|BEST_ANSWER_REWRITE|NEXT_SESSION_FOCUS):|$)",
+                re.S,
+            )
+            match = pattern.search(raw)
+            if match:
+                result[section.lower()] = match.group(1).strip()
+
+        return result
 
     def synthesize_media(
         self,
