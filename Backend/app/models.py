@@ -242,6 +242,10 @@ class Feature5NarrativeSession(SQLModel, table=True):
     export_sync_json: str
     consistency_json: str
 
+    # Chunk 6 enhancements
+    resume_text: str = Field(default="", description="Persisted resume text for re-runs (6.4)")
+    jd_text: str = Field(default="", description="Persisted JD text for re-runs (6.6)")
+
     created_at: datetime = Field(default_factory=utc_now, index=True)
     updated_at: datetime = Field(default_factory=utc_now, index=True)
 

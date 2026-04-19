@@ -13,6 +13,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from sqlmodel import Session, select
 
+from ..analysis import gemini_client
 from ..analysis.feature5_engine import Feature5NarrativeEngine, dump_json
 from ..db import get_session
 from ..models import Feature5NarrativeSession
@@ -22,11 +23,17 @@ from ..schemas_feature5 import (
     Feature5CreateSessionRequest,
     Feature5ExportRequest,
     Feature5ExportResponse,
+    Feature5LinkedInPostResponse,
     Feature5PortfolioSiteResponse,
+    Feature5RegenerateRequest,
+    Feature5RegenerateResponse,
     Feature5SessionHistoryItem,
     Feature5SessionHistoryResponse,
     Feature5SessionResponse,
 )
+
+import logging
+logger = logging.getLogger("career_os.feature5")
 
 router = APIRouter(prefix="/api/feature5", tags=["Feature 5: Narrative Architect"])
 engine = Feature5NarrativeEngine()
@@ -64,6 +71,9 @@ def create_feature5_session(req: Feature5CreateSessionRequest, session: Session 
         gap_analysis_json=dump_json(payload["gap_analysis"]),
         export_sync_json=dump_json(payload["export_sync"]),
         consistency_json=dump_json(payload["consistency_check"]),
+        # Chunk 6: persist for re-runs
+        resume_text=req.resume_text or "",
+        jd_text=req.jd_text or "",
     )
     session.add(row)
     session.commit()
@@ -264,3 +274,131 @@ def feature5_candidate_history(candidate_id: str, session: Session = Depends(get
         )
 
     return Feature5SessionHistoryResponse(candidate_id=candidate_id, sessions=items)
+
+
+# ─── Chunk 6.2: Regenerate narrative endpoint ────────────────────────────────
+
+@router.post("/sessions/{session_id}/regenerate-narrative", response_model=Feature5RegenerateResponse)
+def regenerate_narrative(
+    session_id: int,
+    req: Feature5RegenerateRequest,
+    session: Session = Depends(get_session),
+):
+    """
+    Re-run narrative generation with optional tone/role override.
+    Uses stored resume_text and jd_text so the user doesn't need to re-submit.
+    """
+    row = session.get(Feature5NarrativeSession, session_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Feature 5 session not found.")
+
+    # Use overrides if provided, else keep stored values
+    tone = req.tone or row.tone
+    target_role = req.target_role or row.target_role
+
+    try:
+        payload = engine.build_full_session(
+            repo_subpath=row.repo_subpath,
+            target_role=target_role,
+            tone=tone,
+            jd_text=row.jd_text,
+            resume_text=row.resume_text,
+            linkedin_text="",
+            github_repo="",
+            selected_projects=None,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    # Update stored fields
+    row.tone = tone
+    row.target_role = target_role
+    row.narrative_json = dump_json(payload["narrative"])
+    row.deep_analysis_json = dump_json(payload["deep_analysis"])
+    row.talk_track_json = dump_json(payload["talk_track"])
+    row.gap_analysis_json = dump_json(payload["gap_analysis"])
+    row.export_sync_json = dump_json(payload["export_sync"])
+    row.consistency_json = dump_json(payload["consistency_check"])
+    row.updated_at = datetime.now(timezone.utc)
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+
+    logger.info(f"Narrative regenerated for session {session_id} (tone={tone}, role={target_role})")
+
+    return Feature5RegenerateResponse(
+        session_id=session_id,
+        narrative=payload["narrative"],
+        regenerated_at=row.updated_at,
+    )
+
+
+# ─── Chunk 6.5: LinkedIn post endpoint ───────────────────────────────────────
+
+@router.get("/sessions/{session_id}/linkedin-post", response_model=Feature5LinkedInPostResponse)
+def get_linkedin_post(session_id: int, session: Session = Depends(get_session)):
+    """
+    Generate a ready-to-paste LinkedIn post from the narrative session.
+    Uses Gemini when available; falls back to a structured heuristic post.
+    """
+    row = session.get(Feature5NarrativeSession, session_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Feature 5 session not found.")
+
+    narrative = _loads(row.narrative_json)
+    export_sync = _loads(row.export_sync_json)
+
+    # Extract key data for the post
+    linked = (export_sync.get("epic_5_5", {}) or {}).get("linkedin_sync", {})
+    headline = linked.get("headline", f"{row.target_role} | Building impactful systems")
+    project_desc = linked.get("project_description", "")
+    star_summaries = (narrative.get("epic_5_2", {}) or {}).get("star_summaries", [])
+    top_result = ""
+    if star_summaries:
+        top_result = star_summaries[0].get("result", "")
+
+    if gemini_client.is_available():
+        prompt = (
+            f"Write a LinkedIn post for a {row.target_role} showcasing their technical work.\n\n"
+            f"Headline: {headline}\n"
+            f"Project summary: {project_desc[:300]}\n"
+            f"Top result: {top_result[:200]}\n\n"
+            "Requirements:\n"
+            "1. Start with a strong hook (1 sentence)\n"
+            "2. Describe the technical challenge and solution (2-3 sentences)\n"
+            "3. Quantify the impact with metrics\n"
+            "4. End with a call-to-action or insight\n"
+            "5. Add 3-5 relevant hashtags at the end\n"
+            "6. Keep total length under 1300 characters\n"
+            "Return ONLY the post text, no preamble."
+        )
+        try:
+            post_text = gemini_client.generate(prompt, temperature=0.4, max_tokens=400)
+            if not post_text or len(post_text.strip()) < 50:
+                raise ValueError("Empty response")
+            post_text = post_text.strip()
+            logger.info(f"LinkedIn post generated via Gemini for session {session_id}")
+        except Exception as e:
+            logger.warning(f"Gemini LinkedIn post failed for session {session_id}: {e}")
+            post_text = None
+    else:
+        post_text = None
+
+    # Heuristic fallback
+    if not post_text:
+        result_line = f"Result: {top_result}" if top_result else "Delivered measurable impact."
+        post_text = (
+            f"🚀 {headline}\n\n"
+            f"{project_desc[:280]}\n\n"
+            f"{result_line}\n\n"
+            f"Always looking to connect with engineers solving hard problems.\n\n"
+            f"#{row.target_role.replace(' ', '')} #SoftwareEngineering #CareerGrowth"
+        )
+        logger.info(f"LinkedIn post generated via heuristic for session {session_id}")
+
+    return Feature5LinkedInPostResponse(
+        session_id=session_id,
+        post_text=post_text,
+        character_count=len(post_text),
+        generated_at=datetime.now(timezone.utc),
+    )

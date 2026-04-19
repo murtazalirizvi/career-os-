@@ -73,3 +73,25 @@ class Feature5SessionHistoryItem(BaseModel):
 class Feature5SessionHistoryResponse(BaseModel):
     candidate_id: str
     sessions: List[Feature5SessionHistoryItem]
+
+
+# Chunk 6: New schemas
+
+class Feature5RegenerateRequest(BaseModel):
+    """Request to regenerate narrative with optional new tone/role (6.2)."""
+    tone: Optional[str] = Field(default=None, description="Override tone: deep_tech|business")
+    target_role: Optional[str] = Field(default=None, description="Override target role")
+
+
+class Feature5RegenerateResponse(BaseModel):
+    session_id: int
+    narrative: Dict[str, Any]
+    regenerated_at: datetime
+
+
+class Feature5LinkedInPostResponse(BaseModel):
+    """Ready-to-paste LinkedIn post from the narrative session (6.5)."""
+    session_id: int
+    post_text: str
+    character_count: int
+    generated_at: datetime
