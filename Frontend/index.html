@@ -111,45 +111,41 @@
               </div>
               <button class="nav-btn" data-view="dashboard">
                 <span class="icon-wrap"><i data-lucide="layout-dashboard" class="w-4 h-4"></i></span>
-                <span class="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Dashboard</span>
+                <span class="nav-label">Dashboard</span>
               </button>
               <button class="nav-btn" data-view="command-center">
-                <span class="icon-wrap"><i data-lucide="sliders-horizontal" class="w-4 h-4"></i></span>
-                <span class="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Workspace</span>
+                <span class="icon-wrap"><i data-lucide="upload-cloud" class="w-4 h-4"></i></span>
+                <span class="nav-label">Upload</span>
               </button>
               <button class="nav-btn" data-view="job-tracker">
                 <span class="icon-wrap"><i data-lucide="kanban" class="w-4 h-4"></i></span>
-                <span class="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Jobs</span>
+                <span class="nav-label">Jobs</span>
               </button>
               <button class="nav-btn" data-view="lens-engine">
                 <span class="icon-wrap"><i data-lucide="scan-search" class="w-4 h-4"></i></span>
-                <span class="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Lens</span>
+                <span class="nav-label">Lens</span>
               </button>
               <button class="nav-btn" data-view="rebound">
                 <span class="icon-wrap"><i data-lucide="mic" class="w-4 h-4"></i></span>
-                <span class="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Rebound</span>
-              </button>
-              <button class="nav-btn" data-view="persona-play">
-                <span class="icon-wrap"><i data-lucide="audio-lines" class="w-4 h-4"></i></span>
-                <span class="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Persona</span>
+                <span class="nav-label">Rebound</span>
               </button>
               <button class="nav-btn" data-view="arbitrage">
                 <span class="icon-wrap"><i data-lucide="candlestick-chart" class="w-4 h-4"></i></span>
-                <span class="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Arbitrage</span>
+                <span class="nav-label">Arbitrage</span>
+              </button>
+              <button class="nav-btn" data-view="persona-play">
+                <span class="icon-wrap"><i data-lucide="audio-lines" class="w-4 h-4"></i></span>
+                <span class="nav-label">Persona</span>
               </button>
               <button class="nav-btn" data-view="narrative">
                 <span class="icon-wrap"><i data-lucide="book-open-text" class="w-4 h-4"></i></span>
-                <span class="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Narrative</span>
+                <span class="nav-label">Narrative</span>
               </button>
             </div>
             <div class="space-y-1 pb-1">
               <button class="nav-btn" id="logout-btn">
                 <span class="icon-wrap"><i data-lucide="log-out" class="w-4 h-4"></i></span>
-                <span class="text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Logout</span>
-              </button>
-              <button class="nav-btn">
-                <span class="icon-wrap"><i data-lucide="settings-2" class="w-4 h-4"></i></span>
-                <span class="text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Settings</span>
+                <span class="nav-label">Logout</span>
               </button>
             </div>
           </div>
@@ -235,31 +231,21 @@
             <section id="command-center-view" class="h-full workspace-shell">
               <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
                 <div>
-                  <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Command Center</h1>
-                  <p class="text-sm mt-1" style="color:var(--text-dim)">Dark Matter control room for interview velocity. <span id="ui-mode-label" style="color:rgba(255,255,255,0.7)">Mode: Beginner</span></p>
+                  <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Resume Upload</h1>
+                  <p class="text-sm mt-1" style="color:var(--text-dim)">Upload your resume PDF and run the Lens analysis to get started.</p>
                 </div>
                 <div class="command-actions">
-                  <button id="run-smart-action" class="btn-primary">Next Best Action</button>
                   <button id="analyze-feature1" class="btn-primary">Analyze Resume</button>
-                  <details class="command-more advanced-control">
-                    <summary class="btn-ghost">More Actions</summary>
-                    <div class="command-more-menu">
-                      <button id="run-feature2" class="btn-ghost w-full">Debrief Interview</button>
-                      <button id="run-feature5" class="btn-ghost w-full">Analyze GitHub</button>
-                      <button id="run-feature4" class="btn-ghost w-full">Mock Interview</button>
-                      <button id="run-feature3" class="btn-ghost w-full">Find Skill Gaps</button>
-                      <button id="simulate-upload" class="btn-ghost w-full">Simulate Upload</button>
-                      <button id="rerender-heatmap" class="btn-ghost w-full">Render Heatmap</button>
-                    </div>
-                  </details>
+                  <button id="simulate-upload" class="btn-ghost">Simulate Upload</button>
+                  <button id="rerender-heatmap" class="btn-ghost">Render Heatmap</button>
                 </div>
               </header>
               <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
-                <section id="zone-engine" class="reactive-card card-live col-span-12 lg:col-span-7 row-span-4 glass-card rounded-2xl p-4 md:p-5 relative overflow-hidden custom-scroll">
+                <section id="zone-engine" class="reactive-card card-live col-span-12 lg:col-span-7 row-span-6 glass-card rounded-2xl p-4 md:p-5 relative overflow-hidden custom-scroll">
                   <div class="absolute inset-0 gradient-accent opacity-60 pointer-events-none"></div>
                   <div class="relative">
                     <div class="flex items-center justify-between mb-3">
-                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Zone A · The Engine</h2>
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Resume Upload</h2>
                       <span id="upload-status" class="text-xs px-3 py-1 rounded-full" style="border:1px solid var(--border);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6)" role="status" aria-live="polite">Awaiting Resume.pdf</span>
                     </div>
                     <div id="upload-zone" class="relative rounded-2xl h-[280px] md:h-[310px] flex items-center justify-center text-center spring-gentle" style="border:1px dashed rgba(255,255,255,0.15);background:rgba(0,0,0,0.2)">
@@ -284,162 +270,28 @@
                     </div>
                   </div>
                 </section>
-                <section id="zone-analytics" class="reactive-card card-live col-span-12 lg:col-span-5 row-span-4 glass-card rounded-2xl p-4 md:p-5 overflow-hidden advanced-control">
+                <section id="zone-system" class="reactive-card card-live col-span-12 lg:col-span-5 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
                   <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Zone B · Analytics</h2>
-                    <span class="text-xs" style="color:var(--text-muted)">Volatility Feed</span>
+                    <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.03em">Analysis Output</h2>
+                    <button id="fetch-versions" class="btn-ghost text-xs">Load Versions</button>
                   </div>
-                  <div class="grid grid-cols-1 gap-3 h-[calc(100%-28px)] overflow-y-auto custom-scroll pr-1">
-                    <article class="thin-glass rounded-xl p-3 spring-gentle hover:scale-[1.01]">
-                      <div class="flex justify-between items-center mb-2"><p class="text-sm" style="color:rgba(255,255,255,0.75)">Frontend Arbitrage</p><span class="text-xs" style="color:#34d399">+12.4%</span></div>
-                      <canvas class="sparkline" id="spark-1"></canvas>
-                    </article>
-                    <article class="thin-glass rounded-xl p-3 spring-gentle hover:scale-[1.01]">
-                      <div class="flex justify-between items-center mb-2"><p class="text-sm" style="color:rgba(255,255,255,0.75)">Cloud Native Demand</p><span class="text-xs" style="color:#fbbf24">+7.1%</span></div>
-                      <canvas class="sparkline" id="spark-2"></canvas>
-                    </article>
-                    <article class="thin-glass rounded-xl p-3 spring-gentle hover:scale-[1.01]">
-                      <div class="flex justify-between items-center mb-2"><p class="text-sm" style="color:rgba(255,255,255,0.75)">Agentic Workflow Index</p><span class="text-xs" style="color:#f87171">-2.6%</span></div>
-                      <canvas class="sparkline" id="spark-3"></canvas>
-                    </article>
-                    <article class="thin-glass rounded-xl p-3 spring-gentle hover:scale-[1.01]">
-                      <div class="flex justify-between items-center mb-2"><p class="text-sm" style="color:rgba(255,255,255,0.75)">Skill Gap Radar</p><span class="text-xs" style="color:#a5b4fc">Live</span></div>
-                      <canvas class="radar-canvas" id="feature3-radar"></canvas>
-                    </article>
-                    <article class="thin-glass rounded-xl p-3 spring-gentle hover:scale-[1.01]">
-                      <div class="flex justify-between items-center mb-2"><p class="text-sm" style="color:rgba(255,255,255,0.75)">ROI Paths</p><span class="text-xs" style="color:#6ee7b7">Projection</span></div>
-                      <div id="feature3-roi-bars" class="space-y-2"></div>
-                    </article>
-                  </div>
-                </section>
-                <section id="zone-persona" class="reactive-card card-live col-span-12 md:col-span-8 row-span-2 glass-card rounded-2xl p-4 md:p-5 relative overflow-hidden">
-                  <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Zone C · Rebound Hub</h2>
-                    <button id="simulate-voice" class="btn-ghost text-xs">Simulate Input</button>
-                  </div>
-                  <div class="grid grid-cols-12 gap-4 items-center h-[calc(100%-32px)]">
-                    <div class="col-span-12 md:col-span-7 rounded-xl thin-glass p-3 h-full">
-                      <svg id="wave-svg" viewBox="0 0 320 96" class="w-full h-full">
-                        <defs><linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#6366f1" stop-opacity="0.8"></stop><stop offset="100%" stop-color="#a855f7" stop-opacity="0.9"></stop></linearGradient></defs>
-                        <path id="wave-path" d="M0,48 C30,30 60,66 90,48 C120,30 150,66 180,48 C210,30 240,66 270,48 C290,38 305,58 320,48" fill="none" stroke="url(#waveGrad)" stroke-width="4" stroke-linecap="round"></path>
-                      </svg>
-                      <textarea id="feature2-notes" class="mt-2 w-full rounded-lg px-2 py-2 text-xs h-16 custom-scroll outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border);color:rgba(255,255,255,0.9)" placeholder="Post-interview voice-to-text debrief or notes..."></textarea>
+                  <div class="h-[calc(100%-36px)] overflow-y-auto custom-scroll pr-1 space-y-3">
+                    <div id="analysis-summary-cards" class="space-y-2">
+                      <div class="state-card">Hiring Lens API: Awaiting analysis run.</div>
+                      <div class="state-card">Version tracker: Not loaded.</div>
                     </div>
-                    <div class="col-span-12 md:col-span-5 rounded-xl thin-glass p-3 h-full overflow-hidden">
-                      <div class="grid grid-cols-2 gap-2 mb-2">
-                        <select id="feature2-round" class="rounded px-2 py-1.5 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)"><option value="screening">Screening</option><option value="tech" selected>Tech</option><option value="hr">HR</option><option value="manager">Manager</option></select>
-                        <select id="feature2-vibe" class="rounded px-2 py-1.5 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)"><option value="friendly">Friendly</option><option value="neutral" selected>Neutral</option><option value="cold">Cold</option><option value="hostile">Hostile</option></select>
-                        <input id="feature2-company" value="Acme" class="rounded px-2 py-1.5 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Company" />
-                        <input id="feature2-role" value="Frontend Engineer" class="rounded px-2 py-1.5 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Role" />
+                    <div class="rounded-xl p-3 text-xs" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
+                      <p class="font-semibold mb-2" style="color:rgba(255,255,255,0.85)">Version History</p>
+                      <div id="version-list" class="space-y-1 max-h-28 overflow-y-auto custom-scroll" style="color:rgba(255,255,255,0.6)"></div>
+                    </div>
+                    <div class="rounded-xl p-3 text-xs" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
+                      <div class="flex items-center justify-between mb-2">
+                        <p class="font-semibold" style="color:rgba(255,255,255,0.85)">Daily Plan</p>
+                        <button id="core-load-plan" class="btn-ghost text-xs py-0.5 px-2">Refresh</button>
                       </div>
-                      <textarea id="feature2-transcript" class="w-full rounded px-2 py-1.5 text-xs h-14 custom-scroll outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border);color:rgba(255,255,255,0.9)" placeholder="Paste transcript text or VTT..."></textarea>
-                      <input id="feature2-audio-url" class="mt-2 w-full rounded px-2 py-1.5 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Optional public audio URL" />
-                      <label class="mt-2 flex items-center gap-2 text-xs" style="color:rgba(255,255,255,0.6)"><input id="feature2-use-assembly" type="checkbox" class="accent-indigo-400" />Use AssemblyAI</label>
-                      <div class="mt-2 flex gap-2">
-                        <button id="feature2-quick-debrief" class="flex-1 btn-ghost text-xs py-1.5">Quick Debrief</button>
-                        <button id="feature2-load-trend" class="flex-1 btn-ghost text-xs py-1.5">Load Trend</button>
-                      </div>
-                      <div class="mt-2 grid grid-cols-2 gap-2">
-                        <select id="feature4-persona-mode" class="rounded px-2 py-1.5 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)"><option value="blind" selected>Blind Mode</option><option value="stone_faced">Stone Faced</option><option value="rushed_founder">Rushed Founder</option><option value="non_tech_hr">Non-Tech HR</option><option value="deep_diver">Deep Diver</option></select>
-                        <select id="feature4-language" class="rounded px-2 py-1.5 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)"><option value="english" selected>English</option><option value="hinglish">Hinglish</option></select>
-                      </div>
-                      <div class="mt-2 flex gap-2">
-                        <button id="feature4-finalize" class="flex-1 btn-ghost text-xs py-1.5">Finalize Coach</button>
-                        <button id="feature4-share" class="flex-1 btn-ghost text-xs py-1.5">Share Session</button>
-                      </div>
+                      <div id="core-daily-plan" class="space-y-1 max-h-28 overflow-y-auto custom-scroll" style="color:rgba(255,255,255,0.6)" role="status" aria-live="polite"><p>Core plan not loaded.</p></div>
                     </div>
                   </div>
-                </section>
-                <section id="zone-system" class="reactive-card card-live col-span-12 md:col-span-4 row-span-2 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <h2 class="text-base font-bold text-hero mb-2" style="letter-spacing:-0.03em">System Pulse</h2>
-                  <div class="h-[calc(100%-26px)] overflow-y-auto custom-scroll pr-1 space-y-2" id="analysis-summary-cards">
-                    <div class="state-card">Hiring Lens API: Awaiting analysis run.</div>
-                    <div class="state-card">Version tracker: Not loaded.</div>
-                  </div>
-                  <div class="mt-2 rounded-xl p-2 text-xs" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
-                    <p class="font-semibold mb-1" style="color:rgba(255,255,255,0.85)">Version History</p>
-                    <div id="version-list" class="space-y-1 max-h-20 overflow-y-auto custom-scroll" style="color:rgba(255,255,255,0.6)"></div>
-                  </div>
-                  <div class="mt-2 rounded-xl p-2 text-xs" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
-                    <p class="font-semibold mb-1" style="color:rgba(255,255,255,0.85)">Rebound Output</p>
-                    <div id="feature2-output" class="space-y-1 max-h-20 overflow-y-auto custom-scroll" style="color:rgba(255,255,255,0.6)" role="status" aria-live="polite"><p>Interview Autopsy API: Awaiting run.</p></div>
-                  </div>
-                  <div class="mt-2 rounded-xl p-2 text-xs" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
-                    <div class="flex items-center justify-between mb-1">
-                      <p class="font-semibold" style="color:rgba(255,255,255,0.85)">Core Daily Plan</p>
-                      <button id="core-load-plan" class="btn-ghost text-xs py-0.5 px-2">Refresh</button>
-                    </div>
-                    <div id="core-daily-plan" class="space-y-1 max-h-24 overflow-y-auto custom-scroll" style="color:rgba(255,255,255,0.6)" role="status" aria-live="polite"><p>Core plan not loaded.</p></div>
-                  </div>
-                  <details class="mt-2 rounded-xl p-2 text-xs control-accordion advanced-control" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
-                    <summary class="font-semibold" style="color:rgba(255,255,255,0.85)">Skill Arbitrage Controls</summary>
-                    <div class="mt-2">
-                      <div class="grid grid-cols-2 gap-2">
-                        <input id="feature3-target-role" value="Fullstack Engineer" class="rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Target role" />
-                        <input id="feature3-region" value="PK" class="rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Region" />
-                        <input id="feature3-salary" value="10000" type="number" class="rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Current salary USD" />
-                        <label class="rounded px-2 py-1 text-xs flex items-center gap-1" style="background:rgba(0,0,0,0.3);border:1px solid var(--border);color:rgba(255,255,255,0.7)"><input id="feature3-remote-only" type="checkbox" class="accent-indigo-400" />Remote only</label>
-                      </div>
-                      <textarea id="feature3-current-skills" class="mt-2 w-full rounded px-2 py-1.5 text-xs text-white h-12 custom-scroll outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)">react, javascript, python, sql</textarea>
-                      <div class="mt-2 flex gap-2">
-                        <button id="feature3-load-history" class="flex-1 btn-ghost text-xs py-1.5">Load Gap History</button>
-                        <button id="feature3-run-quiz" class="flex-1 btn-ghost text-xs py-1.5">Run Sprint Quiz</button>
-                      </div>
-                      <div class="mt-2 flex gap-2">
-                        <button id="feature3-resume-inject" class="flex-1 btn-ghost text-xs py-1.5">Resume Inject</button>
-                        <button id="feature3-export" class="flex-1 btn-ghost text-xs py-1.5">Export Snapshot</button>
-                      </div>
-                    </div>
-                  </details>
-                  <div class="mt-2 rounded-xl p-2 text-xs advanced-control" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
-                    <p class="font-semibold mb-1" style="color:rgba(255,255,255,0.85)">Skill Arbitrage Output</p>
-                    <div id="feature3-output" class="space-y-1 max-h-24 overflow-y-auto custom-scroll" style="color:rgba(255,255,255,0.6)" role="status" aria-live="polite"><p>Skill Arbitrage API: Awaiting run.</p></div>
-                  </div>
-                  <div class="mt-2 rounded-xl p-2 text-xs advanced-control" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
-                    <p class="font-semibold mb-1" style="color:rgba(255,255,255,0.85)">Persona Coach Output</p>
-                    <div id="feature4-output" class="space-y-1 max-h-24 overflow-y-auto custom-scroll" style="color:rgba(255,255,255,0.6)" role="status" aria-live="polite"><p>Persona Coach API: Awaiting run.</p></div>
-                  </div>
-                  <details class="mt-2 rounded-xl p-2 text-xs control-accordion advanced-control" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
-                    <summary class="font-semibold" style="color:rgba(255,255,255,0.85)">Portfolio Narrator Controls</summary>
-                    <div class="mt-2">
-                      <div class="grid grid-cols-2 gap-2">
-                        <input id="feature5-target-role" value="Software Engineer" class="rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Target role" />
-                        <select id="feature5-tone" class="rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)"><option value="deep_tech" selected>Deep Tech</option><option value="business">Business</option></select>
-                        <input id="feature5-repo-subpath" value="." class="col-span-2 rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Repo subpath" />
-                        <input id="feature5-selected-projects" value="Backend, Frontend, Requirements" class="col-span-2 rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Selected projects" />
-                        <input id="feature5-github-repo" value="" class="col-span-2 rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="GitHub repo URL (optional)" />
-                        <textarea id="feature5-jd-text" class="col-span-2 rounded px-2 py-1 text-xs text-white h-14 custom-scroll outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Paste target JD..."></textarea>
-                      </div>
-                      <div class="mt-2 flex gap-2">
-                        <button id="feature5-load-history" class="flex-1 btn-ghost text-xs py-1.5">Load History</button>
-                        <button id="feature5-export" class="flex-1 btn-ghost text-xs py-1.5">Export Bundle</button>
-                      </div>
-                      <div class="mt-2 grid grid-cols-1 gap-2">
-                        <button id="feature5-download" class="btn-ghost text-xs py-1.5">Download Markdown (.md)</button>
-                        <button id="feature5-download-pdf" class="btn-ghost text-xs py-1.5">Download Case Study PDF</button>
-                        <button id="feature5-download-site" class="btn-ghost text-xs py-1.5">Download Portfolio Site (.zip)</button>
-                      </div>
-                    </div>
-                  </details>
-                  <div class="mt-2 rounded-xl p-2 text-xs" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
-                    <p class="font-semibold mb-1" style="color:rgba(255,255,255,0.85)">Portfolio Narrator Output</p>
-                    <div id="feature5-output" class="space-y-1 max-h-24 overflow-y-auto custom-scroll" style="color:rgba(255,255,255,0.6)" role="status" aria-live="polite"><p>Portfolio Narrator API: Awaiting run.</p></div>
-                  </div>
-                  <details class="mt-2 rounded-xl p-2 text-xs control-accordion advanced-control" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
-                    <summary class="font-semibold" style="color:rgba(255,255,255,0.85)">Application Outcome Tracker</summary>
-                    <div class="mt-2 grid grid-cols-2 gap-2">
-                      <input id="metrics-application-id" value="app-001" class="rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Application ID" />
-                      <input id="metrics-company" value="Acme" class="rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Company" />
-                      <input id="metrics-role" value="Software Engineer" class="rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Role" />
-                      <select id="metrics-channel" class="rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)"><option value="job_board" selected>Job Board</option><option value="referral">Referral</option><option value="direct">Direct</option></select>
-                      <select id="metrics-status" class="col-span-2 rounded px-2 py-1 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)"><option value="submitted" selected>Submitted</option><option value="invited">Invited</option><option value="interview_scheduled">Interview Scheduled</option><option value="rejected">Rejected</option><option value="offer">Offer</option></select>
-                    </div>
-                    <div class="mt-2 flex gap-2">
-                      <button id="metrics-log-application" class="flex-1 btn-ghost text-xs py-1.5">Log Application</button>
-                      <button id="metrics-update-status" class="flex-1 btn-ghost text-xs py-1.5">Update Status</button>
-                    </div>
-                    <div id="metrics-application-output" class="mt-2 space-y-1 max-h-24 overflow-y-auto custom-scroll" style="color:rgba(255,255,255,0.6)" role="status" aria-live="polite"><p>No application logs yet.</p></div>
-                  </details>
                 </section>
               </div>
             </section>
@@ -491,17 +343,49 @@
                 </div>
               </header>
               <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
-                <section class="reactive-card card-live col-span-12 lg:col-span-7 row-span-4 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                <!-- Input Panel -->
+                <section class="reactive-card card-live col-span-12 lg:col-span-4 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                  <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Configuration</h2>
+                    <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
+                  </div>
+                  <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
+                    <div>
+                      <label class="jt-label" for="lens-candidate-id">Candidate ID</label>
+                      <input id="lens-candidate-id" type="text" class="jt-input" placeholder="e.g. candidate-001" value="candidate-001" />
+                    </div>
+                    <div>
+                      <label class="jt-label" for="lens-job-category">Job Category</label>
+                      <select id="lens-job-category" class="jt-input">
+                        <option value="frontend">Frontend</option>
+                        <option value="backend">Backend</option>
+                        <option value="fullstack" selected>Fullstack</option>
+                        <option value="data">Data</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="lens-upload-btn">Resume PDF *</label>
+                      <button id="lens-upload-btn" class="btn-ghost w-full justify-center text-sm">
+                        <i data-lucide="upload" class="w-4 h-4"></i> Upload Resume PDF
+                      </button>
+                      <p id="lens-resume-name" class="text-xs mt-1" style="color:var(--text-muted)">No resume selected.</p>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="lens-job-description">Job Description</label>
+                      <textarea id="lens-job-description" class="jt-input jt-textarea" placeholder="Paste the target job description here..."></textarea>
+                    </div>
+                    <div class="pt-1">
+                      <button id="lens-run-feature1-panel" class="btn-primary w-full justify-center">Run Lens Analysis</button>
+                    </div>
+                  </div>
+                </section>
+                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-4 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
                   <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Lens Scoreboard</h2><span class="text-xs" style="color:var(--text-muted)">Hiring Lens core</span></div>
                   <div id="lens-summary-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
                 </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-5 row-span-4 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-2 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
                   <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Version Timeline</h2><span class="text-xs" style="color:var(--text-muted)">History</span></div>
                   <div id="lens-versions-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                </section>
-                <section class="reactive-card card-live col-span-12 row-span-2 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <h2 class="text-sm font-bold text-hero mb-2">Heatmap Preview</h2>
-                  <div id="lens-heatmap-preview" class="h-[calc(100%-20px)] rounded-xl flex items-center justify-center text-sm" style="border:1px solid var(--border);background:rgba(0,0,0,0.2);color:rgba(255,255,255,0.4)">Run analysis to refresh heatmap signal overlay.</div>
                 </section>
               </div>
             </section>
@@ -517,23 +401,52 @@
                 </div>
               </header>
               <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
-                <section class="reactive-card card-live col-span-12 lg:col-span-7 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                <!-- Input Panel -->
+                <section class="reactive-card card-live col-span-12 lg:col-span-4 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                  <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Configuration</h2>
+                    <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
+                  </div>
+                  <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
+                    <div>
+                      <label class="jt-label" for="feature3-target-role">Target Role</label>
+                      <input id="feature3-target-role" type="text" class="jt-input" placeholder="e.g. Fullstack Engineer" value="Fullstack Engineer" />
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature3-region">Region</label>
+                      <input id="feature3-region" type="text" class="jt-input" placeholder="e.g. US, PK, EU" value="PK" />
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature3-current-skills">Current Skills</label>
+                      <textarea id="feature3-current-skills" class="jt-input jt-textarea" placeholder="e.g. react, javascript, python, sql">react, javascript, python, sql</textarea>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature3-salary">Current Salary (USD/yr)</label>
+                      <input id="feature3-salary" type="number" class="jt-input" placeholder="e.g. 60000" value="10000" />
+                    </div>
+                    <label class="flex items-center gap-2 text-xs cursor-pointer" style="color:rgba(255,255,255,0.6)">
+                      <input id="feature3-remote-only" type="checkbox" class="accent-indigo-400" />
+                      Remote only roles
+                    </label>
+                    <div class="pt-1">
+                      <button id="feature3-workspace-run-panel" class="btn-primary w-full justify-center">Run Full Arbitrage</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                      <button id="feature3-load-history" class="btn-ghost text-xs py-2">Load History</button>
+                      <button id="feature3-run-quiz" class="btn-ghost text-xs py-2">Sprint Quiz</button>
+                      <button id="feature3-resume-inject" class="btn-ghost text-xs py-2">Resume Inject</button>
+                      <button id="feature3-export" class="btn-ghost text-xs py-2">Export</button>
+                    </div>
+                  </div>
+                </section>
+                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
                   <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Market Board</h2><span class="text-xs" style="color:var(--text-muted)">Live snapshot</span></div>
                   <div id="feature3-market-table" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
                 </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-5 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
                   <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Gap Radar + ROI</h2><span class="text-xs" style="color:var(--text-muted)">Top-decile pursuit</span></div>
                   <canvas class="radar-canvas" id="feature3-radar-workspace"></canvas>
                   <div id="feature3-roi-bars-workspace" class="space-y-2 mt-3"></div>
-                </section>
-                <section class="reactive-card card-live col-span-12 md:col-span-6 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Roadmap to 90</h2><button id="feature3-workspace-quiz" class="btn-ghost text-xs">Run Quiz</button></div>
-                  <div id="feature3-roadmap-list" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                </section>
-                <section class="reactive-card card-live col-span-12 md:col-span-6 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Future + Sprint Ops</h2><button id="feature3-workspace-resume-inject" class="btn-ghost text-xs">Resume Inject</button></div>
-                  <div id="feature3-future-list" class="h-[48%] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                  <div id="feature3-sprint-list" class="h-[48%] overflow-y-auto custom-scroll text-sm space-y-2 mt-2" style="color:rgba(255,255,255,0.75)"></div>
                 </section>
               </div>
             </section>
@@ -550,27 +463,56 @@
                 </div>
               </header>
               <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
-                <section class="reactive-card card-live col-span-12 lg:col-span-5 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Session Overview</h2><span class="text-xs" style="color:var(--text-muted)">Persona + status</span></div>
-                  <div id="feature4-session-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
+                <!-- Input Panel -->
+                <section class="reactive-card card-live col-span-12 lg:col-span-4 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                  <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Session Setup</h2>
+                    <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
+                  </div>
+                  <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
+                    <div>
+                      <label class="jt-label" for="feature4-workspace-persona-mode">Persona Mode</label>
+                      <select id="feature4-workspace-persona-mode" class="jt-input">
+                        <option value="blind" selected>Blind Mode</option>
+                        <option value="stone_faced">Stone Faced</option>
+                        <option value="rushed_founder">Rushed Founder</option>
+                        <option value="non_tech_hr">Non-Tech HR</option>
+                        <option value="deep_diver">Deep Diver</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature4-workspace-language">Language</label>
+                      <select id="feature4-workspace-language" class="jt-input">
+                        <option value="english" selected>English</option>
+                        <option value="hinglish">Hinglish</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature4-workspace-topic">Interview Topic</label>
+                      <input id="feature4-workspace-topic" type="text" class="jt-input" placeholder="e.g. System Design, React, Behavioral" />
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature4-workspace-candidate-id">Candidate ID</label>
+                      <input id="feature4-workspace-candidate-id" type="text" class="jt-input" placeholder="e.g. candidate-001" value="candidate-001" />
+                    </div>
+                    <div class="pt-1">
+                      <button id="feature4-workspace-run-panel" class="btn-primary w-full justify-center">Run Persona Session</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                      <button id="feature4-finalize" class="btn-ghost text-xs py-2">Finalize Coach</button>
+                      <button id="feature4-share" class="btn-ghost text-xs py-2">Share Session</button>
+                    </div>
+                  </div>
                 </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-7 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
                   <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Realtime Signal Timeline</h2><span class="text-xs" style="color:var(--text-muted)">Filler, confidence, freeze</span></div>
                   <div id="feature4-interviewer-prompt" class="workspace-list-card interviewer-prompt text-sm mb-2" style="color:rgba(255,255,255,0.8)">Interviewer prompt will appear here during multi-turn run.</div>
                   <canvas id="feature4-signal-chart" class="radar-canvas"></canvas>
                   <div id="feature4-live-hints" class="mt-2 space-y-2"></div>
                 </section>
-                <section class="reactive-card card-live col-span-12 md:col-span-6 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
                   <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Coach + Badges</h2><span class="text-xs" style="color:var(--text-muted)">Scorecard</span></div>
                   <div id="feature4-coach-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                </section>
-                <section class="reactive-card card-live col-span-12 md:col-span-6 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Synthesis + Share</h2><span class="text-xs" style="color:var(--text-muted)">Audio, avatar, link</span></div>
-                  <div id="feature4-media-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                </section>
-                <section class="reactive-card card-live col-span-12 row-span-1 glass-card rounded-2xl p-3 md:p-4 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-sm font-bold text-hero">Session History Compare</h2><button id="feature4-workspace-compare" class="btn-ghost text-xs">Compare Latest 2</button></div>
-                  <div id="feature4-compare-board" class="text-xs overflow-y-auto custom-scroll max-h-20" style="color:rgba(255,255,255,0.6)"></div>
                 </section>
               </div>
             </section>

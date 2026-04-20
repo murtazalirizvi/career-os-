@@ -536,3 +536,14 @@ textarea:focus-visible,select:focus-visible,a:focus-visible{
   .grid-cols-\[auto_1fr\]{grid-template-columns:1fr!important}
   #mobile-nav{display:flex!important}
 }
+
+
+/* ── Nav label (sidebar hover reveal) ── */
+.nav-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+#sidebar.group:hover .nav-label { opacity: 1; }

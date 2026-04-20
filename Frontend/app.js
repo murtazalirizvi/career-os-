@@ -338,6 +338,18 @@ const nodes = {
   feature4Output: document.getElementById("feature4-output"),
   feature4WorkspaceRun: document.getElementById("feature4-workspace-run"),
   feature4WorkspaceFinalize: document.getElementById("feature4-workspace-finalize"),
+  // New per-workspace panel nodes
+  lensRunFeature1Panel: document.getElementById("lens-run-feature1-panel"),
+  lensCandidateId: document.getElementById("lens-candidate-id"),
+  lensJobCategory: document.getElementById("lens-job-category"),
+  lensJobDescription: document.getElementById("lens-job-description"),
+  lensUploadBtn: document.getElementById("lens-upload-btn"),
+  feature3WorkspaceRunPanel: document.getElementById("feature3-workspace-run-panel"),
+  feature4WorkspaceRunPanel: document.getElementById("feature4-workspace-run-panel"),
+  feature4WorkspacePersonaMode: document.getElementById("feature4-workspace-persona-mode"),
+  feature4WorkspaceLanguage: document.getElementById("feature4-workspace-language"),
+  feature4WorkspaceTopic: document.getElementById("feature4-workspace-topic"),
+  feature4WorkspaceCandidateId: document.getElementById("feature4-workspace-candidate-id"),
   feature4WorkspaceShare: document.getElementById("feature4-workspace-share"),
   feature4WorkspaceHistory: document.getElementById("feature4-workspace-history"),
   feature4WorkspaceCompare: document.getElementById("feature4-workspace-compare"),
@@ -2363,9 +2375,12 @@ function processResume(fileName = "Resume.pdf", fileObject = null) {
     resumeFile: fileObject || AppState.resumeFile
   });
   setStatus(`Loaded ${fileName}`);
+  // Update all resume name indicators
   if (nodes.onboardingResumeName) {
     nodes.onboardingResumeName.textContent = `Selected resume: ${fileName}`;
   }
+  const lensResumeName = document.getElementById("lens-resume-name");
+  if (lensResumeName) lensResumeName.textContent = `Selected: ${fileName}`;
 
   if (!AppState.analytics.firstResumeUploaded) {
     AppState.analytics.firstResumeUploaded = true;
@@ -2810,13 +2825,13 @@ function setupNavigation() {
     if (AppState.resumeUploaded) AppState.setState({ heatmapActive: true });
   });
 
-  nodes.simulateVoice.addEventListener("click", () => {
+  nodes.simulateVoice?.addEventListener("click", () => {
     const randomLevel = 0.2 + Math.random() * 0.95;
     AppState.setState({ audioLevel: randomLevel });
   });
 
   nodes.analyzeFeature1.addEventListener("click", runFeature1Analysis);
-  nodes.runSmartAction.addEventListener("click", runSmartAction);
+  nodes.runSmartAction?.addEventListener("click", runSmartAction);
   nodes.uiModeBeginner?.addEventListener("click", () => setUIMode("beginner"));
   nodes.uiModeExpert?.addEventListener("click", () => setUIMode("expert"));
   nodes.onboardingUploadResume?.addEventListener("click", () => nodes.pdfInput.click());
@@ -2840,10 +2855,33 @@ function setupNavigation() {
   nodes.fetchVersions.addEventListener("click", loadVersions);
   nodes.lensLoadVersions.addEventListener("click", loadVersions);
 
-  nodes.runFeature2.addEventListener("click", runFeature2Autopsy);
-  nodes.runFeature4.addEventListener("click", runFeature4PersonaPlay);
-  nodes.runFeature3.addEventListener("click", runFeature3Arbitrage);
-  nodes.runFeature5.addEventListener("click", runFeature5NarrativeArchitect);
+  nodes.lensRunFeature1Panel?.addEventListener("click", () => {
+    // Sync lens panel inputs → global inputs before running
+    if (nodes.lensCandidateId?.value) nodes.candidateId.value = nodes.lensCandidateId.value;
+    if (nodes.lensJobCategory?.value) nodes.jobCategory.value = nodes.lensJobCategory.value;
+    if (nodes.lensJobDescription?.value) nodes.jobDescription.value = nodes.lensJobDescription.value;
+    runFeature1Analysis();
+  });
+  nodes.lensUploadBtn?.addEventListener("click", () => nodes.pdfInput.click());
+
+  // Sync lens panel inputs live
+  nodes.lensCandidateId?.addEventListener("input", () => { nodes.candidateId.value = nodes.lensCandidateId.value; });
+  nodes.lensJobCategory?.addEventListener("change", () => { nodes.jobCategory.value = nodes.lensJobCategory.value; });
+  nodes.lensJobDescription?.addEventListener("input", () => { nodes.jobDescription.value = nodes.lensJobDescription.value; });
+
+  nodes.feature3WorkspaceRunPanel?.addEventListener("click", runFeature3Arbitrage);
+  nodes.feature4WorkspaceRunPanel?.addEventListener("click", () => {
+    // Sync persona panel inputs → global inputs before running
+    if (nodes.feature4WorkspacePersonaMode?.value) nodes.feature4PersonaMode.value = nodes.feature4WorkspacePersonaMode.value;
+    if (nodes.feature4WorkspaceLanguage?.value) nodes.feature4Language.value = nodes.feature4WorkspaceLanguage.value;
+    if (nodes.feature4WorkspaceCandidateId?.value) nodes.candidateId.value = nodes.feature4WorkspaceCandidateId.value;
+    runFeature4PersonaPlay();
+  });
+
+  nodes.runFeature2?.addEventListener("click", runFeature2Autopsy);
+  nodes.runFeature4?.addEventListener("click", runFeature4PersonaPlay);
+  nodes.runFeature3?.addEventListener("click", runFeature3Arbitrage);
+  nodes.runFeature5?.addEventListener("click", runFeature5NarrativeArchitect);
   nodes.dashboardNextAction?.addEventListener("click", runSmartAction);
   nodes.dashboardOpenWorkspace?.addEventListener("click", () => startViewSwap("command-center"));
   nodes.dashboardFeatureExplainer?.addEventListener("click", (event) => {
