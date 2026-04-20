@@ -518,75 +518,160 @@
             </section>
 
             <!-- ── NARRATIVE ARCHITECT WORKSPACE ── -->
-            <section id="feature5-workspace" class="h-full hidden workspace-shell">
-              <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
-                <div><h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Narrative Architect</h1><p class="text-sm mt-1" style="color:var(--text-dim)">Deep codebase analysis, STAR storytelling, talk-track prep, and export-sync bundle.</p></div>
+            <section id="feature5-workspace" class="hidden workspace-shell" style="height:100%;display:none;flex-direction:column">
+              <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header" style="flex-shrink:0">
+                <div>
+                  <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Narrative Architect</h1>
+                  <p class="text-sm mt-1" style="color:var(--text-dim)">Deep codebase analysis, STAR storytelling, talk-track prep, and export-sync bundle.</p>
+                </div>
                 <div class="flex items-center gap-2 flex-wrap">
-                  <button id="feature5-workspace-run" class="btn-primary">Run Narrative Architect</button>
-                  <button id="feature5-workspace-history" class="btn-ghost">History</button>
-                  <button id="feature5-workspace-export" class="btn-ghost">Export</button>
-                  <button id="feature5-workspace-download" class="btn-ghost">Download .md</button>
-                  <button id="feature5-workspace-download-pdf" class="btn-ghost">Case Study PDF</button>
-                  <button id="feature5-workspace-download-site" class="btn-ghost">Portfolio .zip</button>
+                  <button id="feature5-workspace-run" class="btn-primary"><i data-lucide="play" class="w-4 h-4"></i> Run Analysis</button>
+                  <button id="feature5-workspace-export" class="btn-ghost"><i data-lucide="package" class="w-4 h-4"></i> Export Bundle</button>
+                  <button id="feature5-workspace-download" class="btn-ghost"><i data-lucide="file-text" class="w-4 h-4"></i> .md</button>
+                  <button id="feature5-workspace-download-pdf" class="btn-ghost"><i data-lucide="file" class="w-4 h-4"></i> PDF</button>
+                  <button id="feature5-workspace-download-site" class="btn-ghost"><i data-lucide="globe" class="w-4 h-4"></i> .zip</button>
+                  <button id="feature5-workspace-history" class="btn-ghost"><i data-lucide="history" class="w-4 h-4"></i> History</button>
                 </div>
               </header>
-              <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
-                <section class="reactive-card card-live col-span-12 lg:col-span-5 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Input Configuration</h2><span class="text-xs" style="color:var(--text-muted)">Required fields</span></div>
-                  <div class="h-[calc(100%-24px)] overflow-y-auto custom-scroll space-y-3">
-                    <div>
-                      <label class="jt-label" for="feature5-workspace-github-url">GitHub Repository URL *</label>
-                      <input id="feature5-workspace-github-url" type="url" class="jt-input" placeholder="https://github.com/username/repository" />
-                      <p class="text-xs mt-1" style="color:var(--text-muted)">Enter the full GitHub repository URL to analyze</p>
-                    </div>
-                    <div>
-                      <label class="jt-label" for="feature5-workspace-target-role">Target Role</label>
-                      <input id="feature5-workspace-target-role" type="text" class="jt-input" placeholder="e.g., Senior Backend Engineer" />
-                    </div>
-                    <div>
-                      <label class="jt-label" for="feature5-workspace-tone">Narrative Tone</label>
-                      <select id="feature5-workspace-tone" class="jt-input">
-                        <option value="technical">Technical</option>
-                        <option value="balanced" selected>Balanced</option>
-                        <option value="business">Business-Focused</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="jt-label" for="feature5-workspace-jd">Job Description (Optional)</label>
-                      <textarea id="feature5-workspace-jd" class="jt-input jt-textarea" placeholder="Paste target job description to tailor narratives..."></textarea>
-                    </div>
-                    <div>
-                      <label class="jt-label" for="feature5-workspace-projects">Selected Projects (comma-separated)</label>
-                      <input id="feature5-workspace-projects" type="text" class="jt-input" placeholder="Backend, Frontend, API" value="Backend, Frontend" />
-                    </div>
-                  </div>
-                </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-7 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Deep Analysis</h2><span class="text-xs" style="color:var(--text-muted)">Epic 5.1</span></div>
-                  <div id="feature5-analysis-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                </section>
-                <section class="reactive-card card-live col-span-12 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Generated Narratives</h2><span class="text-xs" style="color:var(--text-muted)">STAR stories & talk tracks</span></div>
-                  <div class="h-[calc(100%-24px)] grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto custom-scroll">
-                    <div class="space-y-2">
-                      <h3 class="text-sm font-semibold" style="color:rgba(255,255,255,0.85)">Narrative Constructor</h3>
-                      <div id="feature5-narrative-board" class="text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                    </div>
-                    <div class="space-y-2">
-                      <h3 class="text-sm font-semibold" style="color:rgba(255,255,255,0.85)">Talk Track Assistant</h3>
-                      <div id="feature5-talk-board" class="text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                    </div>
-                    <div class="space-y-2">
-                      <h3 class="text-sm font-semibold" style="color:rgba(255,255,255,0.85)">Skill Gaps Identified</h3>
-                      <div id="feature5-gap-board" class="text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                    </div>
-                    <div class="space-y-2">
-                      <h3 class="text-sm font-semibold" style="color:rgba(255,255,255,0.85)">Export Options</h3>
-                      <div id="feature5-export-board" class="text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
+
+              <!-- Two-column layout: inputs left, results right -->
+              <div style="flex:1;min-height:0;display:grid;grid-template-columns:340px 1fr;gap:16px;overflow:hidden">
+
+                <!-- LEFT: Input Panel (fixed width, scrollable) -->
+                <div class="glass-card rounded-2xl p-5 overflow-y-auto custom-scroll" style="display:flex;flex-direction:column;gap:16px">
+                  <div>
+                    <p class="text-xs font-bold mb-3" style="color:var(--accent-l);letter-spacing:0.08em;text-transform:uppercase">Configuration</p>
+                    <div style="display:flex;flex-direction:column;gap:12px">
+                      <div>
+                        <label class="jt-label" for="feature5-workspace-github-url">
+                          <i data-lucide="github" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px"></i>
+                          GitHub Repository URL *
+                        </label>
+                        <input id="feature5-workspace-github-url" type="url" class="jt-input" placeholder="https://github.com/username/repo" />
+                        <p class="text-xs mt-1" style="color:var(--text-muted)">Full URL of the repo to analyze</p>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature5-workspace-target-role">
+                          <i data-lucide="briefcase" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px"></i>
+                          Target Role
+                        </label>
+                        <input id="feature5-workspace-target-role" type="text" class="jt-input" placeholder="e.g. Senior Backend Engineer" />
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature5-workspace-tone">Narrative Tone</label>
+                        <select id="feature5-workspace-tone" class="jt-input">
+                          <option value="technical">Technical</option>
+                          <option value="balanced" selected>Balanced</option>
+                          <option value="business">Business-Focused</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature5-workspace-projects">Selected Projects</label>
+                        <input id="feature5-workspace-projects" type="text" class="jt-input" placeholder="Backend, Frontend, API" value="Backend, Frontend" />
+                        <p class="text-xs mt-1" style="color:var(--text-muted)">Comma-separated project names</p>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature5-workspace-jd">Job Description (Optional)</label>
+                        <textarea id="feature5-workspace-jd" class="jt-input" style="min-height:100px;resize:vertical" placeholder="Paste target JD to tailor narratives..."></textarea>
+                      </div>
+                      <button id="feature5-workspace-run-2" class="btn-primary w-full justify-center" style="margin-top:4px">
+                        <i data-lucide="zap" class="w-4 h-4"></i> Run Narrative Architect
+                      </button>
                     </div>
                   </div>
-                </section>
-              </div>
+                </div>
+
+                <!-- RIGHT: Results (scrollable, tabbed) -->
+                <div style="display:flex;flex-direction:column;gap:12px;overflow-y:auto;min-height:0" class="custom-scroll">
+
+                  <!-- Deep Analysis Card -->
+                  <div class="glass-card rounded-2xl p-5" id="f5-analysis-card">
+                    <div class="flex items-center gap-2 mb-4">
+                      <div style="width:32px;height:32px;border-radius:8px;background:rgba(99,102,241,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <i data-lucide="scan-search" style="width:16px;height:16px;color:#818cf8"></i>
+                      </div>
+                      <div>
+                        <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Deep Analysis</h2>
+                        <p class="text-xs" style="color:var(--text-muted)">Architecture · Sophistication · Code quality</p>
+                      </div>
+                    </div>
+                    <div id="feature5-analysis-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
+                      <div class="state-card">Run Narrative Architect to generate architecture and sophistication insights.</div>
+                    </div>
+                  </div>
+
+                  <!-- Narrative Constructor Card -->
+                  <div class="glass-card rounded-2xl p-5" id="f5-narrative-card">
+                    <div class="flex items-center gap-2 mb-4">
+                      <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <i data-lucide="book-open-text" style="width:16px;height:16px;color:#34d399"></i>
+                      </div>
+                      <div>
+                        <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">STAR Narratives</h2>
+                        <p class="text-xs" style="color:var(--text-muted)">Problem → Solution → Impact stories</p>
+                      </div>
+                    </div>
+                    <div id="feature5-narrative-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
+                      <div class="state-card">Problem-solution narrative and STAR bullets appear after run.</div>
+                    </div>
+                  </div>
+
+                  <!-- Talk Track Card -->
+                  <div class="glass-card rounded-2xl p-5" id="f5-talk-card">
+                    <div class="flex items-center gap-2 mb-4">
+                      <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <i data-lucide="mic" style="width:16px;height:16px;color:#fbbf24"></i>
+                      </div>
+                      <div>
+                        <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Talk Track Assistant</h2>
+                        <p class="text-xs" style="color:var(--text-muted)">Code walkthrough scripts · Interview Q&amp;A prep</p>
+                      </div>
+                    </div>
+                    <div id="feature5-talk-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
+                      <div class="state-card">Talk-track script appears after run.</div>
+                    </div>
+                  </div>
+
+                  <!-- Skill Gaps Card -->
+                  <div class="glass-card rounded-2xl p-5" id="f5-gap-card">
+                    <div class="flex items-center gap-2 mb-4">
+                      <div style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <i data-lucide="alert-triangle" style="width:16px;height:16px;color:#f87171"></i>
+                      </div>
+                      <div>
+                        <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Skill Gaps Identified</h2>
+                        <p class="text-xs" style="color:var(--text-muted)">Documentation · Coverage · Senior add-ons</p>
+                      </div>
+                    </div>
+                    <div id="feature5-gap-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
+                      <div class="state-card">Portfolio gap analysis appears after run.</div>
+                    </div>
+                  </div>
+
+                  <!-- Export & History Card -->
+                  <div class="glass-card rounded-2xl p-5" id="f5-export-card">
+                    <div class="flex items-center gap-2 mb-4">
+                      <div style="width:32px;height:32px;border-radius:8px;background:rgba(139,92,246,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <i data-lucide="download" style="width:16px;height:16px;color:#a78bfa"></i>
+                      </div>
+                      <div>
+                        <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Export &amp; Session History</h2>
+                        <p class="text-xs" style="color:var(--text-muted)">Top projects · Consistency warnings · Past sessions</p>
+                      </div>
+                    </div>
+                    <div id="feature5-export-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
+                      <div class="state-card">Export sync bundle appears after run/export.</div>
+                    </div>
+                    <div class="flex gap-2 mt-3 flex-wrap">
+                      <button id="feature5-workspace-export-2" class="btn-ghost text-xs"><i data-lucide="package" class="w-3 h-3"></i> Export Bundle</button>
+                      <button id="feature5-workspace-download-2" class="btn-ghost text-xs"><i data-lucide="file-text" class="w-3 h-3"></i> Download .md</button>
+                      <button id="feature5-workspace-download-pdf-2" class="btn-ghost text-xs"><i data-lucide="file" class="w-3 h-3"></i> Case Study PDF</button>
+                      <button id="feature5-workspace-download-site-2" class="btn-ghost text-xs"><i data-lucide="globe" class="w-3 h-3"></i> Portfolio .zip</button>
+                    </div>
+                  </div>
+
+                </div><!-- /right column -->
+              </div><!-- /two-column -->
             </section>
 
             <!-- ── REBOUND WORKSPACE (Feature 2 - Post-Interview Autopsy) ── -->
