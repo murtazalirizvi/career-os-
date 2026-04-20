@@ -354,6 +354,12 @@ const nodes = {
   feature5SelectedProjects: document.getElementById("feature5-selected-projects"),
   feature5GithubRepo: document.getElementById("feature5-github-repo"),
   feature5JdText: document.getElementById("feature5-jd-text"),
+  // Workspace-specific inputs (dedicated per-feature pages)
+  feature5WorkspaceGithubUrl: document.getElementById("feature5-workspace-github-url"),
+  feature5WorkspaceTargetRole: document.getElementById("feature5-workspace-target-role"),
+  feature5WorkspaceTone: document.getElementById("feature5-workspace-tone"),
+  feature5WorkspaceJd: document.getElementById("feature5-workspace-jd"),
+  feature5WorkspaceProjects: document.getElementById("feature5-workspace-projects"),
   feature5LoadHistory: document.getElementById("feature5-load-history"),
   feature5Export: document.getElementById("feature5-export"),
   feature5Download: document.getElementById("feature5-download"),
@@ -379,6 +385,27 @@ const nodes = {
   feature5WorkspaceDownload: document.getElementById("feature5-workspace-download"),
   feature5WorkspaceDownloadPdf: document.getElementById("feature5-workspace-download-pdf"),
   feature5WorkspaceDownloadSite: document.getElementById("feature5-workspace-download-site"),
+  // Narrative workspace dedicated inputs
+  feature5WorkspaceGithubUrl: document.getElementById("feature5-workspace-github-url"),
+  feature5WorkspaceTargetRole: document.getElementById("feature5-workspace-target-role"),
+  feature5WorkspaceTone: document.getElementById("feature5-workspace-tone"),
+  feature5WorkspaceJd: document.getElementById("feature5-workspace-jd"),
+  feature5WorkspaceProjects: document.getElementById("feature5-workspace-projects"),
+  // Rebound workspace
+  reboundWorkspaceRun: document.getElementById("rebound-workspace-run"),
+  reboundWorkspaceQuickDebrief: document.getElementById("rebound-workspace-quick-debrief"),
+  reboundWorkspaceLoadTrend: document.getElementById("rebound-workspace-load-trend"),
+  reboundWorkspaceNotes: document.getElementById("rebound-workspace-notes"),
+  reboundWorkspaceTranscript: document.getElementById("rebound-workspace-transcript"),
+  reboundWorkspaceAudioUrl: document.getElementById("rebound-workspace-audio-url"),
+  reboundWorkspaceCompany: document.getElementById("rebound-workspace-company"),
+  reboundWorkspaceRole: document.getElementById("rebound-workspace-role"),
+  reboundWorkspaceRound: document.getElementById("rebound-workspace-round"),
+  reboundWorkspaceVibe: document.getElementById("rebound-workspace-vibe"),
+  reboundWorkspaceUseAssembly: document.getElementById("rebound-workspace-use-assembly"),
+  reboundOutputBoard: document.getElementById("rebound-output-board"),
+  reboundTrendBoard: document.getElementById("rebound-trend-board"),
+  reboundActionsBoard: document.getElementById("rebound-actions-board"),
   feature5AnalysisBoard: document.getElementById("feature5-analysis-board"),
   feature5NarrativeBoard: document.getElementById("feature5-narrative-board"),
   feature5TalkBoard: document.getElementById("feature5-talk-board"),
@@ -869,9 +896,10 @@ function renderDashboard() {
   if (nodes.dashboardFeatureExplainer) {
     const explainer = [
       { view: "lens-engine", name: "Lens", desc: "Fix resume ATS + semantic issues to improve callback odds.", done: hasLens },
-      { view: "persona-play", name: "Rebound + Persona", desc: "Debrief interviews and practice high-pressure answers.", done: hasRebound },
-      { view: "arbitrage", name: "Skill-Arbitrage", desc: "Find market-fit skill gaps and weekly ROI actions.", done: Boolean(AppState.feature3.gap) },
-      { view: "narrative", name: "Narrative Architect", desc: "Turn projects into STAR stories and export assets.", done: hasNarrative },
+      { view: "rebound", name: "Rebound", desc: "Debrief interviews and get recovery actions + trend analysis.", done: hasRebound },
+      { view: "arbitrage", name: "Skill Arbitrage", desc: "Find market-fit skill gaps and weekly ROI actions.", done: Boolean(AppState.feature3.gap) },
+      { view: "narrative", name: "Narrative Architect", desc: "Turn GitHub projects into STAR stories and export assets.", done: hasNarrative },
+      { view: "persona-play", name: "Persona Coach", desc: "Practice high-pressure mock interviews with adversarial AI.", done: Boolean(AppState.feature4.session) },
     ];
 
     nodes.dashboardFeatureExplainer.innerHTML = explainer
@@ -919,14 +947,22 @@ function applyViewState(viewName) {
   const showPersona = viewName === "persona-play";
   const showNarrative = viewName === "narrative";
   const showJobTracker = viewName === "job-tracker";
+  const showRebound = viewName === "rebound";
   nodes.dashboardView.classList.toggle("hidden", !showDashboard);
-  nodes.commandCenterView.classList.toggle("hidden", showDashboard || showLens || showArbitrage || showPersona || showNarrative || showJobTracker);
+  nodes.commandCenterView.classList.toggle("hidden", showDashboard || showLens || showArbitrage || showPersona || showNarrative || showJobTracker || showRebound);
   nodes.lensWorkspace.classList.toggle("hidden", !showLens);
   nodes.feature3Workspace.classList.toggle("hidden", !showArbitrage);
   nodes.feature4Workspace.classList.toggle("hidden", !showPersona);
   nodes.feature5Workspace.classList.toggle("hidden", !showNarrative);
   const jtView = document.getElementById("job-tracker-view");
   if (jtView) jtView.classList.toggle("hidden", !showJobTracker);
+  const reboundView = document.getElementById("rebound-workspace");
+  if (reboundView) reboundView.classList.toggle("hidden", !showRebound);
+
+  // Update active nav button
+  document.querySelectorAll(".nav-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.view === viewName);
+  });
 }
 
 function animateWavePath() {
@@ -1001,14 +1037,16 @@ function renderFeature2Output() {
   const feature2 = AppState.feature2;
   const loading = Boolean(AppState.ui?.feature2Loading);
   if (loading) {
-    nodes.feature2Output.innerHTML = stateStack([
-      "Interview Autopsy autopsy is running...",
-      "Extracting pattern breaks, trend deltas, and forecast trajectory."
-    ], "loading");
+    if (nodes.feature2Output) {
+      nodes.feature2Output.innerHTML = stateStack([
+        "Interview Autopsy autopsy is running...",
+        "Extracting pattern breaks, trend deltas, and forecast trajectory."
+      ], "loading");
+    }
     return;
   }
   if (!feature2.interview && !feature2.quickDebrief && !feature2.trend) {
-    nodes.feature2Output.innerHTML = stateCard("Interview Autopsy API: Awaiting autopsy run.");
+    if (nodes.feature2Output) nodes.feature2Output.innerHTML = stateCard("Interview Autopsy API: Awaiting autopsy run.");
     return;
   }
 
@@ -1034,7 +1072,108 @@ function renderFeature2Output() {
     blocks.push(`<p><span class='text-white/90'>Forecast:</span> ${feature2.forecast.forecast_label} (${feature2.forecast.expected_offer_window_weeks}w)</p>`);
   }
 
-  nodes.feature2Output.innerHTML = blocks.map((b) => `<div class='thin-glass rounded px-2 py-1'>${b}</div>`).join("");
+  const html = blocks.map((b) => `<div class='thin-glass rounded px-2 py-1'>${b}</div>`).join("");
+  if (nodes.feature2Output) nodes.feature2Output.innerHTML = html;
+}
+
+function renderReboundWorkspace() {
+  const f2 = AppState.feature2;
+  const loading = Boolean(AppState.ui?.feature2Loading);
+
+  // Output board
+  if (nodes.reboundOutputBoard) {
+    if (loading) {
+      nodes.reboundOutputBoard.innerHTML = stateStack([
+        "Running interview autopsy...",
+        "Analyzing technical accuracy, behavioral patterns, and recovery signals..."
+      ], "loading");
+    } else if (!f2.interview && !f2.quickDebrief) {
+      nodes.reboundOutputBoard.innerHTML = stateCard("Run Full Autopsy or Quick Debrief to see results here.");
+    } else {
+      const blocks = [];
+      if (f2.interview) {
+        const s = f2.interview.score || {};
+        blocks.push(`<div class="workspace-list-card"><span style="color:rgba(255,255,255,0.9);font-weight:600">Autopsy #${f2.interview.interview_id}</span></div>`);
+        blocks.push(`<div class="workspace-list-card">Overall Score: <strong style="color:#34d399">${s.overall_autopsy_score ?? "n/a"}</strong></div>`);
+        blocks.push(`<div class="workspace-list-card text-xs">Technical Accuracy: ${s.technical_accuracy ?? "n/a"} &nbsp;|&nbsp; Behavioral: ${s.behavioral_quality ?? "n/a"} &nbsp;|&nbsp; Recovery: ${s.strategic_recovery_readiness ?? "n/a"}</div>`);
+        const tech = f2.interview.technical_autopsy || {};
+        if (tech.false_confidence_zones?.length) {
+          blocks.push(`<div class="workspace-list-card text-xs" style="border-color:rgba(248,113,113,0.3)">⚠ False confidence: ${tech.false_confidence_zones.slice(0,2).join(", ")}</div>`);
+        }
+        const behav = f2.interview.behavioral_critique || {};
+        if (behav.filler_word_count) {
+          blocks.push(`<div class="workspace-list-card text-xs">Filler words: ${behav.filler_word_count} &nbsp;|&nbsp; STAR compliance: ${behav.star_compliance_score ?? "n/a"}</div>`);
+        }
+        const resilience = f2.interview.strategic_actions?.resilience_prompt;
+        if (resilience) blocks.push(`<div class="workspace-list-card text-xs" style="color:rgba(165,180,252,0.9)">${resilience}</div>`);
+      }
+      if (f2.quickDebrief) {
+        blocks.push(`<div class="workspace-list-card"><span style="color:rgba(255,255,255,0.9);font-weight:600">Quick Debrief</span></div>`);
+        if (f2.quickDebrief.extracted_hardest_question) {
+          blocks.push(`<div class="workspace-list-card text-xs">Hardest Q: ${f2.quickDebrief.extracted_hardest_question}</div>`);
+        }
+        if (f2.quickDebrief.immediate_action) {
+          blocks.push(`<div class="workspace-list-card text-xs">Action: ${f2.quickDebrief.immediate_action}</div>`);
+        }
+      }
+      nodes.reboundOutputBoard.innerHTML = blocks.join("");
+    }
+  }
+
+  // Trend board
+  if (nodes.reboundTrendBoard) {
+    if (!f2.trend && !f2.forecast) {
+      nodes.reboundTrendBoard.innerHTML = stateCard("Load Trend to see your interview performance over time.");
+    } else {
+      const blocks = [];
+      if (f2.trend) {
+        const ts = f2.trend.trend_summary || {};
+        blocks.push(`<div class="workspace-list-card">Overall delta: <strong style="color:${ts.overall_delta >= 0 ? "#34d399" : "#f87171"}">${ts.overall_delta >= 0 ? "+" : ""}${ts.overall_delta ?? "n/a"}</strong></div>`);
+        blocks.push(`<div class="workspace-list-card text-xs">Interviews tracked: ${f2.trend.interview_count ?? "n/a"}</div>`);
+        const signals = f2.trend.rejection_category_signals || [];
+        if (signals.length) {
+          blocks.push(`<div class="workspace-list-card text-xs">Top rejection signal: ${signals[0].category} (${signals[0].frequency}x)</div>`);
+        }
+      }
+      if (f2.forecast) {
+        blocks.push(`<div class="workspace-list-card">Forecast: <strong style="color:#a5b4fc">${f2.forecast.forecast_label ?? "n/a"}</strong></div>`);
+        if (f2.forecast.expected_offer_window_weeks) {
+          blocks.push(`<div class="workspace-list-card text-xs">Expected offer window: ${f2.forecast.expected_offer_window_weeks} weeks</div>`);
+        }
+        if (f2.forecast.readiness_score) {
+          blocks.push(`<div class="workspace-list-card text-xs">Readiness score: ${f2.forecast.readiness_score}</div>`);
+        }
+      }
+      nodes.reboundTrendBoard.innerHTML = blocks.join("");
+    }
+  }
+
+  // Recovery actions board
+  if (nodes.reboundActionsBoard) {
+    const interview = f2.interview;
+    if (!interview) {
+      nodes.reboundActionsBoard.innerHTML = stateCard("Recovery actions appear after running Full Autopsy.");
+    } else {
+      const actions = interview.strategic_actions || {};
+      const blocks = [];
+      if (actions.clarification_email_draft) {
+        blocks.push(`<div class="workspace-list-card"><span style="color:rgba(255,255,255,0.9);font-weight:600">📧 Clarification Email</span><p class="text-xs mt-1" style="color:rgba(255,255,255,0.6)">${String(actions.clarification_email_draft).slice(0, 200)}...</p></div>`);
+      }
+      if (actions.follow_up_cadence?.length) {
+        blocks.push(`<div class="workspace-list-card text-xs"><span style="color:rgba(255,255,255,0.9)">📅 Follow-up:</span> ${actions.follow_up_cadence[0]}</div>`);
+      }
+      if (actions.negotiation_script) {
+        blocks.push(`<div class="workspace-list-card text-xs"><span style="color:rgba(255,255,255,0.9)">💰 Negotiation:</span> ${String(actions.negotiation_script).slice(0, 150)}...</div>`);
+      }
+      if (actions.code_patch_suggestions?.length) {
+        blocks.push(`<div class="workspace-list-card text-xs"><span style="color:rgba(255,255,255,0.9)">🔧 Code Patch:</span> ${actions.code_patch_suggestions[0]}</div>`);
+      }
+      if (!blocks.length) {
+        blocks.push(stateCard("No recovery actions generated. Try running Full Autopsy with more interview details."));
+      }
+      nodes.reboundActionsBoard.innerHTML = blocks.join("");
+    }
+  }
 }
 
 async function runFeature4PersonaPlay() {
@@ -1480,27 +1619,33 @@ function drawFeature4SignalChart() {
 }
 
 async function runFeature5NarrativeArchitect() {
-  const errs = validateRequiredFields([
-    { id: "candidate-id", label: "Candidate ID" },
-    { id: "feature5-target-role", label: "Target Role" },
-    { id: "feature5-selected-projects", label: "Selected Projects" }
-  ]);
-  if (errs.length) {
-    setStatus(errs[0]);
-    return;
-  }
+  // Read from dedicated workspace inputs first, fall back to command-center inputs
+  const githubUrlEl = nodes.feature5WorkspaceGithubUrl || nodes.feature5GithubRepo;
+  const targetRoleEl = nodes.feature5WorkspaceTargetRole || nodes.feature5TargetRole;
+  const toneEl = nodes.feature5WorkspaceTone || nodes.feature5Tone;
+  const jdEl = nodes.feature5WorkspaceJd || nodes.feature5JdText;
+  const projectsEl = nodes.feature5WorkspaceProjects || nodes.feature5SelectedProjects;
 
-  const candidateId = nodes.candidateId.value.trim() || "candidate-001";
-  const targetRole = nodes.feature5TargetRole.value.trim() || "Software Engineer";
-  const tone = nodes.feature5Tone.value || "deep_tech";
-  const repoSubpath = nodes.feature5RepoSubpath.value.trim() || ".";
-  const selectedProjects = (nodes.feature5SelectedProjects.value || "")
+  const githubRepo = githubUrlEl?.value?.trim() || "";
+  const targetRole = targetRoleEl?.value?.trim() || "Software Engineer";
+  const tone = toneEl?.value || "balanced";
+  const jdText = jdEl?.value?.trim() || "";
+  const selectedProjects = (projectsEl?.value || "Backend, Frontend")
     .split(",")
     .map((x) => x.trim())
     .filter(Boolean)
     .slice(0, 8);
-  const githubRepo = nodes.feature5GithubRepo.value.trim();
-  const jdText = nodes.feature5JdText.value.trim();
+
+  const candidateId = nodes.candidateId.value.trim() || "candidate-001";
+  const repoSubpath = nodes.feature5RepoSubpath?.value?.trim() || ".";
+
+  // Validate GitHub URL if provided
+  if (githubRepo && !githubRepo.startsWith("https://github.com/")) {
+    setStatus("Narrative: Please enter a valid GitHub URL (https://github.com/username/repo).");
+    if (githubUrlEl) githubUrlEl.style.borderColor = "rgba(248,113,113,0.7)";
+    return;
+  }
+  if (githubUrlEl) githubUrlEl.style.borderColor = "";
 
   let loader = null;
   try {
@@ -1530,8 +1675,8 @@ async function runFeature5NarrativeArchitect() {
         target_role: targetRole,
         tone,
         jd_text: jdText,
-        resume_text: nodes.feature2Notes.value.trim(),
-        linkedin_text: nodes.feature2Transcript.value.trim(),
+        resume_text: nodes.feature2Notes?.value?.trim() || "",
+        linkedin_text: nodes.feature2Transcript?.value?.trim() || "",
         github_repo: githubRepo,
         selected_projects: selectedProjects.length ? selectedProjects : ["Backend", "Frontend", "Requirements"]
       })
@@ -2336,24 +2481,37 @@ async function loadVersions() {
 }
 
 function buildFeature2Payload() {
-  const notes = nodes.feature2Notes.value.trim();
-  const transcript = nodes.feature2Transcript.value.trim();
+  // Read from dedicated rebound workspace inputs first, fall back to command-center inputs
+  const notesEl = nodes.reboundWorkspaceNotes || nodes.feature2Notes;
+  const transcriptEl = nodes.reboundWorkspaceTranscript || nodes.feature2Transcript;
+  const audioUrlEl = nodes.reboundWorkspaceAudioUrl || nodes.feature2AudioUrl;
+  const useAssemblyEl = nodes.reboundWorkspaceUseAssembly || nodes.feature2UseAssembly;
+  const companyEl = nodes.reboundWorkspaceCompany || nodes.feature2Company;
+  const roleEl = nodes.reboundWorkspaceRole || nodes.feature2Role;
+  const roundEl = nodes.reboundWorkspaceRound || nodes.feature2Round;
+  const vibeEl = nodes.reboundWorkspaceVibe || nodes.feature2Vibe;
+
+  // Prefer whichever has content
+  const notes = (notesEl?.value?.trim() && notesEl.value.trim()) ||
+                (nodes.feature2Notes?.value?.trim()) || "";
+  const transcript = (transcriptEl?.value?.trim() && transcriptEl.value.trim()) ||
+                     (nodes.feature2Transcript?.value?.trim()) || "";
   const isVtt = transcript.includes("WEBVTT") || transcript.includes("-->");
 
   return {
     candidate_id: nodes.candidateId.value.trim() || "candidate-001",
-    interview_round: nodes.feature2Round.value,
-    company_name: nodes.feature2Company.value.trim() || "Unknown",
-    role_name: nodes.feature2Role.value.trim() || "Software Engineer",
+    interview_round: roundEl?.value || "tech",
+    company_name: companyEl?.value?.trim() || "Unknown",
+    role_name: roleEl?.value?.trim() || "Software Engineer",
     interview_notes: notes,
     transcript_text: isVtt ? "" : transcript,
     transcript_vtt: isVtt ? transcript : "",
-    assembly_audio_url: nodes.feature2AudioUrl.value.trim(),
-    use_assemblyai: Boolean(nodes.feature2UseAssembly.checked),
-    culture_vibe: nodes.feature2Vibe.value,
+    assembly_audio_url: audioUrlEl?.value?.trim() || "",
+    use_assemblyai: Boolean(useAssemblyEl?.checked),
+    culture_vibe: vibeEl?.value || "neutral",
     interviewer_friendliness: 6,
     hardest_question_hint: "",
-    lifecycle_stage: nodes.feature2Round.value,
+    lifecycle_stage: roundEl?.value || "tech",
     technical_expectations: ["api", "sql", "testing"],
     interview_outcome: "rejected",
     rejection_reason_hint: "",
@@ -2432,7 +2590,11 @@ async function runFeature2Autopsy() {
 }
 
 async function runQuickDebrief() {
-  const debriefText = nodes.feature2Notes.value.trim() || nodes.feature2Transcript.value.trim();
+  const debriefText =
+    nodes.reboundWorkspaceNotes?.value?.trim() ||
+    nodes.reboundWorkspaceTranscript?.value?.trim() ||
+    nodes.feature2Notes?.value?.trim() ||
+    nodes.feature2Transcript?.value?.trim() || "";
   if (!debriefText) {
     setStatus("Add notes/transcript before quick debrief.");
     return;
@@ -2694,6 +2856,13 @@ function setupNavigation() {
     await Promise.all([loadFeature2Trend(), loadFeature2Forecast()]);
     setStatus("Interview Autopsy trend/forecast loaded.");
   });
+  // Rebound workspace buttons
+  nodes.reboundWorkspaceRun?.addEventListener("click", runFeature2Autopsy);
+  nodes.reboundWorkspaceQuickDebrief?.addEventListener("click", runQuickDebrief);
+  nodes.reboundWorkspaceLoadTrend?.addEventListener("click", async () => {
+    await Promise.all([loadFeature2Trend(), loadFeature2Forecast()]);
+    setStatus("Interview Autopsy trend/forecast loaded.");
+  });
   nodes.feature3LoadHistory.addEventListener("click", loadFeature3History);
   nodes.feature3RunQuiz.addEventListener("click", runFeature3SprintQuiz);
   nodes.feature3ResumeInject.addEventListener("click", runFeature3ResumeInjector);
@@ -2751,6 +2920,7 @@ AppState.subscribe((state) => {
   renderLensWorkspace();
   renderVersions();
   renderFeature2Output();
+  renderReboundWorkspace();
   renderFeature4Output();
   renderFeature4Workspace();
   renderFeature5Output();
