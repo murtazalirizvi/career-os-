@@ -993,6 +993,9 @@ function applyViewState(viewName) {
   nodes.feature3Workspace.classList.toggle("hidden", !showArbitrage);
   nodes.feature4Workspace.classList.toggle("hidden", !showPersona);
   nodes.feature5Workspace.classList.toggle("hidden", !showNarrative);
+  if (nodes.feature5Workspace) {
+    nodes.feature5Workspace.style.display = showNarrative ? "flex" : "none";
+  }
   const jtView = document.getElementById("job-tracker-view");
   if (jtView) jtView.classList.toggle("hidden", !showJobTracker);
   const reboundView = document.getElementById("rebound-workspace");
@@ -1962,21 +1965,26 @@ function renderFeature5Workspace() {
   const session = f5.session;
   const loading = Boolean(AppState.ui?.feature5Loading);
 
+  const loadingCard = (msg) => `<div class="state-card state-loading" style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#818cf8;animation:pulse 1s ease-in-out infinite;flex-shrink:0"></div>${msg}</div>`;
+  const emptyCard = (msg) => `<div class="state-card" style="text-align:center;padding:24px 16px;color:rgba(255,255,255,0.4)">${msg}</div>`;
+  const pill = (label, value, color) => `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 12px;font-size:13px"><span style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:0.05em">${label}</span><span style="color:${color || "#818cf8"};font-weight:600">${value}</span></div>`;
+  const row = (icon, text, sub) => `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;margin-bottom:6px"><span style="font-size:16px;flex-shrink:0;margin-top:1px">${icon}</span><div><div style="font-size:13px;color:rgba(255,255,255,0.9);line-height:1.5">${text}</div>${sub ? `<div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px">${sub}</div>` : ""}</div></div>`;
+
   if (loading) {
-    if (nodes.feature5AnalysisBoard) nodes.feature5AnalysisBoard.innerHTML = stateCard("Analyzing architecture and code sophistication...", "loading");
-    if (nodes.feature5NarrativeBoard) nodes.feature5NarrativeBoard.innerHTML = stateCard("Drafting problem-solution narrative and STAR bullets...", "loading");
-    if (nodes.feature5TalkBoard) nodes.feature5TalkBoard.innerHTML = stateCard("Building confident talk-track script...", "loading");
-    if (nodes.feature5GapBoard) nodes.feature5GapBoard.innerHTML = stateCard("Computing portfolio and documentation gaps...", "loading");
-    if (nodes.feature5ExportBoard) nodes.feature5ExportBoard.innerHTML = stateCard("Preparing export and consistency bundles...", "loading");
+    if (nodes.feature5AnalysisBoard) nodes.feature5AnalysisBoard.innerHTML = loadingCard("Analyzing architecture and code sophistication...");
+    if (nodes.feature5NarrativeBoard) nodes.feature5NarrativeBoard.innerHTML = loadingCard("Drafting STAR narratives from implementation evidence...");
+    if (nodes.feature5TalkBoard) nodes.feature5TalkBoard.innerHTML = loadingCard("Building confident talk-track script...");
+    if (nodes.feature5GapBoard) nodes.feature5GapBoard.innerHTML = loadingCard("Computing portfolio and documentation gaps...");
+    if (nodes.feature5ExportBoard) nodes.feature5ExportBoard.innerHTML = loadingCard("Preparing export and consistency bundles...");
     return;
   }
 
   if (!session) {
-    if (nodes.feature5AnalysisBoard) nodes.feature5AnalysisBoard.innerHTML = stateCard("Run Portfolio Narrator to generate architecture and sophistication insights.");
-    if (nodes.feature5NarrativeBoard) nodes.feature5NarrativeBoard.innerHTML = stateCard("Problem-solution narrative and STAR bullets appear after run.");
-    if (nodes.feature5TalkBoard) nodes.feature5TalkBoard.innerHTML = stateCard("Talk-track script appears after run.");
-    if (nodes.feature5GapBoard) nodes.feature5GapBoard.innerHTML = stateCard("Portfolio gap analysis appears after run.");
-    if (nodes.feature5ExportBoard) nodes.feature5ExportBoard.innerHTML = stateCard("Export sync bundle appears after run/export.");
+    if (nodes.feature5AnalysisBoard) nodes.feature5AnalysisBoard.innerHTML = emptyCard("Enter a GitHub URL and click Run to analyze your codebase.");
+    if (nodes.feature5NarrativeBoard) nodes.feature5NarrativeBoard.innerHTML = emptyCard("STAR narratives will appear here after analysis.");
+    if (nodes.feature5TalkBoard) nodes.feature5TalkBoard.innerHTML = emptyCard("Interview talk-track scripts will appear here.");
+    if (nodes.feature5GapBoard) nodes.feature5GapBoard.innerHTML = emptyCard("Skill gaps and documentation issues will appear here.");
+    if (nodes.feature5ExportBoard) nodes.feature5ExportBoard.innerHTML = emptyCard("Export options and session history will appear here.");
     return;
   }
 
@@ -1987,69 +1995,73 @@ function renderFeature5Workspace() {
   const exp = session.export_sync?.epic_5_5 || {};
 
   if (nodes.feature5AnalysisBoard) {
-    const missingReadme = (deep.readme_polisher?.missing_sections || []).join(", ") || "none";
-    const cloneRisk = deep.tutorial_detector?.clone_risk_score;
-    nodes.feature5AnalysisBoard.innerHTML = `
-      <div class="workspace-list-card">Architecture: ${deep.architecture_mapping?.identified_style || "unknown"}</div>
-      <div class="workspace-list-card">Sophistication: ${deep.sophistication_scoring?.score || "n/a"} (${deep.sophistication_scoring?.tier || "n/a"})</div>
-      <div class="workspace-list-card text-xs">Custom logic ratio: ${deep.logic_identification?.custom_logic_ratio || "n/a"}%</div>
-      <div class="workspace-list-card text-xs">README missing: ${missingReadme}</div>
-      <div class="workspace-list-card text-xs">Tutorial clone risk: ${cloneRisk ?? "n/a"}</div>
-    `;
+    const arch = deep.architecture_mapping?.identified_style || "unknown";
+    const score = deep.sophistication_scoring?.score;
+    const tier = deep.sophistication_scoring?.tier || "";
+    const clr = score >= 80 ? "#34d399" : score >= 60 ? "#fbbf24" : "#f87171";
+    const cloneRisk = deep.tutorial_detector?.clone_risk_score ?? 0;
+    const missingReadme = deep.readme_polisher?.missing_sections || [];
+    const customLogic = deep.logic_identification?.custom_logic_ratio;
+    nodes.feature5AnalysisBoard.innerHTML =
+      `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">` +
+      pill("Architecture", arch, "#a5b4fc") +
+      (score != null ? pill("Sophistication", score + " " + tier, clr) : "") +
+      (customLogic != null ? pill("Custom Logic", customLogic + "%", "#34d399") : "") +
+      pill("Clone Risk", cloneRisk === 0 ? "None" : cloneRisk, cloneRisk === 0 ? "#34d399" : "#f87171") +
+      `</div>` +
+      (missingReadme.length ? row("📄", "README missing sections", missingReadme.join(", ")) : row("✅", "README is complete", "")) +
+      (deep.ownership_signals?.key_contributors || []).slice(0, 2).map((c) => row("👤", c.name || c, "Key contributor")).join("");
   }
 
   if (nodes.feature5NarrativeBoard) {
-    const star = (nar.star_summaries || []).slice(0, 2)
-      .map((s) => `<div class="workspace-list-card text-xs">${s.project}: ${s.action}</div>`)
-      .join("");
-    const metrics = (nar.impact_metrics || []).slice(0, 3)
-      .map((m) => `<div class="workspace-list-card text-xs">${m}</div>`)
-      .join("");
-    nodes.feature5NarrativeBoard.innerHTML = `
-      ${(nar.problem_solution_narrative || []).map((line) => `<div class="workspace-list-card">${line}</div>`).join("")}
-      <div class="workspace-list-card text-xs">Tone: ${nar.narrative_personalization?.selected_tone || "n/a"}</div>
-      ${star}
-      ${metrics}
-    `;
+    const lines = nar.problem_solution_narrative || [];
+    const stars = nar.star_summaries || [];
+    const metrics = nar.impact_metrics || [];
+    const tone = nar.narrative_personalization?.selected_tone || "balanced";
+    nodes.feature5NarrativeBoard.innerHTML =
+      `<div style="margin-bottom:10px"><span style="font-size:11px;background:rgba(99,102,241,0.2);color:#a5b4fc;padding:3px 10px;border-radius:999px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Tone: ${tone}</span></div>` +
+      lines.map((l) => row("💡", l, "")).join("") +
+      stars.slice(0, 3).map((s) => row("⭐", "<strong>" + s.project + "</strong>: " + s.action, s.result || "")).join("") +
+      metrics.slice(0, 3).map((m) => row("📈", m, "")).join("");
   }
 
   if (nodes.feature5TalkBoard) {
-    const walkthrough = (talk.code_walkthrough_script || []).slice(0, 5)
-      .map((x, i) => `<div class="workspace-list-card text-xs">${i + 1}. ${x}</div>`)
-      .join("");
-    const gotchas = (talk.edge_case_anticipator || []).slice(0, 3)
-      .map((x) => `<div class="workspace-list-card text-xs">Q: ${x}</div>`)
-      .join("");
-    nodes.feature5TalkBoard.innerHTML = `${walkthrough}${gotchas}`;
+    const steps = talk.code_walkthrough_script || [];
+    const qs = talk.edge_case_anticipator || [];
+    nodes.feature5TalkBoard.innerHTML =
+      (steps.length ? `<p style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Walkthrough Script</p>` : "") +
+      steps.slice(0, 5).map((s, i) => row((i + 1) + ".", s, "")).join("") +
+      (qs.length ? `<p style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin:12px 0 8px">Likely Interview Questions</p>` : "") +
+      qs.slice(0, 4).map((q) => row("❓", q, "")).join("");
   }
 
   if (nodes.feature5GapBoard) {
-    const missing = (gap.coverage_report?.missing_coverage || []).slice(0, 4)
-      .map((x) => `<div class="workspace-list-card text-xs">Missing: ${x}</div>`)
-      .join("");
-    nodes.feature5GapBoard.innerHTML = `
-      <div class="workspace-list-card">Documentation score: ${gap.documentation_score?.score || "n/a"}</div>
-      <div class="workspace-list-card text-xs">Stale risk: ${gap.stale_date_alert?.stale_risk || "n/a"}</div>
-      <div class="workspace-list-card text-xs">Senior add-on: ${gap.feature_suggestion?.title || "n/a"}</div>
-      ${missing}
-    `;
+    const docScore = gap.documentation_score?.score;
+    const staleRisk = gap.stale_date_alert?.stale_risk || "n/a";
+    const seniorAddOn = gap.feature_suggestion?.title;
+    const missing = gap.coverage_report?.missing_coverage || [];
+    const docClr = docScore >= 80 ? "#34d399" : docScore >= 60 ? "#fbbf24" : "#f87171";
+    nodes.feature5GapBoard.innerHTML =
+      `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">` +
+      (docScore != null ? pill("Doc Score", docScore.toFixed(1), docClr) : "") +
+      pill("Stale Risk", staleRisk, staleRisk === "low" ? "#34d399" : "#f87171") +
+      `</div>` +
+      (seniorAddOn ? row("🚀", "Senior add-on: " + seniorAddOn, gap.feature_suggestion?.description || "") : "") +
+      missing.slice(0, 4).map((m) => row("⚠️", "Missing: " + m, "")).join("") +
+      (!missing.length && !seniorAddOn ? row("✅", "No critical gaps found", "") : "");
   }
 
   if (nodes.feature5ExportBoard) {
     const top3 = exp.resume_optimizer?.top_3_projects || [];
     const warnings = exp.consistency_check?.claim_evidence_soft_warnings || [];
-    const historyRows = (f5.history || []).slice(0, 3)
-      .map((h) => `<div class="workspace-list-card text-xs">#${h.session_id} � ${h.architecture_style} � score ${Math.round(h.sophistication_score || 0)}</div>`)
-      .join("");
-    const exportRows = top3
-      .map((p) => `<div class="workspace-list-card text-xs">Top project: ${p.project} (${p.jd_relevance_score})</div>`)
-      .join("");
-    const warningRows = warnings
-      .slice(0, 2)
-      .map((w) => `<div class="workspace-list-card text-xs">Warning: ${w.warning}</div>`)
-      .join("");
-    const bundleState = f5.exportBundle ? `<div class="workspace-list-card text-xs">Bundle ready: ${f5.exportBundle.exported_sections.join(", ")}</div>` : "";
-    nodes.feature5ExportBoard.innerHTML = `${exportRows}${warningRows}${bundleState}${historyRows}`;
+    const history = (f5.history || []).slice(0, 3);
+    const bundleReady = Boolean(f5.exportBundle);
+    nodes.feature5ExportBoard.innerHTML =
+      (bundleReady ? row("✅", "Export bundle ready", (f5.exportBundle.exported_sections || []).join(", ")) : "") +
+      top3.map((p) => row("🏆", "Top project: " + p.project, "JD relevance: " + p.jd_relevance_score)).join("") +
+      warnings.slice(0, 2).map((w) => row("⚠️", w.warning || w, "Consistency warning")).join("") +
+      (history.length ? `<p style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin:12px 0 8px">Past Sessions</p>` : "") +
+      history.map((h) => row("🕐", "Session #" + h.session_id + " · " + (h.architecture_style || "unknown"), "Sophistication: " + Math.round(h.sophistication_score || 0))).join("");
   }
 }
 
@@ -2952,6 +2964,12 @@ function setupNavigation() {
   nodes.feature5WorkspaceDownload?.addEventListener("click", downloadFeature5Bundle);
   nodes.feature5WorkspaceDownloadPdf?.addEventListener("click", downloadFeature5CaseStudyPdf);
   nodes.feature5WorkspaceDownloadSite?.addEventListener("click", downloadFeature5PortfolioSite);
+  // Duplicate buttons inside the results panel
+  document.getElementById("feature5-workspace-run-2")?.addEventListener("click", runFeature5NarrativeArchitect);
+  document.getElementById("feature5-workspace-export-2")?.addEventListener("click", exportFeature5Bundle);
+  document.getElementById("feature5-workspace-download-2")?.addEventListener("click", downloadFeature5Bundle);
+  document.getElementById("feature5-workspace-download-pdf-2")?.addEventListener("click", downloadFeature5CaseStudyPdf);
+  document.getElementById("feature5-workspace-download-site-2")?.addEventListener("click", downloadFeature5PortfolioSite);
   nodes.feature3WorkspaceRun?.addEventListener("click", runFeature3Arbitrage);
   nodes.feature3WorkspaceHistory?.addEventListener("click", loadFeature3History);
   nodes.feature3WorkspaceExport?.addEventListener("click", exportFeature3Snapshot);
