@@ -1,4 +1,29 @@
-const API_BASE = window.__CAREER_OS_API__ ?? "http://127.0.0.1:8000";
+// Auto-detect API base: if running on GitHub Pages, show a clear message
+// If running locally, connect to local backend
+const _isGitHubPages = window.location.hostname.includes("github.io");
+const API_BASE = window.__CAREER_OS_API__ ?? (_isGitHubPages ? null : "http://127.0.0.1:8000");
+
+// If on GitHub Pages, patch submitAuth to show a helpful message
+if (_isGitHubPages) {
+  window.addEventListener("DOMContentLoaded", () => {
+    const banner = document.createElement("div");
+    banner.style.cssText = [
+      "position:fixed;top:0;left:0;right:0;z-index:9999",
+      "background:rgba(15,15,25,0.97);color:#fff;text-align:center",
+      "font-family:'Plus Jakarta Sans',sans-serif;font-size:14px",
+      "padding:12px 20px;border-bottom:1px solid rgba(99,102,241,0.5)"
+    ].join(";");
+    banner.innerHTML = `
+      🌐 <strong>GitHub Pages Preview</strong> — UI only. 
+      For full features run locally: 
+      <code style="background:rgba(99,102,241,0.3);padding:2px 8px;border-radius:4px">
+        cd Backend &amp;&amp; python -m uvicorn app.main:app --reload --port 8000
+      </code>
+      then open <a href="http://localhost:5500" style="color:#a5b4fc">http://localhost:5500</a>
+    `;
+    document.body.prepend(banner);
+  });
+}
 
 const AppState = {
   view: "dashboard",
@@ -112,8 +137,16 @@ async function submitAuth() {
   const fullName = document.getElementById("auth-fullname").value.trim();
   const errEl = document.getElementById("auth-error");
   errEl.style.display = "none";
+
   if (!email || !password) {
     errEl.textContent = "Email and password are required.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  // GitHub Pages — no backend available, allow skip
+  if (!API_BASE) {
+    errEl.textContent = "No backend available on GitHub Pages. Use 'Continue without account' or run locally at http://localhost:5500.";
     errEl.style.display = "block";
     return;
   }
