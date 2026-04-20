@@ -1,25 +1,32 @@
 const API_BASE = window.__CAREER_OS_API__ ?? "http://127.0.0.1:8000";
 
-// Show a banner if the backend is not reachable (GitHub Pages demo mode)
+// Show a banner only when backend is genuinely unreachable (network error)
 window.addEventListener("DOMContentLoaded", () => {
-  fetch(`${API_BASE}/api/auth/me`, { method: "GET" }).catch(() => {
-    const banner = document.createElement("div");
-    banner.id = "backend-banner";
-    banner.style.cssText = `
-      position:fixed;bottom:0;left:0;right:0;z-index:9999;
-      background:rgba(99,102,241,0.95);color:#fff;
-      font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;
-      padding:10px 20px;display:flex;align-items:center;justify-content:space-between;
-      backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,0.2);
-    `;
-    banner.innerHTML = `
-      <span>⚡ <strong>Demo Mode</strong> — Backend not running. 
-      To enable all features: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">cd Backend && python -m uvicorn app.main:app --reload --port 8000</code></span>
-      <button onclick="document.getElementById('backend-banner').remove()" 
-        style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:4px 12px;border-radius:6px;cursor:pointer;font-family:inherit">✕</button>
-    `;
-    document.body.appendChild(banner);
-  });
+  fetch(`${API_BASE}/health`, { method: "GET" })
+    .then(res => {
+      if (!res.ok) throw new Error("not ok");
+      // Backend is up — no banner
+    })
+    .catch(() => {
+      // Only show banner if not already dismissed this session
+      if (sessionStorage.getItem("banner_dismissed")) return;
+      const banner = document.createElement("div");
+      banner.id = "backend-banner";
+      banner.style.cssText = [
+        "position:fixed;bottom:0;left:0;right:0;z-index:9999",
+        "background:rgba(99,102,241,0.95);color:#fff",
+        "font-family:'Plus Jakarta Sans',sans-serif;font-size:13px",
+        "padding:10px 20px;display:flex;align-items:center;justify-content:space-between",
+        "backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,0.2)"
+      ].join(";");
+      banner.innerHTML = `
+        <span>⚡ <strong>Demo Mode</strong> — Backend not running locally.
+        Start it with: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;font-size:12px">cd Backend &amp;&amp; python -m uvicorn app.main:app --reload --port 8000</code></span>
+        <button onclick="sessionStorage.setItem('banner_dismissed','1');this.closest('#backend-banner').remove()"
+          style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:4px 12px;border-radius:6px;cursor:pointer;font-family:inherit;margin-left:16px;flex-shrink:0">✕ Dismiss</button>
+      `;
+      document.body.appendChild(banner);
+    });
 });
 
 const AppState = {

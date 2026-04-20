@@ -56,7 +56,8 @@ _raw = os.getenv(
     "http://localhost:3000,http://127.0.0.1:3000,"
     "http://localhost:8080,http://127.0.0.1:8080,"
     "http://localhost:8000,http://127.0.0.1:8000,"
-    "http://localhost:5502,http://127.0.0.1:5502"
+    "http://localhost:5502,http://127.0.0.1:5502,"
+    "https://murtazalirizvi.github.io"
 )
 ALLOWED_ORIGINS = [o.strip() for o in _raw.split(",") if o.strip()]
 allow_credentials = "*" not in ALLOWED_ORIGINS
@@ -107,7 +108,7 @@ async def add_security_and_request_id(request: Request, call_next):
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data:; "
-        "connect-src 'self' http://localhost:8000 http://127.0.0.1:8000;"
+        "connect-src 'self' http://localhost:8000 http://127.0.0.1:8000 http://localhost:5500 http://127.0.0.1:5500 https://murtazalirizvi.github.io;"
     )
     return response
 
