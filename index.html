@@ -125,6 +125,10 @@
                 <span class="icon-wrap"><i data-lucide="scan-search" class="w-4 h-4"></i></span>
                 <span class="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Lens</span>
               </button>
+              <button class="nav-btn" data-view="rebound">
+                <span class="icon-wrap"><i data-lucide="mic" class="w-4 h-4"></i></span>
+                <span class="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Rebound</span>
+              </button>
               <button class="nav-btn" data-view="persona-play">
                 <span class="icon-wrap"><i data-lucide="audio-lines" class="w-4 h-4"></i></span>
                 <span class="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 spring-gentle">Persona</span>
@@ -586,22 +590,165 @@
               </header>
               <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
                 <section class="reactive-card card-live col-span-12 lg:col-span-5 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Input Configuration</h2><span class="text-xs" style="color:var(--text-muted)">Required fields</span></div>
+                  <div class="h-[calc(100%-24px)] overflow-y-auto custom-scroll space-y-3">
+                    <div>
+                      <label class="jt-label" for="feature5-workspace-github-url">GitHub Repository URL *</label>
+                      <input id="feature5-workspace-github-url" type="url" class="jt-input" placeholder="https://github.com/username/repository" />
+                      <p class="text-xs mt-1" style="color:var(--text-muted)">Enter the full GitHub repository URL to analyze</p>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature5-workspace-target-role">Target Role</label>
+                      <input id="feature5-workspace-target-role" type="text" class="jt-input" placeholder="e.g., Senior Backend Engineer" />
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature5-workspace-tone">Narrative Tone</label>
+                      <select id="feature5-workspace-tone" class="jt-input">
+                        <option value="technical">Technical</option>
+                        <option value="balanced" selected>Balanced</option>
+                        <option value="business">Business-Focused</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature5-workspace-jd">Job Description (Optional)</label>
+                      <textarea id="feature5-workspace-jd" class="jt-input jt-textarea" placeholder="Paste target job description to tailor narratives..."></textarea>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature5-workspace-projects">Selected Projects (comma-separated)</label>
+                      <input id="feature5-workspace-projects" type="text" class="jt-input" placeholder="Backend, Frontend, API" value="Backend, Frontend" />
+                    </div>
+                  </div>
+                </section>
+                <section class="reactive-card card-live col-span-12 lg:col-span-7 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
                   <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Deep Analysis</h2><span class="text-xs" style="color:var(--text-muted)">Epic 5.1</span></div>
                   <div id="feature5-analysis-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
                 </section>
+                <section class="reactive-card card-live col-span-12 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Generated Narratives</h2><span class="text-xs" style="color:var(--text-muted)">STAR stories & talk tracks</span></div>
+                  <div class="h-[calc(100%-24px)] grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto custom-scroll">
+                    <div class="space-y-2">
+                      <h3 class="text-sm font-semibold" style="color:rgba(255,255,255,0.85)">Narrative Constructor</h3>
+                      <div id="feature5-narrative-board" class="text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
+                    </div>
+                    <div class="space-y-2">
+                      <h3 class="text-sm font-semibold" style="color:rgba(255,255,255,0.85)">Talk Track Assistant</h3>
+                      <div id="feature5-talk-board" class="text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
+                    </div>
+                    <div class="space-y-2">
+                      <h3 class="text-sm font-semibold" style="color:rgba(255,255,255,0.85)">Skill Gaps Identified</h3>
+                      <div id="feature5-gap-board" class="text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
+                    </div>
+                    <div class="space-y-2">
+                      <h3 class="text-sm font-semibold" style="color:rgba(255,255,255,0.85)">Export Options</h3>
+                      <div id="feature5-export-board" class="text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </section>
+
+            <!-- ── REBOUND WORKSPACE (Feature 2 - Post-Interview Autopsy) ── -->
+            <section id="rebound-workspace" class="h-full hidden workspace-shell">
+              <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
+                <div>
+                  <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">The Rebound</h1>
+                  <p class="text-sm mt-1" style="color:var(--text-dim)">Post-interview autopsy — technical accuracy, behavioral critique, and strategic recovery actions.</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button id="rebound-workspace-run" class="btn-primary">Run Full Autopsy</button>
+                  <button id="rebound-workspace-quick-debrief" class="btn-ghost">Quick Debrief</button>
+                  <button id="rebound-workspace-load-trend" class="btn-ghost">Load Trend</button>
+                </div>
+              </header>
+              <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
+
+                <!-- Input Panel -->
+                <section class="reactive-card card-live col-span-12 lg:col-span-5 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                  <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Interview Details</h2>
+                    <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
+                  </div>
+                  <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <label class="jt-label" for="rebound-workspace-company">Company *</label>
+                        <input id="rebound-workspace-company" type="text" class="jt-input" placeholder="e.g. Google" value="Acme" />
+                      </div>
+                      <div>
+                        <label class="jt-label" for="rebound-workspace-role">Role *</label>
+                        <input id="rebound-workspace-role" type="text" class="jt-input" placeholder="e.g. Backend Engineer" value="Frontend Engineer" />
+                      </div>
+                      <div>
+                        <label class="jt-label" for="rebound-workspace-round">Interview Round</label>
+                        <select id="rebound-workspace-round" class="jt-input">
+                          <option value="screening">Screening</option>
+                          <option value="tech" selected>Technical</option>
+                          <option value="hr">HR</option>
+                          <option value="manager">Manager</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="rebound-workspace-vibe">Interviewer Vibe</label>
+                        <select id="rebound-workspace-vibe" class="jt-input">
+                          <option value="friendly">Friendly</option>
+                          <option value="neutral" selected>Neutral</option>
+                          <option value="cold">Cold</option>
+                          <option value="hostile">Hostile</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="rebound-workspace-notes">Voice Notes / Debrief</label>
+                      <textarea id="rebound-workspace-notes" class="jt-input jt-textarea" placeholder="Write your post-interview thoughts, what went well, what didn't..."></textarea>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="rebound-workspace-transcript">Transcript / VTT</label>
+                      <textarea id="rebound-workspace-transcript" class="jt-input" style="min-height:80px" placeholder="Paste interview transcript or VTT file content..."></textarea>
+                    </div>
+                    <div>
+                      <label class="jt-label" for="rebound-workspace-audio-url">Audio URL (Optional)</label>
+                      <input id="rebound-workspace-audio-url" type="url" class="jt-input" placeholder="https://... public audio URL" />
+                    </div>
+                    <label class="flex items-center gap-2 text-xs cursor-pointer" style="color:rgba(255,255,255,0.6)">
+                      <input id="rebound-workspace-use-assembly" type="checkbox" class="accent-indigo-400" />
+                      Use AssemblyAI for transcription
+                    </label>
+                  </div>
+                </section>
+
+                <!-- Autopsy Output -->
                 <section class="reactive-card card-live col-span-12 lg:col-span-7 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Narrative Constructor</h2><span class="text-xs" style="color:var(--text-muted)">Epic 5.2</span></div>
-                  <div id="feature5-narrative-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
+                  <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Autopsy Results</h2>
+                    <span class="text-xs" style="color:var(--text-muted)">Technical + Behavioral</span>
+                  </div>
+                  <div id="rebound-output-board" class="h-[calc(100%-28px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)">
+                    <div class="state-card">Run Full Autopsy to see technical accuracy, behavioral critique, and recovery actions.</div>
+                  </div>
                 </section>
+
+                <!-- Trend & Forecast -->
                 <section class="reactive-card card-live col-span-12 md:col-span-6 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Talk Track Assistant</h2><span class="text-xs" style="color:var(--text-muted)">Epic 5.3</span></div>
-                  <div id="feature5-talk-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
+                  <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Growth Trend</h2>
+                    <span class="text-xs" style="color:var(--text-muted)">Across interviews</span>
+                  </div>
+                  <div id="rebound-trend-board" class="h-[calc(100%-28px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)">
+                    <div class="state-card">Load Trend to see your interview performance over time.</div>
+                  </div>
                 </section>
+
+                <!-- Recovery Actions -->
                 <section class="reactive-card card-live col-span-12 md:col-span-6 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Gap + Export Sync</h2><span class="text-xs" style="color:var(--text-muted)">Epic 5.4 / 5.5</span></div>
-                  <div id="feature5-gap-board" class="h-[48%] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                  <div id="feature5-export-board" class="h-[48%] overflow-y-auto custom-scroll text-sm space-y-2 mt-2" style="color:rgba(255,255,255,0.75)"></div>
+                  <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Recovery Actions</h2>
+                    <span class="text-xs" style="color:var(--text-muted)">Emails, scripts, patches</span>
+                  </div>
+                  <div id="rebound-actions-board" class="h-[calc(100%-28px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)">
+                    <div class="state-card">Recovery actions (clarification email, follow-up cadence, negotiation scripts) appear after autopsy.</div>
+                  </div>
                 </section>
+
               </div>
             </section>
 
@@ -672,6 +819,7 @@
     <button onclick="navigateTo('dashboard')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="layout-dashboard" style="width:18px;height:18px"></i>Home</button>
     <button onclick="navigateTo('job-tracker')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="kanban" style="width:18px;height:18px"></i>Jobs</button>
     <button onclick="navigateTo('lens-engine')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="scan-search" style="width:18px;height:18px"></i>Lens</button>
+    <button onclick="navigateTo('rebound')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="mic" style="width:18px;height:18px"></i>Rebound</button>
     <button onclick="navigateTo('persona-play')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="audio-lines" style="width:18px;height:18px"></i>Coach</button>
     <button onclick="navigateTo('narrative')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="book-open-text" style="width:18px;height:18px"></i>Portfo</button>
   </div>
