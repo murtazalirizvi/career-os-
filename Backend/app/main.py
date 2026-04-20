@@ -51,21 +51,16 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 _raw = os.getenv(
     "ALLOWED_ORIGINS",
-    "http://localhost:5500,http://127.0.0.1:5500,"
-    "http://localhost:5173,http://127.0.0.1:5173,"
-    "http://localhost:3000,http://127.0.0.1:3000,"
-    "http://localhost:8080,http://127.0.0.1:8080,"
-    "http://localhost:8000,http://127.0.0.1:8000,"
-    "http://localhost:5502,http://127.0.0.1:5502,"
-    "https://murtazalirizvi.github.io"
+    "*"
 )
 ALLOWED_ORIGINS = [o.strip() for o in _raw.split(",") if o.strip()]
+# When using wildcard, credentials must be False
 allow_credentials = "*" not in ALLOWED_ORIGINS
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=allow_credentials,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
