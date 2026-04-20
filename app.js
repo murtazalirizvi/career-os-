@@ -1,47 +1,5 @@
 const API_BASE = window.__CAREER_OS_API__ ?? "http://127.0.0.1:8000";
 
-// Only show demo banner if backend is genuinely unreachable after page load
-function checkBackendAndShowBanner() {
-  // Don't show if already dismissed this session
-  if (sessionStorage.getItem("banner_dismissed")) return;
-
-  fetch(`${API_BASE}/health`, { method: "GET", cache: "no-store" })
-    .then(res => {
-      if (res.ok) {
-        // Backend is up — remove banner if it somehow got added
-        const b = document.getElementById("backend-banner");
-        if (b) b.remove();
-      } else {
-        showDemoBanner();
-      }
-    })
-    .catch(() => showDemoBanner());
-}
-
-function showDemoBanner() {
-  if (document.getElementById("backend-banner")) return; // already shown
-  if (sessionStorage.getItem("banner_dismissed")) return;
-  const banner = document.createElement("div");
-  banner.id = "backend-banner";
-  banner.style.cssText = [
-    "position:fixed;bottom:0;left:0;right:0;z-index:9999",
-    "background:rgba(99,102,241,0.95);color:#fff",
-    "font-family:'Plus Jakarta Sans',sans-serif;font-size:13px",
-    "padding:10px 20px;display:flex;align-items:center;justify-content:space-between",
-    "backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,0.2)"
-  ].join(";");
-  banner.innerHTML = `
-    <span>⚡ <strong>Demo Mode</strong> — Backend not running locally.
-    Start it: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;font-size:12px">cd Backend &amp;&amp; python -m uvicorn app.main:app --reload --port 8000</code></span>
-    <button onclick="sessionStorage.setItem('banner_dismissed','1');this.closest('#backend-banner').remove()"
-      style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:4px 12px;border-radius:6px;cursor:pointer;font-family:inherit;margin-left:16px;flex-shrink:0">✕ Dismiss</button>
-  `;
-  document.body.appendChild(banner);
-}
-
-// Run check after page fully loads (not just DOM ready)
-window.addEventListener("load", () => setTimeout(checkBackendAndShowBanner, 1500));
-
 const AppState = {
   view: "dashboard",
   analyticsSessionId: `web-${Date.now()}`,
