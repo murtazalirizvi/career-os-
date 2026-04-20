@@ -2065,6 +2065,73 @@ function renderFeature5Workspace() {
   }
 }
 
+async function generateLinkedInPost() {
+  const sid = AppState.feature5.session?.session_id;
+  const board = document.getElementById("feature5-linkedin-board");
+  const copyBtn = document.getElementById("feature5-copy-linkedin");
+
+  if (!sid) {
+    if (board) board.innerHTML = `<div class="state-card" style="color:#f87171">Run Narrative Architect first to generate a LinkedIn post.</div>`;
+    return;
+  }
+
+  if (board) board.innerHTML = `<div class="state-card state-loading" style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#818cf8;animation:pulse 1s ease-in-out infinite;flex-shrink:0"></div>Generating LinkedIn post with AI...</div>`;
+
+  try {
+    const res = await apiFetch(`${API_BASE}/api/feature5/sessions/${sid}/linkedin-post`);
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    const post = data.post_text || "";
+    const charCount = data.character_count || post.length;
+    const charColor = charCount > 1300 ? "#f87171" : charCount > 1000 ? "#fbbf24" : "#34d399";
+
+    if (board) {
+      board.innerHTML = `
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+          <span style="font-size:11px;color:${charColor};background:rgba(255,255,255,0.06);padding:2px 10px;border-radius:999px">${charCount} / 1300 chars</span>
+        </div>
+        <div id="linkedin-post-text" style="
+          background:rgba(255,255,255,0.04);
+          border:1px solid rgba(255,255,255,0.1);
+          border-radius:12px;
+          padding:16px;
+          font-size:14px;
+          line-height:1.7;
+          color:rgba(255,255,255,0.9);
+          white-space:pre-wrap;
+          word-break:break-word;
+        ">${post.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+      `;
+    }
+    if (copyBtn) copyBtn.style.display = "inline-flex";
+    setStatus("LinkedIn post generated.");
+  } catch (err) {
+    if (board) board.innerHTML = `<div class="state-card" style="color:#f87171">Failed to generate LinkedIn post: ${String(err.message).slice(0, 100)}</div>`;
+  }
+}
+
+function copyLinkedInPost() {
+  const el = document.getElementById("linkedin-post-text");
+  if (!el) return;
+  const text = el.innerText || el.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById("feature5-copy-linkedin");
+    if (btn) {
+      btn.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i> Copied!`;
+      btn.style.borderColor = "#34d399";
+      btn.style.color = "#34d399";
+      setTimeout(() => {
+        btn.innerHTML = `<i data-lucide="copy" class="w-3 h-3"></i> Copy`;
+        btn.style.borderColor = "";
+        btn.style.color = "";
+        lucide.createIcons();
+      }, 2000);
+      lucide.createIcons();
+    }
+    setStatus("LinkedIn post copied to clipboard.");
+  }).catch(() => setStatus("Copy failed — please select and copy manually."));
+}
+
 function parseCommaSkills(text) {
   return text
     .split(",")
@@ -2970,6 +3037,10 @@ function setupNavigation() {
   document.getElementById("feature5-workspace-download-2")?.addEventListener("click", downloadFeature5Bundle);
   document.getElementById("feature5-workspace-download-pdf-2")?.addEventListener("click", downloadFeature5CaseStudyPdf);
   document.getElementById("feature5-workspace-download-site-2")?.addEventListener("click", downloadFeature5PortfolioSite);
+
+  // LinkedIn post
+  document.getElementById("feature5-generate-linkedin")?.addEventListener("click", generateLinkedInPost);
+  document.getElementById("feature5-copy-linkedin")?.addEventListener("click", copyLinkedInPost);
   nodes.feature3WorkspaceRun?.addEventListener("click", runFeature3Arbitrage);
   nodes.feature3WorkspaceHistory?.addEventListener("click", loadFeature3History);
   nodes.feature3WorkspaceExport?.addEventListener("click", exportFeature3Snapshot);
