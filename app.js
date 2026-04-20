@@ -397,12 +397,6 @@ const nodes = {
   feature5WorkspaceDownload: document.getElementById("feature5-workspace-download"),
   feature5WorkspaceDownloadPdf: document.getElementById("feature5-workspace-download-pdf"),
   feature5WorkspaceDownloadSite: document.getElementById("feature5-workspace-download-site"),
-  // Narrative workspace dedicated inputs
-  feature5WorkspaceGithubUrl: document.getElementById("feature5-workspace-github-url"),
-  feature5WorkspaceTargetRole: document.getElementById("feature5-workspace-target-role"),
-  feature5WorkspaceTone: document.getElementById("feature5-workspace-tone"),
-  feature5WorkspaceJd: document.getElementById("feature5-workspace-jd"),
-  feature5WorkspaceProjects: document.getElementById("feature5-workspace-projects"),
   // Rebound workspace
   reboundWorkspaceRun: document.getElementById("rebound-workspace-run"),
   reboundWorkspaceQuickDebrief: document.getElementById("rebound-workspace-quick-debrief"),
@@ -453,7 +447,7 @@ const nodes = {
 const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 
 function setStatus(text) {
-  nodes.uploadStatus.textContent = text;
+  if (nodes.uploadStatus) nodes.uploadStatus.textContent = text;
   const stamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const history = [`${stamp} - ${text}`, ...(AppState.ui?.activity || [])].slice(0, 8);
   AppState.setState({
@@ -978,6 +972,7 @@ function applyViewState(viewName) {
 }
 
 function animateWavePath() {
+  if (!nodes.wavePath) return; // wave SVG removed from simplified layout
   const t = performance.now() / 380;
   const level = AppState.audioLevel;
   const amplitude = 10 + level * 22;
@@ -2830,7 +2825,7 @@ function setupNavigation() {
     AppState.setState({ audioLevel: randomLevel });
   });
 
-  nodes.analyzeFeature1.addEventListener("click", runFeature1Analysis);
+  nodes.analyzeFeature1?.addEventListener("click", runFeature1Analysis);
   nodes.runSmartAction?.addEventListener("click", runSmartAction);
   nodes.uiModeBeginner?.addEventListener("click", () => setUIMode("beginner"));
   nodes.uiModeExpert?.addEventListener("click", () => setUIMode("expert"));
@@ -2854,6 +2849,7 @@ function setupNavigation() {
   nodes.lensRunFeature1.addEventListener("click", runFeature1Analysis);
   nodes.fetchVersions.addEventListener("click", loadVersions);
   nodes.lensLoadVersions.addEventListener("click", loadVersions);
+  document.getElementById("fetch-versions-output")?.addEventListener("click", loadVersions);
 
   nodes.lensRunFeature1Panel?.addEventListener("click", () => {
     // Sync lens panel inputs → global inputs before running
@@ -2889,8 +2885,8 @@ function setupNavigation() {
     if (!target) return;
     startViewSwap(target.dataset.view);
   });
-  nodes.feature2QuickDebrief.addEventListener("click", runQuickDebrief);
-  nodes.feature2LoadTrend.addEventListener("click", async () => {
+  nodes.feature2QuickDebrief?.addEventListener("click", runQuickDebrief);
+  nodes.feature2LoadTrend?.addEventListener("click", async () => {
     await Promise.all([loadFeature2Trend(), loadFeature2Forecast()]);
     setStatus("Interview Autopsy trend/forecast loaded.");
   });
@@ -2901,33 +2897,33 @@ function setupNavigation() {
     await Promise.all([loadFeature2Trend(), loadFeature2Forecast()]);
     setStatus("Interview Autopsy trend/forecast loaded.");
   });
-  nodes.feature3LoadHistory.addEventListener("click", loadFeature3History);
-  nodes.feature3RunQuiz.addEventListener("click", runFeature3SprintQuiz);
-  nodes.feature3ResumeInject.addEventListener("click", runFeature3ResumeInjector);
-  nodes.feature3Export.addEventListener("click", exportFeature3Snapshot);
-  nodes.feature4Finalize.addEventListener("click", finalizeFeature4Again);
-  nodes.feature4Share.addEventListener("click", shareFeature4Session);
-  nodes.feature4WorkspaceRun.addEventListener("click", runFeature4PersonaPlay);
-  nodes.feature4WorkspaceFinalize.addEventListener("click", finalizeFeature4Again);
-  nodes.feature4WorkspaceShare.addEventListener("click", shareFeature4Session);
-  nodes.feature4WorkspaceHistory.addEventListener("click", loadFeature4History);
-  nodes.feature4WorkspaceCompare.addEventListener("click", compareLatestFeature4Sessions);
-  nodes.feature5LoadHistory.addEventListener("click", loadFeature5History);
-  nodes.feature5Export.addEventListener("click", exportFeature5Bundle);
-  nodes.feature5Download.addEventListener("click", downloadFeature5Bundle);
-  nodes.feature5DownloadPdf.addEventListener("click", downloadFeature5CaseStudyPdf);
-  nodes.feature5DownloadSite.addEventListener("click", downloadFeature5PortfolioSite);
-  nodes.feature5WorkspaceRun.addEventListener("click", runFeature5NarrativeArchitect);
-  nodes.feature5WorkspaceHistory.addEventListener("click", loadFeature5History);
-  nodes.feature5WorkspaceExport.addEventListener("click", exportFeature5Bundle);
-  nodes.feature5WorkspaceDownload.addEventListener("click", downloadFeature5Bundle);
-  nodes.feature5WorkspaceDownloadPdf.addEventListener("click", downloadFeature5CaseStudyPdf);
-  nodes.feature5WorkspaceDownloadSite.addEventListener("click", downloadFeature5PortfolioSite);
-  nodes.feature3WorkspaceRun.addEventListener("click", runFeature3Arbitrage);
-  nodes.feature3WorkspaceHistory.addEventListener("click", loadFeature3History);
-  nodes.feature3WorkspaceExport.addEventListener("click", exportFeature3Snapshot);
-  nodes.feature3WorkspaceQuiz.addEventListener("click", runFeature3SprintQuiz);
-  nodes.feature3WorkspaceResumeInject.addEventListener("click", runFeature3ResumeInjector);
+  nodes.feature3LoadHistory?.addEventListener("click", loadFeature3History);
+  nodes.feature3RunQuiz?.addEventListener("click", runFeature3SprintQuiz);
+  nodes.feature3ResumeInject?.addEventListener("click", runFeature3ResumeInjector);
+  nodes.feature3Export?.addEventListener("click", exportFeature3Snapshot);
+  nodes.feature4Finalize?.addEventListener("click", finalizeFeature4Again);
+  nodes.feature4Share?.addEventListener("click", shareFeature4Session);
+  nodes.feature4WorkspaceRun?.addEventListener("click", runFeature4PersonaPlay);
+  nodes.feature4WorkspaceFinalize?.addEventListener("click", finalizeFeature4Again);
+  nodes.feature4WorkspaceShare?.addEventListener("click", shareFeature4Session);
+  nodes.feature4WorkspaceHistory?.addEventListener("click", loadFeature4History);
+  nodes.feature4WorkspaceCompare?.addEventListener("click", compareLatestFeature4Sessions);
+  nodes.feature5LoadHistory?.addEventListener("click", loadFeature5History);
+  nodes.feature5Export?.addEventListener("click", exportFeature5Bundle);
+  nodes.feature5Download?.addEventListener("click", downloadFeature5Bundle);
+  nodes.feature5DownloadPdf?.addEventListener("click", downloadFeature5CaseStudyPdf);
+  nodes.feature5DownloadSite?.addEventListener("click", downloadFeature5PortfolioSite);
+  nodes.feature5WorkspaceRun?.addEventListener("click", runFeature5NarrativeArchitect);
+  nodes.feature5WorkspaceHistory?.addEventListener("click", loadFeature5History);
+  nodes.feature5WorkspaceExport?.addEventListener("click", exportFeature5Bundle);
+  nodes.feature5WorkspaceDownload?.addEventListener("click", downloadFeature5Bundle);
+  nodes.feature5WorkspaceDownloadPdf?.addEventListener("click", downloadFeature5CaseStudyPdf);
+  nodes.feature5WorkspaceDownloadSite?.addEventListener("click", downloadFeature5PortfolioSite);
+  nodes.feature3WorkspaceRun?.addEventListener("click", runFeature3Arbitrage);
+  nodes.feature3WorkspaceHistory?.addEventListener("click", loadFeature3History);
+  nodes.feature3WorkspaceExport?.addEventListener("click", exportFeature3Snapshot);
+  nodes.feature3WorkspaceQuiz?.addEventListener("click", runFeature3SprintQuiz);
+  nodes.feature3WorkspaceResumeInject?.addEventListener("click", runFeature3ResumeInjector);
   nodes.coreLoadPlan?.addEventListener("click", loadCoreDailyPlan);
   nodes.metricsLogApplication?.addEventListener("click", logApplication);
   nodes.metricsUpdateStatus?.addEventListener("click", updateApplicationStatus);
