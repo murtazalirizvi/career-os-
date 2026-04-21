@@ -358,24 +358,46 @@ def get_linkedin_post(session_id: int, session: Session = Depends(get_session)):
         top_result = star_summaries[0].get("result", "")
 
     if gemini_client.is_available():
+        # Extract rich context for Gemini
+        deep = _loads(row.deep_analysis_json).get("epic_5_1", {}) or {}
+        arch_style = deep.get("architecture_mapping", {}).get("identified_style", "modular")
+        sophistication = deep.get("sophistication_scoring", {}).get("score", 0)
+        sophistication_tier = deep.get("sophistication_scoring", {}).get("tier", "intermediate")
+        impact_metrics = (narrative.get("epic_5_2", {}) or {}).get("impact_metrics", [])
+        problem_lines = (narrative.get("epic_5_2", {}) or {}).get("problem_solution_narrative", [])
+        
         prompt = (
-            f"Write a LinkedIn post for a {row.target_role} showcasing their technical work.\n\n"
-            f"Headline: {headline}\n"
-            f"Project summary: {project_desc[:300]}\n"
-            f"Top result: {top_result[:200]}\n\n"
-            "Requirements:\n"
-            "1. Start with a strong hook (1 sentence)\n"
-            "2. Describe the technical challenge and solution (2-3 sentences)\n"
-            "3. Quantify the impact with metrics\n"
-            "4. End with a call-to-action or insight\n"
-            "5. Add 3-5 relevant hashtags at the end\n"
-            "6. Keep total length under 1300 characters\n"
-            "Return ONLY the post text, no preamble."
+            f"Write a detailed, engaging LinkedIn post for a {row.target_role} showcasing real technical work.\n\n"
+            f"PROJECT CONTEXT:\n"
+            f"- Architecture: {arch_style}\n"
+            f"- Sophistication score: {sophistication}/100 ({sophistication_tier})\n"
+            f"- Headline: {headline}\n"
+            f"- Project description: {project_desc[:400]}\n"
+            f"- Problem solved: {problem_lines[0][:200] if problem_lines else 'N/A'}\n"
+            f"- Top result: {top_result[:200]}\n"
+            f"- Impact metrics: {', '.join(impact_metrics[:3]) if impact_metrics else 'N/A'}\n"
+            f"- STAR stories: {len(star_summaries)} documented\n\n"
+            "REQUIREMENTS — follow these exactly:\n"
+            "1. HOOK (line 1): Start with a bold, curiosity-triggering statement or question. NOT 'I built' or 'Excited to share'. Use an insight, a surprising fact, or a relatable pain point.\n"
+            "2. PROBLEM (2-3 lines): Describe the real problem this solves. Be specific. Use numbers if possible.\n"
+            "3. SOLUTION (3-4 lines): Explain what you built and HOW. Mention the architecture, key technical decisions, and trade-offs you made. Show depth.\n"
+            "4. RESULTS (2-3 lines): Quantify impact. Use metrics, percentages, time saved, or before/after comparisons.\n"
+            "5. INSIGHT (1-2 lines): Share one genuine lesson or unexpected discovery from building this.\n"
+            "6. CTA (1 line): End with a specific question that invites comments — not generic 'let's connect'.\n"
+            "7. HASHTAGS: 5-7 specific, relevant hashtags on the last line.\n\n"
+            "STYLE RULES:\n"
+            "- Use emojis strategically (1-2 per section, not every line)\n"
+            "- Write like a senior engineer talking to peers, not a recruiter\n"
+            "- Avoid buzzwords: 'leverage', 'synergy', 'passionate', 'excited to share'\n"
+            "- Be specific and technical — vague posts get ignored\n"
+            "- Total length: 800-1200 characters\n"
+            "- Use line breaks between sections for readability\n\n"
+            "Return ONLY the post text. No preamble, no 'Here is your post:', nothing extra."
         )
         try:
-            post_text = gemini_client.generate(prompt, temperature=0.4, max_tokens=400)
-            if not post_text or len(post_text.strip()) < 50:
-                raise ValueError("Empty response")
+            post_text = gemini_client.generate(prompt, temperature=0.7, max_tokens=600)
+            if not post_text or len(post_text.strip()) < 100:
+                raise ValueError("Empty or too short response")
             post_text = post_text.strip()
             logger.info(f"LinkedIn post generated via Gemini for session {session_id}")
         except Exception as e:
@@ -384,17 +406,72 @@ def get_linkedin_post(session_id: int, session: Session = Depends(get_session)):
     else:
         post_text = None
 
-    # Heuristic fallback
+    # Heuristic fallback — rich, engaging LinkedIn post
     if not post_text:
-        result_line = f"Result: {top_result}" if top_result else "Delivered measurable impact."
-        post_text = (
-            f"🚀 {headline}\n\n"
-            f"{project_desc[:280]}\n\n"
-            f"{result_line}\n\n"
-            f"Always looking to connect with engineers solving hard problems.\n\n"
-            f"#{row.target_role.replace(' ', '')} #SoftwareEngineering #CareerGrowth"
-        )
-        logger.info(f"LinkedIn post generated via heuristic for session {session_id}")
+        # Extract rich context from the session
+        deep = _loads(row.deep_analysis_json).get("epic_5_1", {}) or {}
+        arch_style = deep.get("architecture_mapping", {}).get("identified_style", "modular")
+        sophistication = deep.get("sophistication_scoring", {}).get("score", 0)
+        sophistication_tier = deep.get("sophistication_scoring", {}).get("tier", "intermediate")
+        custom_logic = deep.get("logic_identification", {}).get("custom_logic_ratio", 0)
+        
+        star = star_summaries[:2] if len(star_summaries) >= 2 else star_summaries
+        impact_metrics = (narrative.get("epic_5_2", {}) or {}).get("impact_metrics", [])
+        problem_lines = (narrative.get("epic_5_2", {}) or {}).get("problem_solution_narrative", [])
+        
+        # Build the post with hooks, storytelling, and engagement
+        hook = "💡 Ever wondered how to turn your GitHub projects into compelling interview stories?"
+        if sophistication >= 80:
+            hook = "🚀 Just shipped a production-grade system that solves a real problem engineers face every day."
+        elif sophistication >= 60:
+            hook = "⚡ Built something I'm genuinely proud of — and learned a ton in the process."
+        
+        # Problem statement
+        problem = problem_lines[0] if problem_lines else "Developers struggle to articulate their technical work in interviews."
+        
+        # Solution with architecture details
+        solution_parts = []
+        solution_parts.append(f"Built a {arch_style} architecture")
+        if custom_logic >= 70:
+            solution_parts.append(f"with {custom_logic}% custom business logic")
+        solution_parts.append(f"(sophistication: {sophistication_tier})")
+        solution = " ".join(solution_parts) + "."
+        
+        # STAR stories with emojis
+        star_section = ""
+        if star:
+            star_section = "\n\n📊 Key wins:\n"
+            for i, s in enumerate(star[:2], 1):
+                proj = s.get("project", "Component")
+                action = s.get("action", "")
+                result = s.get("result", "")
+                if action and result:
+                    star_section += f"\n{i}. {proj}: {action}\n   → {result}"
+        
+        # Impact metrics
+        metrics_section = ""
+        if impact_metrics:
+            metrics_section = "\n\n" + " · ".join(impact_metrics[:2])
+        
+        # Technical depth callout
+        tech_callout = ""
+        if sophistication >= 75:
+            tech_callout = f"\n\n🔧 Technical depth: {sophistication}/100 — production-ready patterns, error handling, and scalability considerations baked in."
+        
+        # Call to action
+        cta = "\n\nWhat's the hardest part of your job search right now? Let's connect and share notes. 👇"
+        
+        # Hashtags
+        role_tag = row.target_role.replace(" ", "").replace("-", "")
+        hashtags = f"\n\n#{role_tag} #SoftwareEngineering #BuildInPublic #TechCareers #DeveloperJourney"
+        
+        post_text = hook + "\n\n" + problem + "\n\n" + solution + star_section + metrics_section + tech_callout + cta + hashtags
+        
+        # Trim if over 1300 chars
+        if len(post_text) > 1300:
+            post_text = post_text[:1280] + "...\n\n" + hashtags
+        
+        logger.info(f"LinkedIn post generated via rich heuristic for session {session_id}")
 
     return Feature5LinkedInPostResponse(
         session_id=session_id,
