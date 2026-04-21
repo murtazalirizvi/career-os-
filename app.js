@@ -2069,13 +2069,15 @@ async function generateLinkedInPost() {
   const sid = AppState.feature5.session?.session_id;
   const board = document.getElementById("feature5-linkedin-board");
   const copyBtn = document.getElementById("feature5-copy-linkedin");
+  const genBtn = document.getElementById("feature5-generate-linkedin");
 
   if (!sid) {
-    if (board) board.innerHTML = `<div class="state-card" style="color:#f87171">Run Narrative Architect first to generate a LinkedIn post.</div>`;
+    if (board) board.innerHTML = `<div class="state-card" style="color:#f87171;padding:16px">⚠️ Run Narrative Architect first, then generate your LinkedIn post.</div>`;
     return;
   }
 
-  if (board) board.innerHTML = `<div class="state-card state-loading" style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#818cf8;animation:pulse 1s ease-in-out infinite;flex-shrink:0"></div>Generating LinkedIn post with AI...</div>`;
+  if (board) board.innerHTML = `<div class="state-card state-loading" style="display:flex;align-items:center;gap:10px;padding:16px"><div style="width:8px;height:8px;border-radius:50%;background:#818cf8;animation:pulse 1s ease-in-out infinite;flex-shrink:0"></div>Crafting your LinkedIn post — analyzing architecture, STAR stories, and impact metrics...</div>`;
+  if (genBtn) { genBtn.disabled = true; genBtn.innerHTML = `<i data-lucide="loader" class="w-3 h-3"></i> Generating...`; lucide.createIcons(); }
 
   try {
     const res = await apiFetch(`${API_BASE}/api/feature5/sessions/${sid}/linkedin-post`);
@@ -2084,29 +2086,35 @@ async function generateLinkedInPost() {
     const post = data.post_text || "";
     const charCount = data.character_count || post.length;
     const charColor = charCount > 1300 ? "#f87171" : charCount > 1000 ? "#fbbf24" : "#34d399";
+    const charLabel = charCount > 1300 ? "Over limit — trim before posting" : charCount > 1000 ? "Good length" : "Concise";
 
     if (board) {
       board.innerHTML = `
-        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-          <span style="font-size:11px;color:${charColor};background:rgba(255,255,255,0.06);padding:2px 10px;border-radius:999px">${charCount} / 1300 chars</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span style="font-size:12px;color:rgba(255,255,255,0.5)">Ready to paste on LinkedIn</span>
+          <span style="font-size:11px;color:${charColor};background:rgba(255,255,255,0.06);padding:3px 10px;border-radius:999px;font-weight:600">${charCount} chars · ${charLabel}</span>
         </div>
         <div id="linkedin-post-text" style="
           background:rgba(255,255,255,0.04);
           border:1px solid rgba(255,255,255,0.1);
           border-radius:12px;
-          padding:16px;
+          padding:20px;
           font-size:14px;
-          line-height:1.7;
-          color:rgba(255,255,255,0.9);
+          line-height:1.8;
+          color:rgba(255,255,255,0.92);
           white-space:pre-wrap;
           word-break:break-word;
-        ">${post.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+          font-family:'Plus Jakarta Sans',sans-serif;
+        ">${post.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
+        <p style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:10px">💡 Tip: Add real metrics (e.g. "reduced load time by 40%") to make this post stand out even more.</p>
       `;
     }
     if (copyBtn) copyBtn.style.display = "inline-flex";
     setStatus("LinkedIn post generated.");
   } catch (err) {
-    if (board) board.innerHTML = `<div class="state-card" style="color:#f87171">Failed to generate LinkedIn post: ${String(err.message).slice(0, 100)}</div>`;
+    if (board) board.innerHTML = `<div class="state-card" style="color:#f87171;padding:16px">Failed to generate: ${String(err.message).slice(0, 120)}</div>`;
+  } finally {
+    if (genBtn) { genBtn.disabled = false; genBtn.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3"></i> Regenerate`; lucide.createIcons(); }
   }
 }
 
