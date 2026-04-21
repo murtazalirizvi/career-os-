@@ -390,7 +390,7 @@ def get_linkedin_post(session_id: int, session: Session = Depends(get_session)):
             "- Write like a senior engineer talking to peers, not a recruiter\n"
             "- Avoid buzzwords: 'leverage', 'synergy', 'passionate', 'excited to share'\n"
             "- Be specific and technical — vague posts get ignored\n"
-            "- Total length: 800-1200 characters\n"
+            "- Total length: 100-150 words maximum — tight, punchy, no fluff\n"
             "- Use line breaks between sections for readability\n\n"
             "Return ONLY the post text. No preamble, no 'Here is your post:', nothing extra."
         )
@@ -467,9 +467,11 @@ def get_linkedin_post(session_id: int, session: Session = Depends(get_session)):
         
         post_text = hook + "\n\n" + problem + "\n\n" + solution + star_section + metrics_section + tech_callout + cta + hashtags
         
-        # Trim if over 1300 chars
-        if len(post_text) > 1300:
-            post_text = post_text[:1280] + "...\n\n" + hashtags
+        # Trim if over 150 words
+        words = post_text.split()
+        if len(words) > 150:
+            # Keep hook + first STAR + hashtags
+            post_text = " ".join(words[:140]) + "...\n\n" + hashtags
         
         logger.info(f"LinkedIn post generated via rich heuristic for session {session_id}")
 

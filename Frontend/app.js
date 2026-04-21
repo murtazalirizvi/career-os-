@@ -1220,21 +1220,27 @@ function renderReboundWorkspace() {
 }
 
 async function runFeature4PersonaPlay() {
-  const errs = validateRequiredFields([
-    { id: "candidate-id", label: "Candidate ID" },
-    { id: "feature2-role", label: "Role" }
-  ]);
-  const candidateId = nodes.candidateId.value.trim() || "candidate-001";
-  const roleName = nodes.feature2Role.value.trim() || "Software Engineer";
-  const personaMode = nodes.feature4PersonaMode.value || "blind";
-  const language = nodes.feature4Language.value || "english";
-  const rawText = nodes.feature2Notes.value.trim() || nodes.feature2Transcript.value.trim();
+  // Read from dedicated workspace panel inputs first, fall back to legacy IDs
+  const candidateId = (nodes.feature4WorkspaceCandidateId?.value?.trim()
+    || nodes.candidateId?.value?.trim()
+    || "candidate-001");
 
-  if (!rawText) errs.push("Notes or transcript is required.");
-  if (errs.length) {
-    setStatus(errs[0]);
-    return;
-  }
+  const personaMode = (nodes.feature4WorkspacePersonaMode?.value
+    || nodes.feature4PersonaMode?.value
+    || "blind");
+
+  const language = (nodes.feature4WorkspaceLanguage?.value
+    || nodes.feature4Language?.value
+    || "english");
+
+  const topic = nodes.feature4WorkspaceTopic?.value?.trim() || "Software Engineering";
+  const roleName = topic || nodes.feature2Role?.value?.trim() || "Software Engineer";
+
+  // For persona coach, we don't need pre-existing notes — the AI generates questions
+  // Use topic as the seed utterance if no notes exist
+  const rawText = nodes.feature2Notes?.value?.trim()
+    || nodes.feature2Transcript?.value?.trim()
+    || `I want to practice a mock interview for ${roleName}. Topic: ${topic}.`;
 
   const utterances = rawText
     .split(/\n+/)
@@ -1248,15 +1254,13 @@ async function runFeature4PersonaPlay() {
 
   let loader = null;
   try {
-    loader = showStepLoader("feature4-output", [
-      "Opening your mock interview session...",
-      "Analyzing your response timing and confidence signals...",
-      "Generating coach heatmap and behavioral patterns...",
-      "Finalizing coaching report and synthesis assets..."
-    ]);
+    // Show loading in the session board (visible on the workspace)
+    if (nodes.feature4SessionBoard) {
+      nodes.feature4SessionBoard.innerHTML = `<div class="state-card state-loading" style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#818cf8;animation:pulse 1s ease-in-out infinite;flex-shrink:0"></div>Starting persona session...</div>`;
+    }
     setUiFlag("feature4Loading", true);
-    if (nodes.runFeature4) nodes.runFeature4.disabled = true;
     if (nodes.feature4WorkspaceRun) nodes.feature4WorkspaceRun.disabled = true;
+    if (nodes.feature4WorkspaceRunPanel) nodes.feature4WorkspaceRunPanel.disabled = true;
     setStatus("Persona Coach: starting persona session...");
     const sessionResp = await apiFetch(`${API_BASE}/api/feature4/sessions`, {
       method: "POST",
@@ -1343,10 +1347,14 @@ async function runFeature4PersonaPlay() {
     setStatus(`Persona Coach complete - overall ${finalData.scorecard.overall}`);
   } catch (error) {
     setStatus(handleApiError(error, "Persona Coach"));
+    if (nodes.feature4SessionBoard) {
+      nodes.feature4SessionBoard.innerHTML = `<div class="state-card" style="color:#f87171">Error: ${handleApiError(error, "Persona Coach")}</div>`;
+    }
   } finally {
     loader?.stop();
     if (nodes.runFeature4) nodes.runFeature4.disabled = false;
     if (nodes.feature4WorkspaceRun) nodes.feature4WorkspaceRun.disabled = false;
+    if (nodes.feature4WorkspaceRunPanel) nodes.feature4WorkspaceRunPanel.disabled = false;
     setUiFlag("feature4Loading", false);
   }
 }
@@ -2986,13 +2994,7 @@ function setupNavigation() {
   nodes.lensJobDescription?.addEventListener("input", () => { nodes.jobDescription.value = nodes.lensJobDescription.value; });
 
   nodes.feature3WorkspaceRunPanel?.addEventListener("click", runFeature3Arbitrage);
-  nodes.feature4WorkspaceRunPanel?.addEventListener("click", () => {
-    // Sync persona panel inputs → global inputs before running
-    if (nodes.feature4WorkspacePersonaMode?.value) nodes.feature4PersonaMode.value = nodes.feature4WorkspacePersonaMode.value;
-    if (nodes.feature4WorkspaceLanguage?.value) nodes.feature4Language.value = nodes.feature4WorkspaceLanguage.value;
-    if (nodes.feature4WorkspaceCandidateId?.value) nodes.candidateId.value = nodes.feature4WorkspaceCandidateId.value;
-    runFeature4PersonaPlay();
-  });
+  nodes.feature4WorkspaceRunPanel?.addEventListener("click", runFeature4PersonaPlay);
 
   nodes.runFeature2?.addEventListener("click", runFeature2Autopsy);
   nodes.runFeature4?.addEventListener("click", runFeature4PersonaPlay);
