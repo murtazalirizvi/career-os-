@@ -20,6 +20,8 @@ from typing import Any, Dict, Optional
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -103,7 +105,7 @@ async def add_security_and_request_id(request: Request, call_next):
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data:; "
-        "connect-src 'self' http://localhost:8000 http://127.0.0.1:8000 http://localhost:5500 http://127.0.0.1:5500 https://murtazalirizvi.github.io;"
+        "connect-src *;"
     )
     return response
 
@@ -114,10 +116,14 @@ write_limiter = Limiter(key_func=get_remote_address)
 
 @app.on_event("startup")
 def on_startup() -> None:
+    # Ensure data directories exist before creating DB tables
+    from pathlib import Path
+    Path("/app/data/uploads").mkdir(parents=True, exist_ok=True)
+    Path("/app/data/reports").mkdir(parents=True, exist_ok=True)
     create_db_and_tables()
 
 
-@app.get("/health")
+@app.get("/health", include_in_schema=False)
 def health():
     return {"status": "ok", "version": "0.1.0"}
 
@@ -465,3 +471,39 @@ app.include_router(feature5_router)
 app.include_router(metrics_router)
 app.include_router(auth_router)
 app.include_router(core_router)
+
+# ── Static frontend (Railway single-service deployment) ───────────────────────
+# In the Railway image, Frontend is copied to /Frontend.
+# Wrapped in try/except so a missing dir never crashes startup.
+_frontend_dir = Path("/Frontend")
+if not _frontend_dir.exists():
+    _frontend_dir = Path(__file__).resolve().parent.parent.parent / "Frontend"
+
+if _frontend_dir.exists():
+    try:
+        app.mount("/static", StaticFiles(directory=str(_frontend_dir)), name="static")
+        logger.info(f"Frontend static files mounted from {_frontend_dir}")
+    except Exception as e:
+        logger.warning(f"Could not mount static files: {e}")
+
+    @app.get("/", include_in_schema=False)
+    def serve_index():
+        _idx = _frontend_dir / "index.html"
+        if _idx.exists():
+            return FileResponse(str(_idx))
+        return JSONResponse({"status": "ok", "message": "Career OS API"})
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def serve_spa(full_path: str):
+        # Never intercept API routes — let them 404 naturally
+        if full_path.startswith("api/") or full_path == "health" or full_path == "docs" or full_path == "openapi.json":
+            return JSONResponse(status_code=404, content={"detail": "Not found"})
+        file_path = _frontend_dir / full_path
+        if file_path.exists() and file_path.is_file():
+            return FileResponse(str(file_path))
+        _idx = _frontend_dir / "index.html"
+        if _idx.exists():
+            return FileResponse(str(_idx))
+        return JSONResponse({"status": "ok", "message": "Career OS API"})
+else:
+    logger.info("Frontend directory not found — serving API only")

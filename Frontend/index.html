@@ -442,15 +442,36 @@
                     </div>
                     <div>
                       <label class="jt-label" for="feature3-region">Region</label>
-                      <input id="feature3-region" type="text" class="jt-input" placeholder="e.g. US, PK, EU" value="PK" />
+                      <input id="feature3-region" type="text" class="jt-input" placeholder="e.g. gb, us, au" value="gb" />
                     </div>
                     <div>
                       <label class="jt-label" for="feature3-current-skills">Current Skills</label>
-                      <textarea id="feature3-current-skills" class="jt-input jt-textarea" placeholder="e.g. react, javascript, python, sql">react, javascript, python, sql</textarea>
+                      <div class="relative">
+                        <textarea id="feature3-current-skills" class="jt-input jt-textarea" placeholder="e.g. react, javascript, python, sql" style="padding-right:80px">react, javascript, python, sql</textarea>
+                        <button id="feature3-autofill-skills" title="Auto-fill from uploaded resume" style="position:absolute;top:8px;right:8px;font-size:0.7rem;padding:3px 8px;background:rgba(99,102,241,0.25);border:1px solid rgba(99,102,241,0.5);border-radius:6px;color:#a5b4fc;cursor:pointer;white-space:nowrap">↑ Resume</button>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label class="jt-label" for="feature3-years-exp">Years Exp.</label>
+                        <input id="feature3-years-exp" type="number" class="jt-input" placeholder="e.g. 3" value="2" min="0" max="40" step="0.5" />
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature3-currency">Currency</label>
+                        <select id="feature3-currency" class="jt-input" style="padding-top:7px;padding-bottom:7px">
+                          <option value="USD">USD</option>
+                          <option value="GBP">GBP</option>
+                          <option value="PKR">PKR</option>
+                        </select>
+                      </div>
                     </div>
                     <div>
-                      <label class="jt-label" for="feature3-salary">Current Salary (USD/yr)</label>
+                      <label class="jt-label" for="feature3-salary">Current Salary (per yr)</label>
                       <input id="feature3-salary" type="number" class="jt-input" placeholder="e.g. 60000" value="10000" />
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature3-github">GitHub Username <span style="color:rgba(255,255,255,0.35);font-weight:400">(optional)</span></label>
+                      <input id="feature3-github" type="text" class="jt-input" placeholder="e.g. torvalds" />
                     </div>
                     <label class="flex items-center gap-2 text-xs cursor-pointer" style="color:rgba(255,255,255,0.6)">
                       <input id="feature3-remote-only" type="checkbox" class="accent-indigo-400" />
@@ -467,14 +488,71 @@
                     </div>
                   </div>
                 </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-2 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
                   <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Market Board</h2><span class="text-xs" style="color:var(--text-muted)">Live snapshot</span></div>
                   <div id="feature3-market-table" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
                 </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Gap Radar + ROI</h2><span class="text-xs" style="color:var(--text-muted)">Top-decile pursuit</span></div>
-                  <canvas class="radar-canvas" id="feature3-radar-workspace"></canvas>
-                  <div id="feature3-roi-bars-workspace" class="space-y-2 mt-3"></div>
+                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-4 glass-card rounded-2xl p-4 md:p-5 flex flex-col">
+                  <div class="flex items-center justify-between mb-2 flex-shrink-0"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Gap Radar + ROI</h2><span class="text-xs" style="color:var(--text-muted)">Top-decile pursuit</span></div>
+                  
+                  <!-- Match Score Display -->
+                  <div id="feature3-match-score-display" class="flex items-center justify-center gap-6 mb-3 p-3 flex-shrink-0" style="background:rgba(99,102,241,0.1);border-radius:12px;display:none">
+                    <div class="text-center">
+                      <div class="text-3xl font-bold" style="color:#818cf8" id="feature3-match-score-value">--</div>
+                      <div class="text-xs" style="color:var(--text-muted)">Match Score</div>
+                    </div>
+                    <div class="text-center">
+                      <div class="text-xl font-semibold" style="color:#f87171" id="feature3-gap-score-value">--</div>
+                      <div class="text-xs" style="color:var(--text-muted)">Gap to Top 10%</div>
+                    </div>
+                    <div class="text-center" id="feature3-missing-skills-container" style="flex:1;text-align:left">
+                      <div class="text-xs font-semibold mb-1" style="color:var(--text-muted)">Missing Skills:</div>
+                      <div class="text-sm" style="color:rgba(255,255,255,0.8)" id="feature3-missing-skills-list">--</div>
+                    </div>
+                  </div>
+                  
+                  <div class="flex-1 overflow-y-auto custom-scroll min-h-0">
+                    <div style="min-height:300px;display:flex;flex-direction:column">
+                      <canvas class="radar-canvas" id="feature3-radar-workspace" style="width:100%;height:300px;flex-shrink:0"></canvas>
+                      <div id="feature3-roi-bars-workspace" class="space-y-2 mt-3"></div>
+                      
+                      <!-- Enhanced ROI Section -->
+                      <div id="feature3-roi-enhanced" class="mt-4" style="display:none">
+                        <div class="flex items-center justify-between mb-3">
+                          <h3 style="font-size:0.95rem;font-weight:700;color:#fff;letter-spacing:-0.02em">💰 ROI Analysis</h3>
+                          <button id="feature3-roi-details-btn" class="btn-ghost text-xs py-1 px-3">View Details</button>
+                        </div>
+                        
+                        <!-- Callback Probability -->
+                        <div class="mb-3 p-3" style="background:rgba(34,197,94,0.1);border-radius:10px;border:1px solid rgba(34,197,94,0.3)">
+                          <div class="flex items-center justify-between">
+                            <div>
+                              <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">Callback Probability</p>
+                              <p id="roi-callback-value" style="font-size:1.3rem;font-weight:700;color:#34d399;margin-top:2px">--</p>
+                            </div>
+                            <div class="text-right">
+                              <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">Increase</p>
+                              <p id="roi-callback-delta" style="font-size:0.9rem;font-weight:600;color:#34d399;margin-top:2px">--</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Lifetime Value -->
+                        <div class="mb-3 p-3" style="background:rgba(59,130,246,0.1);border-radius:10px;border:1px solid rgba(59,130,246,0.3)">
+                          <div class="flex items-center justify-between">
+                            <div>
+                              <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">5-Year Earnings Delta</p>
+                              <p id="roi-lifetime-value" style="font-size:1.3rem;font-weight:700;color:#60a5fa;margin-top:2px">--</p>
+                            </div>
+                            <div class="text-right">
+                              <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">Per Year</p>
+                              <p id="roi-annual-value" style="font-size:0.9rem;font-weight:600;color:#60a5fa;margin-top:2px">--</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </section>
               </div>
             </section>
@@ -525,6 +603,12 @@
                     </div>
                     <div class="pt-1">
                       <button id="feature4-workspace-run-panel" class="btn-primary w-full justify-center">Run Persona Session</button>
+                    </div>
+                    <div class="pt-2 border-t border-white/10">
+                      <p class="text-xs mb-2" style="color:var(--text-muted)">Interactive Mode (Turn-by-Turn)</p>
+                      <button id="feature4-start-interactive" class="btn-ghost w-full justify-center text-xs py-2 mb-2">Start Interview</button>
+                      <button id="feature4-submit-answer" class="btn-primary w-full justify-center text-xs py-2 mb-2">Submit Answer</button>
+                      <button id="feature4-end-session" class="btn-ghost w-full justify-center text-xs py-2">End Session</button>
                     </div>
                     <div class="grid grid-cols-2 gap-2 pt-1">
                       <button id="feature4-finalize" class="btn-ghost text-xs py-2">Finalize Coach</button>
@@ -892,6 +976,355 @@
     <div style="display:flex;gap:10px;margin-top:20px">
       <button id="jt-modal-save" class="btn-primary" style="flex:1;justify-content:center;padding:11px">Save</button>
       <button id="jt-modal-cancel" class="btn-ghost" style="flex:1;justify-content:center;padding:11px">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SPRINT PLAN MODAL ── -->
+<div id="sprint-modal" class="jt-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="sprint-modal-title">
+  <div class="jt-modal-box" style="max-width:800px;max-height:90vh;overflow-y:auto">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 id="sprint-modal-title" style="font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:-0.03em">7-Day Learning Sprint</h2>
+        <p id="sprint-modal-skill" style="font-size:0.9rem;color:rgba(255,255,255,0.6);margin-top:4px"></p>
+      </div>
+      <button id="sprint-modal-close" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:4px;border-radius:8px;transition:color 0.15s ease" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'" aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    
+    <!-- Sprint Status -->
+    <div id="sprint-status" class="mb-4 p-3" style="background:rgba(99,102,241,0.1);border-radius:12px;border:1px solid rgba(99,102,241,0.3)">
+      <div class="flex items-center justify-between">
+        <div>
+          <p style="font-size:0.75rem;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.05em">Sprint Status</p>
+          <p id="sprint-status-text" style="font-size:1rem;color:#818cf8;font-weight:600;margin-top:2px">Active</p>
+        </div>
+        <div class="text-right">
+          <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">Target Role</p>
+          <p id="sprint-target-role" style="font-size:0.9rem;color:rgba(255,255,255,0.9);margin-top:2px">--</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Day-by-Day Plan -->
+    <div class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">📅 Day-by-Day Roadmap</h3>
+      <div id="sprint-day-plan" class="space-y-3"></div>
+    </div>
+    
+    <!-- MVP Project Prompt -->
+    <div class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">🚀 MVP Project Prompt</h3>
+      <div id="sprint-mvp-prompt" class="p-4" style="background:rgba(34,197,94,0.1);border-radius:12px;border:1px solid rgba(34,197,94,0.3);color:rgba(255,255,255,0.85);font-size:0.9rem;line-height:1.6"></div>
+    </div>
+    
+    <!-- Peer Group Tags -->
+    <div class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">👥 Peer Group</h3>
+      <div id="sprint-peer-tags" class="flex flex-wrap gap-2"></div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button id="sprint-modal-quiz" class="btn-primary" style="flex:1;justify-content:center;padding:11px">Take Quiz</button>
+      <button id="sprint-modal-resume" class="btn-ghost" style="flex:1;justify-content:center;padding:11px">Resume Inject</button>
+      <button id="sprint-modal-close-btn" class="btn-ghost" style="padding:11px">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── QUIZ MODAL ── -->
+<div id="quiz-modal" class="jt-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="quiz-modal-title">
+  <div class="jt-modal-box" style="max-width:700px;max-height:90vh;overflow-y:auto">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 id="quiz-modal-title" style="font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:-0.03em">Sprint Checkpoint Quiz</h2>
+        <p id="quiz-modal-skill" style="font-size:0.9rem;color:rgba(255,255,255,0.6);margin-top:4px">Day 3 Checkpoint</p>
+      </div>
+      <button id="quiz-modal-close" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:4px;border-radius:8px;transition:color 0.15s ease" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'" aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    
+    <!-- Quiz Instructions -->
+    <div class="mb-4 p-3" style="background:rgba(59,130,246,0.1);border-radius:12px;border:1px solid rgba(59,130,246,0.3)">
+      <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);line-height:1.6">
+        Answer the following questions to test your understanding. Focus on trade-offs, constraints, and measurable impact. Pass mark: <span style="color:#60a5fa;font-weight:600" id="quiz-pass-mark">70%</span>
+      </p>
+    </div>
+    
+    <!-- Quiz Questions -->
+    <div id="quiz-questions-container" class="space-y-4 mb-4"></div>
+    
+    <!-- Quiz Results (hidden initially) -->
+    <div id="quiz-results" style="display:none;" class="mb-4 p-4" style="border-radius:12px">
+      <div class="flex items-center justify-between mb-3">
+        <h3 style="font-size:1.1rem;font-weight:700;color:#fff">Quiz Results</h3>
+        <div class="text-right">
+          <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">Your Score</p>
+          <p id="quiz-score-value" style="font-size:1.5rem;font-weight:800;margin-top:2px">--</p>
+        </div>
+      </div>
+      <div id="quiz-status-badge" class="mb-3 p-2 text-center" style="border-radius:8px;font-weight:600"></div>
+      <div id="quiz-feedback-list" class="space-y-2"></div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button id="quiz-submit-btn" class="btn-primary" style="flex:1;justify-content:center;padding:11px">Submit Answers</button>
+      <button id="quiz-retry-btn" class="btn-ghost" style="flex:1;justify-content:center;padding:11px;display:none">Retry Quiz</button>
+      <button id="quiz-modal-close-btn" class="btn-ghost" style="padding:11px">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RESUME INJECT MODAL ── -->
+<div id="resume-modal" class="jt-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="resume-modal-title">
+  <div class="jt-modal-box" style="max-width:700px;max-height:90vh;overflow-y:auto">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 id="resume-modal-title" style="font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:-0.03em">Resume Bullet Generator</h2>
+        <p id="resume-modal-skill" style="font-size:0.9rem;color:rgba(255,255,255,0.6);margin-top:4px">ATS-Optimized Bullets</p>
+      </div>
+      <button id="resume-modal-close" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:4px;border-radius:8px;transition:color 0.15s ease" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'" aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    
+    <!-- Instructions -->
+    <div class="mb-4 p-3" style="background:rgba(168,85,247,0.1);border-radius:12px;border:1px solid rgba(168,85,247,0.3)">
+      <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);line-height:1.6">
+        Generate professional resume bullet points for your project. Include project details, context, and measurable impact for best results.
+      </p>
+    </div>
+    
+    <!-- Input Form -->
+    <div id="resume-input-form" class="space-y-4 mb-4">
+      <div>
+        <label class="jt-label" for="resume-project-name">Project Name *</label>
+        <input id="resume-project-name" type="text" class="jt-input" placeholder="e.g., E-commerce Microservices Platform" />
+      </div>
+      
+      <div>
+        <label class="jt-label" for="resume-baseline-context">Project Context *</label>
+        <textarea id="resume-baseline-context" class="jt-input jt-textarea" rows="3" placeholder="e.g., Built a scalable microservices architecture for an e-commerce platform handling 10k+ daily transactions..."></textarea>
+      </div>
+      
+      <div>
+        <label class="jt-label" for="resume-impact-metric">Impact Metrics *</label>
+        <input id="resume-impact-metric" type="text" class="jt-input" placeholder="e.g., reduced latency by 40%, improved reliability to 99.9%" />
+      </div>
+    </div>
+    
+    <!-- Generated Bullets (hidden initially) -->
+    <div id="resume-results" style="display:none;" class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">📝 Generated Bullets</h3>
+      
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <p style="font-size:0.85rem;color:rgba(255,255,255,0.7)">Resume Bullets (STAR Format)</p>
+          <button id="copy-bullets-btn" class="btn-ghost text-xs py-1 px-3">Copy All</button>
+        </div>
+        <div id="resume-bullets-list" class="space-y-2"></div>
+      </div>
+      
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <p style="font-size:0.85rem;color:rgba(255,255,255,0.7)">LinkedIn Snippet</p>
+          <button id="copy-linkedin-btn" class="btn-ghost text-xs py-1 px-3">Copy</button>
+        </div>
+        <div id="resume-linkedin-snippet" class="p-3" style="background:rgba(59,130,246,0.1);border-radius:8px;border:1px solid rgba(59,130,246,0.3);color:rgba(255,255,255,0.85);font-size:0.9rem;line-height:1.6"></div>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button id="resume-generate-btn" class="btn-primary" style="flex:1;justify-content:center;padding:11px">Generate Bullets</button>
+      <button id="resume-modal-close-btn" class="btn-ghost" style="padding:11px">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ROI DETAILS MODAL ── -->
+<div id="roi-modal" class="jt-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="roi-modal-title">
+  <div class="jt-modal-box" style="max-width:800px;max-height:90vh;overflow-y:auto">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 id="roi-modal-title" style="font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:-0.03em">ROI Analysis Report</h2>
+        <p style="font-size:0.9rem;color:rgba(255,255,255,0.6);margin-top:4px">Career Impact Projections</p>
+      </div>
+      <button id="roi-modal-close" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:4px;border-radius:8px;transition:color 0.15s ease" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'" aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    
+    <!-- Callback Probability Section -->
+    <div class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">📞 Callback Probability</h3>
+      <div class="p-4" style="background:rgba(34,197,94,0.1);border-radius:12px;border:1px solid rgba(34,197,94,0.3)">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">Current Probability</p>
+            <p id="roi-modal-callback-current" style="font-size:1.8rem;font-weight:800;color:#34d399;margin-top:2px">--</p>
+          </div>
+          <div class="text-center">
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">After Upskilling</p>
+            <p id="roi-modal-callback-after" style="font-size:1.8rem;font-weight:800;color:#34d399;margin-top:2px">--</p>
+          </div>
+          <div class="text-right">
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">Increase</p>
+            <p id="roi-modal-callback-increase" style="font-size:1.5rem;font-weight:700;color:#34d399;margin-top:2px">--</p>
+          </div>
+        </div>
+        <p id="roi-modal-callback-reasoning" style="font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.6"></p>
+      </div>
+    </div>
+    
+    <!-- Lifetime Value Section -->
+    <div class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">💰 Lifetime Earnings Impact</h3>
+      <div class="p-4" style="background:rgba(59,130,246,0.1);border-radius:12px;border:1px solid rgba(59,130,246,0.3)">
+        <div class="grid grid-cols-3 gap-4 mb-3">
+          <div class="text-center">
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">5-Year Delta</p>
+            <p id="roi-modal-ltv-5year" style="font-size:1.5rem;font-weight:800;color:#60a5fa;margin-top:2px">--</p>
+          </div>
+          <div class="text-center">
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">Annual Increase</p>
+            <p id="roi-modal-ltv-annual" style="font-size:1.5rem;font-weight:800;color:#60a5fa;margin-top:2px">--</p>
+          </div>
+          <div class="text-center">
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">ROI Multiple</p>
+            <p id="roi-modal-ltv-multiple" style="font-size:1.5rem;font-weight:800;color:#60a5fa;margin-top:2px">--</p>
+          </div>
+        </div>
+        <p id="roi-modal-ltv-explanation" style="font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.6"></p>
+      </div>
+    </div>
+    
+    <!-- Skill Impact Section -->
+    <div class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">🎯 Skill Impact Breakdown</h3>
+      <div id="roi-modal-skill-impact" class="space-y-2"></div>
+    </div>
+    
+    <!-- Path Comparison Section -->
+    <div class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">🛤️ Career Path Comparison</h3>
+      <div id="roi-modal-path-comparison" class="space-y-2"></div>
+    </div>
+    
+    <!-- Success Stories Section -->
+    <div class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">✨ Success Stories</h3>
+      <div id="roi-modal-success-stories" class="space-y-3"></div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button id="roi-modal-close-btn" class="btn-ghost" style="flex:1;justify-content:center;padding:11px">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── HISTORY MODAL ── -->
+<div id="history-modal" class="jt-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="history-modal-title">
+  <div class="jt-modal-box" style="max-width:800px;max-height:90vh;overflow-y:auto">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 id="history-modal-title" style="font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:-0.03em">Skill Gap History</h2>
+        <p id="history-modal-subtitle" style="font-size:0.9rem;color:rgba(255,255,255,0.6);margin-top:4px">Track Your Progress Over Time</p>
+      </div>
+      <button id="history-modal-close" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:4px;border-radius:8px;transition:color 0.15s ease" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'" aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    
+    <!-- Trend Summary -->
+    <div class="mb-4 p-4" style="background:rgba(99,102,241,0.1);border-radius:12px;border:1px solid rgba(99,102,241,0.3)">
+      <div class="flex items-center justify-between">
+        <div>
+          <p style="font-size:0.75rem;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.05em">Overall Trend</p>
+          <p id="history-trend-delta" style="font-size:1.8rem;font-weight:800;color:#818cf8;margin-top:2px">--</p>
+        </div>
+        <div class="text-right">
+          <p style="font-size:0.75rem;color:rgba(255,255,255,0.6)">Confidence</p>
+          <p id="history-trend-confidence" style="font-size:1.3rem;font-weight:700;color:#818cf8;margin-top:2px">--</p>
+        </div>
+      </div>
+      <p id="history-trend-message" style="font-size:0.85rem;color:rgba(255,255,255,0.7);margin-top:12px;line-height:1.6"></p>
+    </div>
+    
+    <!-- Timeline Chart -->
+    <div class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">📈 Match Score Timeline</h3>
+      <div id="history-timeline-chart" style="min-height:200px;background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.1)">
+        <canvas id="history-chart-canvas" style="width:100%;height:180px"></canvas>
+      </div>
+    </div>
+    
+    <!-- Monthly Snapshots -->
+    <div class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">📅 Monthly Snapshots</h3>
+      <div id="history-snapshots-list" class="space-y-2"></div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button id="history-modal-close-btn" class="btn-ghost" style="flex:1;justify-content:center;padding:11px">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EXPORT MODAL ── -->
+<div id="export-modal" class="jt-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
+  <div class="jt-modal-box" style="max-width:600px">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 id="export-modal-title" style="font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:-0.03em">Export Analysis</h2>
+        <p style="font-size:0.9rem;color:rgba(255,255,255,0.6);margin-top:4px">Download your complete skill arbitrage report</p>
+      </div>
+      <button id="export-modal-close" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:4px;border-radius:8px;transition:color 0.15s ease" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'" aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    
+    <!-- Export Format Selection -->
+    <div class="mb-4">
+      <h3 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-0.02em">Select Format</h3>
+      <div class="space-y-3">
+        <!-- JSON Format -->
+        <div class="p-4" style="background:rgba(59,130,246,0.1);border-radius:12px;border:1px solid rgba(59,130,246,0.3);cursor:pointer;transition:all 0.2s ease" onclick="selectExportFormat('json')" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'">
+          <div class="flex items-center justify-between">
+            <div>
+              <p style="font-size:0.95rem;font-weight:600;color:#60a5fa;margin-bottom:4px">📄 JSON Format</p>
+              <p style="font-size:0.8rem;color:rgba(255,255,255,0.6)">Complete data export for developers</p>
+            </div>
+            <i data-lucide="download" class="w-5 h-5" style="color:#60a5fa"></i>
+          </div>
+        </div>
+        
+        <!-- CSV Format -->
+        <div class="p-4" style="background:rgba(34,197,94,0.1);border-radius:12px;border:1px solid rgba(34,197,94,0.3);cursor:pointer;transition:all 0.2s ease" onclick="selectExportFormat('csv')" onmouseover="this.style.background='rgba(34,197,94,0.15)'" onmouseout="this.style.background='rgba(34,197,94,0.1)'">
+          <div class="flex items-center justify-between">
+            <div>
+              <p style="font-size:0.95rem;font-weight:600;color:#34d399;margin-bottom:4px">📊 CSV Format</p>
+              <p style="font-size:0.8rem;color:rgba(255,255,255,0.6)">Spreadsheet-friendly tabular data</p>
+            </div>
+            <i data-lucide="download" class="w-5 h-5" style="color:#34d399"></i>
+          </div>
+        </div>
+        
+        <!-- HTML Format -->
+        <div class="p-4" style="background:rgba(168,85,247,0.1);border-radius:12px;border:1px solid rgba(168,85,247,0.3);cursor:pointer;transition:all 0.2s ease" onclick="selectExportFormat('html')" onmouseover="this.style.background='rgba(168,85,247,0.15)'" onmouseout="this.style.background='rgba(168,85,247,0.1)'">
+          <div class="flex items-center justify-between">
+            <div>
+              <p style="font-size:0.95rem;font-weight:600;color:#a78bfa;margin-bottom:4px">🌐 HTML Report</p>
+              <p style="font-size:0.8rem;color:rgba(255,255,255,0.6)">Formatted report for viewing/printing</p>
+            </div>
+            <i data-lucide="download" class="w-5 h-5" style="color:#a78bfa"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Export Status -->
+    <div id="export-status" style="display:none;margin-top:16px;padding:12px;background:rgba(59,130,246,0.1);border-radius:8px;border:1px solid rgba(59,130,246,0.3)">
+      <p id="export-status-text" style="font-size:0.85rem;color:rgba(255,255,255,0.8)"></p>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button id="export-modal-close-btn" class="btn-ghost" style="flex:1;justify-content:center;padding:11px">Close</button>
     </div>
   </div>
 </div>
