@@ -443,7 +443,7 @@
                   <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Market Board</h2><span class="text-xs" style="color:var(--text-muted)">Live snapshot</span></div>
                   <div id="feature3-market-table" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
                 </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-4 glass-card rounded-2xl p-4 md:p-5 overflow-auto">
                   <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Gap Radar + ROI</h2><span class="text-xs" style="color:var(--text-muted)">Top-decile pursuit</span></div>
                   
                   <!-- Match Score Display -->
@@ -462,7 +462,7 @@
                     </div>
                   </div>
                   
-                  <canvas class="radar-canvas" id="feature3-radar-workspace"></canvas>
+                  <canvas class="radar-canvas" id="feature3-radar-workspace" style="max-height:250px"></canvas>
                   <div id="feature3-roi-bars-workspace" class="space-y-2 mt-3"></div>
                 </section>
               </div>
