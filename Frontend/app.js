@@ -1,7 +1,9 @@
 // Auto-detect API base: if running on GitHub Pages, show a clear message
 // If running locally, connect to local backend
 const _isGitHubPages = window.location.hostname.includes("github.io");
-const API_BASE = window.__CAREER_OS_API__ ?? (_isGitHubPages ? null : "http://127.0.0.1:8000");
+const _isRailway = window.location.hostname.includes("railway.app") || window.location.hostname.includes("up.railway.app");
+// On Railway the frontend is served by the same FastAPI process — use same origin
+const API_BASE = window.__CAREER_OS_API__ ?? (_isRailway ? window.location.origin : _isGitHubPages ? null : "http://127.0.0.1:8000");
 
 // If on GitHub Pages, patch submitAuth to show a helpful message
 if (_isGitHubPages) {
@@ -3200,8 +3202,13 @@ function showRoiModal() {
         <div class="flex items-start gap-2">
           <span style="font-size:1.2rem">✨</span>
           <div style="flex:1">
-            <p style="font-size:0.85rem;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:4px">${story.story || story.description || ''}</p>
-            <p style="font-size:0.75rem;color:rgba(255,255,255,0.5)">${story.outcome || ''}</p>
+            <p style="font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:4px">${story.persona || 'Career Changer'}</p>
+            <p style="font-size:0.85rem;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:4px">${story.result || story.story || story.description || ''}</p>
+            <div class="flex items-center gap-3 mt-1">
+              ${story.timeline_weeks ? `<span style="font-size:0.75rem;color:rgba(255,255,255,0.5)">⏱ ${story.timeline_weeks} weeks</span>` : ''}
+              ${story.match_rate_lift_points ? `<span style="font-size:0.75rem;color:#34d399">+${story.match_rate_lift_points} match pts</span>` : ''}
+              ${story.bucket ? `<span style="font-size:0.7rem;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,0.2);color:#34d399">${story.bucket.replace('_', ' ')}</span>` : ''}
+            </div>
           </div>
         </div>
       </div>
