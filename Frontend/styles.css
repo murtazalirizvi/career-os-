@@ -240,6 +240,66 @@ main.h-full{overflow-y:auto!important;overflow-x:hidden!important}
 /* ── Workspace list cards ── */
 .workspace-list-card{border:1px solid var(--border);background:var(--surface);border-radius:var(--r-md);padding:8px 12px}
 
+/* ── Dashboard analytics ── */
+.dashboard-sync-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:999px;
+  border:1px solid rgba(99,102,241,0.25);
+  background:rgba(99,102,241,0.08);
+  color:rgba(255,255,255,0.8);
+  font-size:0.72rem;font-weight:600;
+}
+.dashboard-score-card{min-height:132px}
+.dashboard-score-value{
+  margin-top:6px;
+  font-size:clamp(2.4rem,5vw,3.6rem);
+  font-weight:800;
+  line-height:1;
+  letter-spacing:-0.06em;
+  color:#fff;
+  text-shadow:0 0 28px rgba(99,102,241,0.2);
+}
+.dashboard-score-breakdown-card{
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:rgba(255,255,255,0.03);
+  padding:10px 12px;
+}
+.dashboard-score-breakdown-label{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font-size:11px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.12em;
+}
+.dashboard-score-breakdown-bar{
+  height:8px;border-radius:999px;overflow:hidden;
+  background:rgba(255,255,255,0.08);margin-top:8px;
+}
+.dashboard-score-breakdown-fill{
+  height:100%;border-radius:999px;
+  background:linear-gradient(90deg,#818cf8 0%,#6366f1 100%);
+  box-shadow:0 0 18px rgba(99,102,241,0.35);
+}
+.dashboard-score-breakdown-meta{margin-top:6px;font-size:11px;color:rgba(255,255,255,0.55);line-height:1.35}
+.dashboard-chart-row{display:flex;align-items:center;gap:8px}
+.dashboard-chart-label{min-width:72px;font-size:11px;color:rgba(255,255,255,0.65);flex-shrink:0}
+.dashboard-chart-track{
+  position:relative;flex:1;height:10px;border-radius:999px;
+  background:rgba(255,255,255,0.08);overflow:hidden;
+}
+.dashboard-chart-fill{
+  position:absolute;inset:0 auto 0 0;height:100%;
+  border-radius:999px;background:linear-gradient(90deg,rgba(34,197,94,0.95),rgba(99,102,241,0.95));
+  box-shadow:0 0 16px rgba(99,102,241,0.22);
+}
+.dashboard-chart-value{min-width:30px;text-align:right;font-size:11px;color:rgba(255,255,255,0.72);flex-shrink:0}
+.dashboard-empty-state{
+  border:1px dashed rgba(255,255,255,0.14);
+  border-radius:14px;
+  padding:12px;
+  background:rgba(255,255,255,0.02);
+  color:rgba(255,255,255,0.62);
+  font-size:12px;
+}
+
 /* ── Inputs & selects ── */
 input,textarea,select{font-family:inherit}
 button:focus-visible,summary:focus-visible,input:focus-visible,

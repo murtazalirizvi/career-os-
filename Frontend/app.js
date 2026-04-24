@@ -74,6 +74,12 @@ const AppState = {
     history: [],
     exportBundle: null
   },
+  dashboard: {
+    loading: false,
+    error: null,
+    data: null,
+    lastLoadedAt: null
+  },
   ui: {
     mode: "beginner",
     feature1Loading: false,
@@ -175,6 +181,7 @@ async function submitAuth() {
     document.querySelectorAll("[id*='candidate']").forEach((el) => {
       if (el.tagName === "INPUT") el.value = data.user.candidate_id;
     });
+    void loadDashboard();
   } catch {
     errEl.textContent = "Cannot connect to server. Make sure the backend is running on port 8000.";
     errEl.style.display = "block";
@@ -261,6 +268,152 @@ function renderScoreCard(key, value) {
     </div>`;
 }
 
+function formatDashboardTimestamp(value) {
+  if (!value) return "Not loaded";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not loaded";
+  return new Intl.DateTimeFormat([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+function dashboardStatusFromScore(score) {
+  const pct = Math.max(0, Math.min(100, Number(score) || 0));
+  if (pct >= 85) return { label: "Ready to Apply", tone: "#34d399" };
+  if (pct >= 70) return { label: "Strong Candidate", tone: "#67e8f9" };
+  if (pct >= 50) return { label: "Building Momentum", tone: "#fbbf24" };
+  return { label: "Needs More Signal", tone: "#f87171" };
+}
+
+function renderDashboardBreakdown(components = []) {
+  if (!nodes.dashboardScoreBreakdown) return;
+  if (!components.length) {
+    nodes.dashboardScoreBreakdown.innerHTML = `<div class="dashboard-empty-state">No breakdown available yet. Run Feature 1, Feature 2, or Feature 3 to populate the readiness score.</div>`;
+    return;
+  }
+
+  nodes.dashboardScoreBreakdown.innerHTML = components
+    .map((component) => {
+      const pct = Math.max(0, Math.min(100, Number(component.score) || 0));
+      const normalizedWeight = Math.round((Number(component.normalized_weight) || 0) * 100);
+      const contribution = Number(component.contribution) || 0;
+      return `
+        <div class="dashboard-score-breakdown-card">
+          <div class="dashboard-score-breakdown-label">
+            <span>${component.label}</span>
+            <span>${pct}% · ${normalizedWeight}% weight</span>
+          </div>
+          <div class="dashboard-score-breakdown-bar"><div class="dashboard-score-breakdown-fill" style="width:${pct}%;"></div></div>
+          <div class="dashboard-score-breakdown-meta">${component.summary || "Not available yet"}<br/>Weighted contribution: ${contribution.toFixed(1)}</div>
+        </div>`;
+    })
+    .join("");
+}
+
+function renderDashboardChart(chartData = []) {
+  if (!nodes.dashboardChart) return;
+  if (!chartData.length) {
+    nodes.dashboardChart.innerHTML = `<div class="dashboard-empty-state">No analytics points yet. Complete a feature run and we’ll show real dashboard activity here.</div>`;
+    return;
+  }
+
+  const maxValue = Math.max(...chartData.map((item) => Number(item.value) || 0), 1);
+  nodes.dashboardChart.innerHTML = chartData
+    .map((item) => {
+      const value = Number(item.value) || 0;
+      const width = Math.max(6, Math.min(100, (value / maxValue) * 100));
+      const label = item.label || "Metric";
+      const display = item.events != null ? item.events : Math.round(value);
+      return `
+        <div class="dashboard-chart-row">
+          <div class="dashboard-chart-label">${label}</div>
+          <div class="dashboard-chart-track"><div class="dashboard-chart-fill" style="width:${width}%;"></div></div>
+          <div class="dashboard-chart-value">${display}</div>
+        </div>`;
+    })
+    .join("");
+}
+
+function renderDashboardActivity(rows = []) {
+  if (!nodes.dashboardActivity) return;
+  if (!rows.length) {
+    nodes.dashboardActivity.innerHTML = `<div class="activity-row">No dashboard activity yet. Run Feature 1 to generate the first real signal.</div>`;
+    return;
+  }
+
+  nodes.dashboardActivity.innerHTML = rows
+    .slice(0, 6)
+    .map((row) => {
+      const label = row.event_name || row.feature_area || "activity";
+      const when = formatDashboardTimestamp(row.occurred_at_utc);
+      const detail = row.application_id ? `Application ${row.application_id}` : (row.feature_area || "signal");
+      return `<div class="activity-row"><div class="flex items-center justify-between gap-2"><span>${label}</span><span class="text-[11px]" style="color:var(--text-muted)">${when}</span></div><div class="text-[11px]" style="color:rgba(255,255,255,0.55)">${detail}</div></div>`;
+    })
+    .join("");
+}
+
+async function loadDashboard(options = {}) {
+  const silent = Boolean(options.silent);
+  if (!API_BASE) {
+    AppState.setState({
+      dashboard: {
+        loading: false,
+        error: "The backend is not available in this preview. Run the app locally to load the dashboard.",
+        data: null,
+        lastLoadedAt: null
+      }
+    });
+    return;
+  }
+
+  if (!silent) {
+    AppState.setState({
+      dashboard: {
+        ...AppState.dashboard,
+        loading: true,
+        error: null
+      }
+    });
+  }
+
+  try {
+    const response = await apiFetch(`${API_BASE}/api/me/dashboard`);
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload?.detail || "Dashboard data unavailable.");
+    }
+
+    if (payload?.user?.candidate_id) {
+      document.querySelectorAll("[id*='candidate']").forEach((el) => {
+        if (el.tagName === "INPUT" && !el.matches(":focus")) {
+          el.value = payload.user.candidate_id;
+        }
+      });
+    }
+
+    AppState.setState({
+      dashboard: {
+        loading: false,
+        error: null,
+        data: payload,
+        lastLoadedAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    AppState.setState({
+      dashboard: {
+        loading: false,
+        error: handleApiError(error, "Dashboard"),
+        data: AppState.dashboard?.data ?? null,
+        lastLoadedAt: AppState.dashboard?.lastLoadedAt ?? null
+      }
+    });
+  }
+}
+
 function navigateTo(viewName) {
   startViewSwap(viewName);
 }
@@ -273,6 +426,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const app = document.getElementById("app-shell");
     if (landing) landing.style.display = "none";
     if (app) app.style.display = "block";
+    void loadDashboard();
   }
   lucide.createIcons();
 
@@ -311,6 +465,15 @@ const nodes = {
   dashboardOpenWorkspace: document.getElementById("dashboard-open-workspace"),
   dashboardFeatureExplainer: document.getElementById("dashboard-feature-explainer"),
   dashboardActivity: document.getElementById("dashboard-activity"),
+  dashboardSyncStatus: document.getElementById("dashboard-sync-status"),
+  dashboardRefresh: document.getElementById("dashboard-refresh"),
+  dashboardReadinessScore: document.getElementById("dashboard-readiness-score"),
+  dashboardReadinessLabel: document.getElementById("dashboard-readiness-label"),
+  dashboardReadinessSummary: document.getElementById("dashboard-readiness-summary"),
+  dashboardScoreBreakdown: document.getElementById("dashboard-score-breakdown"),
+  dashboardGeneratedAt: document.getElementById("dashboard-generated-at"),
+  dashboardChart: document.getElementById("dashboard-chart"),
+  dashboardChartNote: document.getElementById("dashboard-chart-note"),
   uiModeBeginner: document.getElementById("ui-mode-beginner"),
   uiModeExpert: document.getElementById("ui-mode-expert"),
   uiModeLabel: document.getElementById("ui-mode-label"),
@@ -908,63 +1071,158 @@ function renderFeature3Workspace() {
 function renderDashboard() {
   if (!nodes.dashboardProgress || !nodes.dashboardPlan) return;
 
-  const hasResume = Boolean(AppState.resumeFile);
-  const hasJd = Boolean(nodes.jobDescription.value.trim());
-  const hasLens = Boolean(AppState.feature1.analysis);
-  const hasRebound = Boolean(AppState.feature2.interview);
-  const hasNarrative = Boolean(AppState.feature5.session);
+  const dashboard = AppState.dashboard || {};
+  const data = dashboard.data || {};
+  const readiness = data.readiness || {};
+  const latestAnalysis = data.latest_analysis || {};
+  const interviewAnalysis = data.interview_analysis || {};
+  const marketAnalysis = data.market_analysis || {};
+  const analytics = data.analytics || {};
+  const nextActions = Array.isArray(data.next_actions) ? data.next_actions : [];
+  const statusIndicators = data.status_indicators || {};
+  const score = Number(readiness.score ?? data.readiness_score ?? 0);
+  const scoreMeta = dashboardStatusFromScore(score);
+  const lastLoaded = dashboard.lastLoadedAt || data.generated_at || null;
+  const chartData = Array.isArray(analytics.chart_data) && analytics.chart_data.length
+    ? analytics.chart_data
+    : (Array.isArray(analytics.snapshot_chart_data) ? analytics.snapshot_chart_data : []);
+  const activityRows = Array.isArray(analytics.recent_activity) && analytics.recent_activity.length
+    ? analytics.recent_activity
+    : (AppState.ui?.activity || []).map((line) => ({ event_name: line, feature_area: "activity", occurred_at_utc: new Date().toISOString() }));
 
-  const steps = [
-    { done: hasResume && hasJd, title: "Step 1: Add Resume + JD", desc: "Upload your resume and paste the target job description." },
-    { done: hasLens, title: "Step 2: Run Lens", desc: "Generate ATS + semantic score and apply top recommendations." },
-    { done: hasRebound, title: "Step 3: Run Rebound", desc: "Capture interview feedback and next interview action plan." },
-    { done: hasNarrative, title: "Step 4: Run Narrative", desc: "Generate STAR stories and export portfolio artifacts." },
-  ];
+  if (nodes.dashboardSyncStatus) {
+    if (dashboard.loading) {
+      nodes.dashboardSyncStatus.textContent = "Syncing dashboard...";
+    } else if (dashboard.error && !data.readiness) {
+      nodes.dashboardSyncStatus.textContent = "Dashboard offline";
+    } else if (lastLoaded) {
+      nodes.dashboardSyncStatus.textContent = `Live ${formatDashboardTimestamp(lastLoaded)}`;
+    } else {
+      nodes.dashboardSyncStatus.textContent = "Dashboard idle";
+    }
+  }
 
-  nodes.dashboardProgress.innerHTML = steps
-    .map((step) => `<div class="workspace-list-card"><div class="flex items-center justify-between"><span class="text-white/90">${step.title}</span><span class="text-[11px] ${step.done ? "text-emerald-300" : "text-amber-300"}">${step.done ? "Done" : "Pending"}</span></div><div class="text-xs text-white/65 mt-1">${step.desc}</div></div>`)
-    .join("");
+  if (nodes.dashboardReadinessScore) {
+    nodes.dashboardReadinessScore.textContent = dashboard.loading ? "--" : `${Math.round(score)}%`;
+  }
+  if (nodes.dashboardReadinessLabel) {
+    nodes.dashboardReadinessLabel.textContent = dashboard.loading
+      ? "Loading live dashboard data"
+      : readiness.label || scoreMeta.label;
+    nodes.dashboardReadinessLabel.style.color = scoreMeta.tone;
+  }
+  if (nodes.dashboardReadinessSummary) {
+    nodes.dashboardReadinessSummary.textContent = dashboard.loading
+      ? "Pulling latest resume, interview, and market signals..."
+      : readiness.formula || latestAnalysis.summary || "Connects your resume, interview, and market signals into one score.";
+  }
+  if (nodes.dashboardGeneratedAt) {
+    nodes.dashboardGeneratedAt.textContent = lastLoaded ? `Updated ${formatDashboardTimestamp(lastLoaded)}` : "Not loaded";
+  }
 
-  const action = smartActionMeta();
-  nodes.dashboardPlan.innerHTML = `
-    <div class="workspace-list-card">${action.label.replace("Next Best Action: ", "")}</div>
-    <div class="workspace-list-card text-xs">Completion: ${steps.filter((s) => s.done).length}/4 steps</div>
-    <div class="workspace-list-card text-xs">Current mode: ${(AppState.ui?.mode || "beginner").toUpperCase()}</div>
-  `;
+  if (dashboard.loading && !data.readiness) {
+    nodes.dashboardProgress.innerHTML = stateStack([
+      "Loading dashboard signals...",
+      "Resolving resume, interview, and market data...",
+      "Preparing analytics cards and status summary..."
+    ], "loading");
+    nodes.dashboardPlan.innerHTML = stateStack([
+      "Waiting for live dashboard payload...",
+      "Refresh if the backend has just finished processing your data."
+    ], "loading");
+    renderDashboardBreakdown([]);
+    renderDashboardChart([]);
+    renderDashboardActivity([]);
+  } else if (dashboard.error && !data.readiness) {
+    nodes.dashboardProgress.innerHTML = `<div class="dashboard-empty-state">${dashboard.error}</div>`;
+    nodes.dashboardPlan.innerHTML = `<div class="dashboard-empty-state">${dashboard.error}</div>`;
+    renderDashboardBreakdown([]);
+    renderDashboardChart([]);
+    renderDashboardActivity([]);
+  } else {
+    const hasLens = Boolean(latestAnalysis.analysis_id || AppState.feature1.analysis);
+    const hasRebound = Boolean(interviewAnalysis.interview_id || AppState.feature2.interview);
+    const hasArbitrage = Boolean(marketAnalysis.gap_snapshot_id || AppState.feature3.gap);
+    const hasNarrative = Boolean(AppState.feature5.session);
 
-  if (nodes.dashboardFeatureExplainer) {
-    const explainer = [
-      { view: "lens-engine", name: "Lens", desc: "Fix resume ATS + semantic issues to improve callback odds.", done: hasLens },
-      { view: "rebound", name: "Rebound", desc: "Debrief interviews and get recovery actions + trend analysis.", done: hasRebound },
-      { view: "arbitrage", name: "Skill Arbitrage", desc: "Find market-fit skill gaps and weekly ROI actions.", done: Boolean(AppState.feature3.gap) },
-      { view: "narrative", name: "Narrative Architect", desc: "Turn GitHub projects into STAR stories and export assets.", done: hasNarrative },
-      { view: "persona-play", name: "Persona Coach", desc: "Practice high-pressure mock interviews with adversarial AI.", done: Boolean(AppState.feature4.session) },
+    const steps = [
+      {
+        done: hasLens,
+        title: "Step 1: Resume intelligence",
+        desc: latestAnalysis.summary || "Run Feature 1 to populate the resume baseline."
+      },
+      {
+        done: hasRebound,
+        title: "Step 2: Interview recovery",
+        desc: interviewAnalysis.summary || "Capture interview signals to improve the next conversation."
+      },
+      {
+        done: hasArbitrage,
+        title: "Step 3: Skill gap + market fit",
+        desc: marketAnalysis.summary || "Map your current skills to the target role market."
+      },
+      {
+        done: hasNarrative,
+        title: "Step 4: Narrative + portfolio",
+        desc: "Turn projects into STAR stories and export the final portfolio pack."
+      },
     ];
 
-    nodes.dashboardFeatureExplainer.innerHTML = explainer
-      .map((item) => `
-        <button class="feature-chip w-full" data-view="${item.view}">
-          <span class="feature-chip-title">${item.name}</span>
-          <span class="feature-chip-state ${item.done ? "done" : "pending"}">${item.done ? "Ready" : "Pending"}</span>
-          <span class="feature-chip-desc">${item.desc}</span>
-        </button>
-      `)
-      .join("");
-  }
+    nodes.dashboardProgress.innerHTML = [
+      data.readiness_score != null
+        ? `<div class="workspace-list-card"><div class="flex items-center justify-between"><span class="text-white/90">Readiness snapshot</span><span class="text-[11px]" style="color:${scoreMeta.tone}">${readiness.label || scoreMeta.label}</span></div><div class="text-xs text-white/65 mt-1">${readiness.formula || "Normalized weighted average of the available signals."}</div></div>`
+        : `<div class="dashboard-empty-state">No dashboard snapshot yet. Run Feature 1 to create the first real readiness signal.</div>`,
+      ...steps.map((step) => `<div class="workspace-list-card"><div class="flex items-center justify-between"><span class="text-white/90">${step.title}</span><span class="text-[11px] ${step.done ? "text-emerald-300" : "text-amber-300"}">${step.done ? "Done" : "Pending"}</span></div><div class="text-xs text-white/65 mt-1">${step.desc}</div></div>`)
+    ].join("");
 
-  if (nodes.dashboardActivity) {
-    const rows = AppState.ui?.activity || [];
-    nodes.dashboardActivity.innerHTML = rows.length
-      ? rows.map((line) => `<div class="activity-row">${line}</div>`).join("")
-      : `<div class="activity-row">No actions yet. Start with Upload Resume and Run Lens.</div>`;
-  }
+    const topAction = nextActions[0] || smartActionMeta();
+    const pipeline = data.job_pipeline || {};
+    const pipelineSummary = ["Wishlist", "Applied", "Interviewing", "Offered", "Rejected"]
+      .map((status) => `${status}: ${pipeline[status] ?? 0}`)
+      .join(" · ");
 
-  if (nodes.dashboardNextAction) {
-    nodes.dashboardNextAction.textContent = action.label;
+    nodes.dashboardPlan.innerHTML = `
+      <div class="workspace-list-card"><div class="flex items-center justify-between gap-2"><span class="text-white/90">${topAction.label.replace(/^Next Best Action:\s*/, "")}</span><span class="text-[11px]" style="color:${scoreMeta.tone}">${statusIndicators.ready_to_apply ? "Ready to Apply" : scoreMeta.label}</span></div><div class="text-xs text-white/65 mt-1">${topAction.reason || readiness.formula || "Use the dashboard to pick the next best action."}</div></div>
+      <div class="workspace-list-card text-xs">Pipeline: ${pipelineSummary || "No jobs logged yet."}</div>
+      <div class="workspace-list-card text-xs">Current mode: ${(AppState.ui?.mode || "beginner").toUpperCase()}</div>
+    `;
+
+    if (nodes.dashboardFeatureExplainer) {
+      const explainer = [
+        { view: "lens-engine", name: "Lens", desc: "Resume intelligence and ATS scoring.", done: hasLens },
+        { view: "rebound", name: "Rebound", desc: "Interview recovery and follow-up analysis.", done: hasRebound },
+        { view: "arbitrage", name: "Skill Arbitrage", desc: "Market-fit gap analysis and sprint planning.", done: hasArbitrage },
+        { view: "narrative", name: "Narrative Architect", desc: "Portfolio and STAR-story generation.", done: hasNarrative },
+        { view: "persona-play", name: "Persona Coach", desc: "Practice high-pressure mock interviews.", done: Boolean(AppState.feature4.session) },
+      ];
+
+      nodes.dashboardFeatureExplainer.innerHTML = explainer
+        .map((item) => `
+          <button class="feature-chip w-full" data-view="${item.view}">
+            <span class="feature-chip-title">${item.name}</span>
+            <span class="feature-chip-state ${item.done ? "done" : "pending"}">${item.done ? "Ready" : "Pending"}</span>
+            <span class="feature-chip-desc">${item.desc}</span>
+          </button>
+        `)
+        .join("");
+    }
+
+    renderDashboardBreakdown(readiness.components || []);
+    renderDashboardChart(chartData);
+    renderDashboardActivity(activityRows);
+
+    if (nodes.dashboardNextAction) {
+      nodes.dashboardNextAction.textContent = topAction.label || "Run Next Action";
+    }
   }
 
   if (nodes.onboardingStatus) {
-    const doneCount = steps.filter((s) => s.done).length;
+    const doneCount = [
+      Boolean(latestAnalysis.analysis_id || AppState.feature1.analysis),
+      Boolean(interviewAnalysis.interview_id || AppState.feature2.interview),
+      Boolean(marketAnalysis.gap_snapshot_id || AppState.feature3.gap),
+      Boolean(AppState.feature5.session)
+    ].filter(Boolean).length;
     nodes.onboardingStatus.textContent = `Step ${Math.min(doneCount + 1, 4)} of 4`;
   }
 
@@ -2416,6 +2674,7 @@ async function runFeature3Arbitrage() {
     });
 
     setStatus(`Skill Arbitrage complete - match ${gap.match_score}, callback ${roi.callback_probability.probability}%`);
+    void loadDashboard({ silent: true });
   } catch (error) {
     setStatus(handleApiError(error, "Skill Arbitrage"));
   } finally {
@@ -2595,6 +2854,7 @@ async function runFeature1Analysis() {
 
     setStatus(`Hiring Lens complete - score ${data.score.overall}`);
     await loadVersions();
+    void loadDashboard({ silent: true });
   } catch (error) {
     AppState.setState({ scannerActive: false, heatmapActive: false });
     setStatus(handleApiError(error, "Hiring Lens"));
@@ -2718,6 +2978,7 @@ async function runFeature2Autopsy() {
 
     await Promise.all([loadFeature2Trend(), loadFeature2Forecast()]);
     setStatus(`Interview Autopsy complete - autopsy #${interview.interview_id}`);
+    void loadDashboard({ silent: true });
   } catch (error) {
     setStatus(handleApiError(error, "Interview Autopsy"));
   } finally {
@@ -3002,6 +3263,7 @@ function setupNavigation() {
   nodes.runFeature5?.addEventListener("click", runFeature5NarrativeArchitect);
   nodes.dashboardNextAction?.addEventListener("click", runSmartAction);
   nodes.dashboardOpenWorkspace?.addEventListener("click", () => startViewSwap("command-center"));
+  nodes.dashboardRefresh?.addEventListener("click", () => loadDashboard());
   nodes.dashboardFeatureExplainer?.addEventListener("click", (event) => {
     const target = event.target.closest("button[data-view]");
     if (!target) return;
