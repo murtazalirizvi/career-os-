@@ -816,6 +816,45 @@ function drawFeature3Radar() {
       stroke: "rgba(45, 212, 191, 0.68)"
     });
   });
+  
+  // Update match score display
+  updateFeature3MatchScoreDisplay();
+}
+
+function updateFeature3MatchScoreDisplay() {
+  const gap = AppState.feature3?.gap;
+  const display = document.getElementById('feature3-match-score-display');
+  const matchScoreValue = document.getElementById('feature3-match-score-value');
+  const gapScoreValue = document.getElementById('feature3-gap-score-value');
+  const missingSkillsList = document.getElementById('feature3-missing-skills-list');
+  
+  if (!gap || !display) return;
+  
+  // Show the display
+  display.style.display = 'flex';
+  
+  // Update match score
+  if (matchScoreValue) {
+    const score = Math.round(gap.match_score || 0);
+    matchScoreValue.textContent = score + '%';
+    // Color code: green if >80, yellow if >60, red otherwise
+    matchScoreValue.style.color = score >= 80 ? '#34d399' : score >= 60 ? '#fbbf24' : '#f87171';
+  }
+  
+  // Update gap to top 10%
+  if (gapScoreValue) {
+    const gapScore = Math.round(gap.gap_to_top10_score || 0);
+    gapScoreValue.textContent = gapScore + '%';
+  }
+  
+  // Update missing skills
+  if (missingSkillsList && gap.niche_recommendations) {
+    const missingSkills = gap.niche_recommendations
+      .slice(0, 5)
+      .map(rec => rec.skill)
+      .join(', ');
+    missingSkillsList.textContent = missingSkills || 'None identified';
+  }
 }
 
 function renderFeature3RoiBars() {
