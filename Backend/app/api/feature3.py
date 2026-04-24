@@ -190,8 +190,8 @@ def _dumps(value: Any) -> str:
 
 @router.post("/market-snapshot", response_model=Feature3MarketSnapshotResponse)
 def create_market_snapshot(req: Feature3MarketSnapshotRequest, session: Session = Depends(get_session)):
-    # Chunk 4: Check cache first
-    cache_key = (req.target_role, req.region, req.salary_currency)
+    # Chunk 4: Check cache first — include remote_only so remote/non-remote don't collide (Bug 7 fix)
+    cache_key = (req.target_role, req.region, req.salary_currency, req.remote_only)
     cached_payload = _market_cache.get(cache_key)
     
     if cached_payload:
@@ -214,11 +214,11 @@ def create_market_snapshot(req: Feature3MarketSnapshotRequest, session: Session 
     jobs = payload["jobs"]
     job_count = len(jobs)
     
-    # Calculate average salary from converted salary map
+    # Calculate average salary from converted salary map — key is "avg_salary" not "avg" (Bug 5 fix)
     all_salaries = []
     for skill_data in salary_map.values():
-        if "avg" in skill_data:
-            all_salaries.append(skill_data["avg"])
+        if "avg_salary" in skill_data:
+            all_salaries.append(skill_data["avg_salary"])
     avg_salary = sum(all_salaries) / len(all_salaries) if all_salaries else 0.0
     
     # Extract top skills
@@ -630,6 +630,237 @@ def candidate_historical_gaps(candidate_id: str, session: Session = Depends(get_
     )
 
 
+# ─── Export Analysis Results ──────────────────────────────────────────────────
+
+@router.get("/candidate/{candidate_id}/export")
+def export_analysis_results(
+    candidate_id: str,
+    format: str = "json",
+    session: Session = Depends(get_session)
+):
+    """
+    Export complete analysis results for a candidate.
+    Formats: json, csv, html
+    Bug 1 & 4 fix: use correct SQLModel field names and _loads() for JSON columns.
+    """
+    # Get latest market snapshot
+    market_query = (
+        select(Feature3MarketSnapshot)
+        .where(Feature3MarketSnapshot.candidate_id == candidate_id)
+        .order_by(Feature3MarketSnapshot.created_at.desc())
+        .limit(1)
+    )
+    market_snapshot = session.exec(market_query).first()
+
+    # Get latest gap analysis
+    gap_query = (
+        select(Feature3GapSnapshot)
+        .where(Feature3GapSnapshot.candidate_id == candidate_id)
+        .order_by(Feature3GapSnapshot.created_at.desc())
+        .limit(1)
+    )
+    gap_snapshot = session.exec(gap_query).first()
+
+    # Get latest sprint
+    sprint_query = (
+        select(Feature3SkillSprint)
+        .where(Feature3SkillSprint.candidate_id == candidate_id)
+        .order_by(Feature3SkillSprint.started_at.desc())
+        .limit(1)
+    )
+    sprint = session.exec(sprint_query).first()
+
+    # Get latest ROI report
+    roi_query = (
+        select(Feature3RoiReport)
+        .where(Feature3RoiReport.candidate_id == candidate_id)
+        .order_by(Feature3RoiReport.created_at.desc())
+        .limit(1)
+    )
+    roi_report = session.exec(roi_query).first()
+
+    # Build export data using correct field names
+    export_data: Dict[str, Any] = {
+        "candidate_id": candidate_id,
+        "export_date": datetime.now(timezone.utc).isoformat(),
+        "market_snapshot": None,
+        "gap_analysis": None,
+        "sprint_plan": None,
+        "roi_report": None,
+    }
+
+    if market_snapshot:
+        commentary_raw = _loads(market_snapshot.market_commentary_json) if market_snapshot.market_commentary_json else {}
+        jobs_list = _loads(market_snapshot.jobs_json)
+        export_data["market_snapshot"] = {
+            "snapshot_id": market_snapshot.id,                          # .id not .snapshot_id
+            "target_role": market_snapshot.target_role,
+            "region": market_snapshot.region,
+            "jobs_count": len(jobs_list),
+            "tech_stack_clusters": _loads(market_snapshot.clustering_json),
+            "demand_supply_ratio": _loads(market_snapshot.demand_supply_json),
+            "salary_to_skill_map": _loads(market_snapshot.salary_map_json),
+            "salary_currency": market_snapshot.salary_currency,
+            "market_commentary": commentary_raw.get("commentary", ""),
+            "created_at": market_snapshot.created_at.isoformat(),
+        }
+
+    if gap_snapshot:
+        export_data["gap_analysis"] = {
+            "gap_snapshot_id": gap_snapshot.id,                         # .id not .gap_snapshot_id
+            "match_score": float(gap_snapshot.match_score),
+            "gap_to_top10_score": float(gap_snapshot.gap_to_top10_score),
+            "radar_chart": _loads(gap_snapshot.radar_chart_json),       # _loads() not direct attr
+            "roadmap_to_90": _loads(gap_snapshot.roadmap_json),
+            "niche_recommendations": _loads(gap_snapshot.niche_recommendations_json),
+            "created_at": gap_snapshot.created_at.isoformat(),
+        }
+
+    if sprint:
+        day_plan = _loads(sprint.day_plan_json)
+        mvp_raw = _loads(sprint.mvp_prompt)
+        export_data["sprint_plan"] = {
+            "sprint_id": sprint.id,                                     # .id not .sprint_id
+            "primary_skill": sprint.primary_skill,
+            "day_plan": day_plan,
+            "mvp_project_prompt": mvp_raw.get("brief", "") if isinstance(mvp_raw, dict) else str(mvp_raw),
+            "status": sprint.sprint_status,                             # .sprint_status not .status
+            "created_at": sprint.started_at.isoformat(),               # .started_at not .created_at
+        }
+
+    if roi_report:
+        export_data["roi_report"] = {
+            "roi_id": roi_report.id,                                    # .id not .roi_id
+            "callback_probability": roi_report.callback_probability,
+            "lifetime_value_delta": roi_report.lifetime_value_delta,
+            "skill_impact": _loads(roi_report.impact_json),             # .impact_json not .skill_impact_bars
+            "career_path_comparison": _loads(roi_report.path_comparison_json),
+            "success_stories": _loads(roi_report.success_stories_json),
+            "created_at": roi_report.created_at.isoformat(),
+        }
+
+    # Return based on format
+    if format == "json":
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            content=export_data,
+            headers={"Content-Disposition": f"attachment; filename=career_os_analysis_{candidate_id}.json"}
+        )
+
+    elif format == "csv":
+        import csv
+        import io
+        from fastapi.responses import StreamingResponse
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["Section", "Metric", "Value"])
+
+        if export_data["market_snapshot"]:
+            ms = export_data["market_snapshot"]
+            writer.writerow(["Market Snapshot", "Target Role", ms["target_role"]])
+            writer.writerow(["Market Snapshot", "Region", ms["region"]])
+            writer.writerow(["Market Snapshot", "Jobs Count", ms["jobs_count"]])
+            writer.writerow(["Market Snapshot", "Currency", ms["salary_currency"]])
+            writer.writerow(["Market Snapshot", "Commentary", ms["market_commentary"]])
+
+        if export_data["gap_analysis"]:
+            ga = export_data["gap_analysis"]
+            writer.writerow(["Gap Analysis", "Match Score", f"{ga['match_score']}%"])
+            writer.writerow(["Gap Analysis", "Gap to Top 10%", f"{ga['gap_to_top10_score']}%"])
+
+        if export_data["sprint_plan"]:
+            sp = export_data["sprint_plan"]
+            writer.writerow(["Sprint Plan", "Primary Skill", sp["primary_skill"]])
+            writer.writerow(["Sprint Plan", "Status", sp["status"]])
+            writer.writerow(["Sprint Plan", "MVP Prompt", sp["mvp_project_prompt"]])
+
+        if export_data["roi_report"]:
+            roi = export_data["roi_report"]
+            writer.writerow(["ROI Report", "Callback Probability", f"{roi['callback_probability']}%"])
+            writer.writerow(["ROI Report", "Lifetime Value Delta (USD)", roi["lifetime_value_delta"]])
+
+        output.seek(0)
+        return StreamingResponse(
+            iter([output.getvalue()]),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=career_os_analysis_{candidate_id}.csv"}
+        )
+
+    elif format == "html":
+        from fastapi.responses import HTMLResponse
+
+        ms = export_data.get("market_snapshot") or {}
+        ga = export_data.get("gap_analysis") or {}
+        sp = export_data.get("sprint_plan") or {}
+        roi = export_data.get("roi_report") or {}
+
+        ms_section = f"""
+            <div class="section">
+                <h2>📊 Market Snapshot</h2>
+                <div class="metric"><span class="metric-label">Target Role:</span><span class="metric-value">{ms.get('target_role','--')}</span></div>
+                <div class="metric"><span class="metric-label">Region:</span><span class="metric-value">{ms.get('region','--')}</span></div>
+                <div class="metric"><span class="metric-label">Jobs Found:</span><span class="metric-value">{ms.get('jobs_count','--')}</span></div>
+                <div class="metric"><span class="metric-label">Currency:</span><span class="metric-value">{ms.get('salary_currency','USD')}</span></div>
+                <p style="margin-top:15px;color:rgba(255,255,255,0.8);line-height:1.6">{ms.get('market_commentary','')}</p>
+            </div>""" if ms else ""
+
+        ga_section = f"""
+            <div class="section">
+                <h2>🎯 Gap Analysis</h2>
+                <div class="metric"><span class="metric-label">Match Score:</span><span class="metric-value">{ga.get('match_score','--')}%</span></div>
+                <div class="metric"><span class="metric-label">Gap to Top 10%:</span><span class="metric-value">{ga.get('gap_to_top10_score','--')}%</span></div>
+            </div>""" if ga else ""
+
+        sp_section = f"""
+            <div class="section">
+                <h2>🚀 Sprint Plan</h2>
+                <div class="metric"><span class="metric-label">Primary Skill:</span><span class="metric-value">{sp.get('primary_skill','--')}</span></div>
+                <div class="metric"><span class="metric-label">Status:</span><span class="metric-value">{sp.get('status','--')}</span></div>
+                <p style="margin-top:15px;color:rgba(255,255,255,0.8);line-height:1.6"><strong>MVP Project:</strong> {sp.get('mvp_project_prompt','')}</p>
+            </div>""" if sp else ""
+
+        roi_section = f"""
+            <div class="section">
+                <h2>💰 ROI Report</h2>
+                <div class="metric"><span class="metric-label">Callback Probability:</span><span class="metric-value">{roi.get('callback_probability','--')}%</span></div>
+                <div class="metric"><span class="metric-label">Lifetime Value Delta:</span><span class="metric-value">${roi.get('lifetime_value_delta','--'):,.0f}</span></div>
+            </div>""" if roi else ""
+
+        html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>Career OS Analysis Report - {candidate_id}</title>
+    <style>
+        body {{ font-family: 'Inter', sans-serif; background: #0f172a; color: #fff; padding: 40px; }}
+        .container {{ max-width: 1200px; margin: 0 auto; }}
+        h1 {{ color: #60a5fa; font-size: 2rem; margin-bottom: 10px; }}
+        h2 {{ color: #818cf8; font-size: 1.5rem; margin-top: 30px; margin-bottom: 15px; }}
+        .section {{ background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 20px; }}
+        .metric {{ display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }}
+        .metric-label {{ color: rgba(255,255,255,0.6); }}
+        .metric-value {{ color: #34d399; font-weight: 600; }}
+        .export-date {{ color: rgba(255,255,255,0.5); font-size: 0.9rem; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Career OS Analysis Report</h1>
+        <p class="export-date">Candidate: {candidate_id} | Exported: {export_data['export_date']}</p>
+        {ms_section}{ga_section}{sp_section}{roi_section}
+    </div>
+</body>
+</html>"""
+
+        return HTMLResponse(
+            content=html_content,
+            headers={"Content-Disposition": f"attachment; filename=career_os_analysis_{candidate_id}.html"}
+        )
+
+    else:
+        raise HTTPException(status_code=400, detail="Invalid format. Use: json, csv, or html")
+
+
 # ─── Chunk 4: Full-Run Composite Endpoint ────────────────────────────────────
 
 @router.post("/full-run", response_model=Feature3FullRunResponse)
@@ -672,15 +903,27 @@ def full_run_analysis(
         
         # Step 3: Skill Sprint
         logger.info(f"Full-run: Starting skill sprint for {req.candidate_id}")
-        # Determine primary skill: use provided or pick top gap skill
+        # Determine primary skill: use provided or pick top gap skill from niche_recommendations
         primary_skill = req.primary_skill_for_sprint
         if not primary_skill:
-            # Extract top gap skill from roadmap
-            roadmap = gap_response.roadmap_to_90
-            if roadmap and "skills_to_acquire" in roadmap and roadmap["skills_to_acquire"]:
-                primary_skill = roadmap["skills_to_acquire"][0]
+            # Use top niche recommendation (highest opportunity score) — Bug 6 fix
+            niche = gap_response.niche_recommendations
+            if niche and len(niche) > 0 and niche[0].get("skill"):
+                primary_skill = niche[0]["skill"]
             else:
-                primary_skill = "Python"  # Fallback
+                # Final fallback: first missing skill from roadmap phases
+                phases = gap_response.roadmap_to_90.get("phases", [])
+                for phase in phases:
+                    actions = phase.get("actions", [])
+                    if actions:
+                        # Extract skill name from action text like "Build one mini-project showcasing kubernetes."
+                        import re as _re
+                        m = _re.search(r"showcasing (\w+)", actions[0])
+                        if m:
+                            primary_skill = m.group(1)
+                            break
+                if not primary_skill:
+                    primary_skill = "kubernetes"  # Sensible fallback
         
         sprint_req = Feature3SprintCreateRequest(
             candidate_id=req.candidate_id,
@@ -772,9 +1015,9 @@ def get_trending_skills(
                     }
                 skill_stats[skill]["count"] += 1
                 
-                # Get salary data for this skill
-                if skill in salary_map and "avg" in salary_map[skill]:
-                    skill_stats[skill]["salaries"].append(salary_map[skill]["avg"])
+                # Get salary data for this skill — key is "avg_salary" not "avg" (Bug 8 fix)
+                if skill in salary_map and "avg_salary" in salary_map[skill]:
+                    skill_stats[skill]["salaries"].append(salary_map[skill]["avg_salary"])
                 
                 skill_stats[skill]["last_seen"] = max(
                     skill_stats[skill]["last_seen"],

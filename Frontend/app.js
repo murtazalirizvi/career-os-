@@ -1,7 +1,9 @@
 // Auto-detect API base: if running on GitHub Pages, show a clear message
 // If running locally, connect to local backend
 const _isGitHubPages = window.location.hostname.includes("github.io");
-const API_BASE = window.__CAREER_OS_API__ ?? (_isGitHubPages ? null : "http://127.0.0.1:8000");
+const _isRailway = window.location.hostname.includes("railway.app") || window.location.hostname.includes("up.railway.app");
+// On Railway the frontend is served by the same FastAPI process — use same origin
+const API_BASE = window.__CAREER_OS_API__ ?? (_isRailway ? window.location.origin : _isGitHubPages ? null : "http://127.0.0.1:8000");
 
 // If on GitHub Pages, patch submitAuth to show a helpful message
 if (_isGitHubPages) {
@@ -455,6 +457,9 @@ const nodes = {
   feature3CurrentSkills: document.getElementById("feature3-current-skills"),
   feature3RemoteOnly: document.getElementById("feature3-remote-only"),
   feature3Salary: document.getElementById("feature3-salary"),
+  feature3YearsExp: document.getElementById("feature3-years-exp"),
+  feature3Currency: document.getElementById("feature3-currency"),
+  feature3Github: document.getElementById("feature3-github"),
   feature3LoadHistory: document.getElementById("feature3-load-history"),
   feature3RunQuiz: document.getElementById("feature3-run-quiz"),
   feature3ResumeInject: document.getElementById("feature3-resume-inject"),
@@ -816,6 +821,45 @@ function drawFeature3Radar() {
       stroke: "rgba(45, 212, 191, 0.68)"
     });
   });
+  
+  // Update match score display
+  updateFeature3MatchScoreDisplay();
+}
+
+function updateFeature3MatchScoreDisplay() {
+  const gap = AppState.feature3?.gap;
+  const display = document.getElementById('feature3-match-score-display');
+  const matchScoreValue = document.getElementById('feature3-match-score-value');
+  const gapScoreValue = document.getElementById('feature3-gap-score-value');
+  const missingSkillsList = document.getElementById('feature3-missing-skills-list');
+  
+  if (!gap || !display) return;
+  
+  // Show the display
+  display.style.display = 'flex';
+  
+  // Update match score
+  if (matchScoreValue) {
+    const score = Math.round(gap.match_score || 0);
+    matchScoreValue.textContent = score + '%';
+    // Color code: green if >80, yellow if >60, red otherwise
+    matchScoreValue.style.color = score >= 80 ? '#34d399' : score >= 60 ? '#fbbf24' : '#f87171';
+  }
+  
+  // Update gap to top 10%
+  if (gapScoreValue) {
+    const gapScore = Math.round(gap.gap_to_top10_score || 0);
+    gapScoreValue.textContent = gapScore + '%';
+  }
+  
+  // Update missing skills
+  if (missingSkillsList && gap.niche_recommendations) {
+    const missingSkills = gap.niche_recommendations
+      .slice(0, 5)
+      .map(rec => rec.skill)
+      .join(', ');
+    missingSkillsList.textContent = missingSkills || 'None identified';
+  }
 }
 
 function renderFeature3RoiBars() {
@@ -2182,47 +2226,34 @@ function roleFromCategory(category) {
 }
 
 async function loadFeature3History() {
+  // Bug 11 fix: always fetch from API and show modal, don't rely on AppState (resets on page reload)
   const candidateId = nodes.candidateId.value.trim() || "candidate-001";
   try {
+    setStatus("Loading Skill Arbitrage history...");
     const response = await apiFetch(`${API_BASE}/api/feature3/candidate/${encodeURIComponent(candidateId)}/historical-gaps`);
     if (!response.ok) throw new Error("History unavailable");
     const history = await response.json();
+    // Always update AppState with fresh data
     AppState.setState({ feature3: { ...AppState.feature3, history } });
     setStatus("Skill Arbitrage historical gaps loaded.");
+    // Always show modal — data is now in AppState
+    showHistoryModal();
   } catch (error) {
     AppState.setState({ feature3: { ...AppState.feature3, history: null } });
     setStatus(`Skill Arbitrage history error: ${String(error.message).slice(0, 120)}`);
+    alert('Could not load history. Run Full Arbitrage first to generate data.');
   }
 }
 
 async function runFeature3SprintQuiz() {
-  const sprintId = AppState.feature3.sprint?.sprint_id;
-  if (!sprintId) {
-    setStatus("Run Skill Arbitrage arbitrage first to create a sprint.");
+  const sprint = AppState.feature3?.sprint;
+  if (!sprint || !sprint.sprint_id) {
+    setStatus("Run Skill Arbitrage first to create a sprint.");
     return;
   }
-
-  try {
-    setStatus("Skill Arbitrage: running sprint quiz...");
-    const response = await apiFetch(`${API_BASE}/api/feature3/sprint/${sprintId}/quiz`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        answers: [
-          "Trade-off is latency versus reliability, validated with tests and measurable metrics.",
-          "Failure mode is stale state under concurrency; mitigation is constraints, retries, and observability.",
-          "Result improved p95 and reduced incidents with explicit impact metrics."
-        ]
-      })
-    });
-
-    if (!response.ok) throw new Error(await response.text());
-    const quiz = await response.json();
-    AppState.setState({ feature3: { ...AppState.feature3, quiz } });
-    setStatus(`Skill Arbitrage quiz complete - score ${quiz.score}`);
-  } catch (error) {
-    setStatus(`Skill Arbitrage quiz error: ${String(error.message).slice(0, 120)}`);
-  }
+  
+  // Show sprint modal with full plan
+  showSprintModal();
 }
 
 async function runFeature3ResumeInjector() {
@@ -2259,22 +2290,8 @@ async function runFeature3ResumeInjector() {
 }
 
 function exportFeature3Snapshot() {
-  const payload = {
-    exported_at: new Date().toISOString(),
-    candidate_id: nodes.candidateId.value.trim() || "candidate-001",
-    feature3: AppState.feature3
-  };
-
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${payload.candidate_id}-feature3-snapshot.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-  setStatus("Skill Arbitrage snapshot exported.");
+  // Open export modal for format selection
+  showExportModal();
 }
 
 async function runFeature3Arbitrage() {
@@ -2286,10 +2303,13 @@ async function runFeature3Arbitrage() {
   ]);
   const candidateId = nodes.candidateId.value.trim() || "candidate-001";
   const targetRole = (nodes.feature3TargetRole.value || "").trim() || roleFromCategory(nodes.jobCategory.value);
-  const region = (nodes.feature3Region.value || "").trim() || "PK";
+  const region = (nodes.feature3Region.value || "").trim() || "gb";
   const currentSkills = parseCommaSkills(nodes.feature3CurrentSkills.value || "");
   const salary = Number(nodes.feature3Salary.value || 10000);
   const remoteOnly = Boolean(nodes.feature3RemoteOnly.checked);
+  const yearsExp = parseFloat(nodes.feature3YearsExp?.value || "2") || 2.0;
+  const currency = nodes.feature3Currency?.value || "USD";
+  const githubUsername = (nodes.feature3Github?.value || "").trim();
   const searchTerms = extractSearchTerms();
 
   if (!currentSkills.length) errs.push("Current Skills is required.");
@@ -2318,7 +2338,8 @@ async function runFeature3Arbitrage() {
         target_role: targetRole,
         region,
         remote_only: remoteOnly,
-        search_terms: searchTerms
+        search_terms: searchTerms,
+        salary_currency: currency
       })
     });
     if (!marketResponse.ok) throw new Error(await marketResponse.text());
@@ -2337,8 +2358,8 @@ async function runFeature3Arbitrage() {
         candidate_id: candidateId,
         market_snapshot_id: market.snapshot_id,
         current_skills: currentSkills,
-        years_experience: 2.0,
-        github_username: ""
+        years_experience: yearsExp,
+        github_username: githubUsername
       })
     });
     if (!gapResponse.ok) throw new Error(await gapResponse.text());
@@ -2384,7 +2405,12 @@ async function runFeature3Arbitrage() {
         candidate_id: candidateId,
         market_snapshot_id: market.snapshot_id,
         gap_snapshot_id: gap.gap_snapshot_id,
-        current_salary_usd: Number.isFinite(salary) ? salary : 10000,
+        // Normalize to USD for backend — PKR and GBP users enter local amounts
+        current_salary_usd: currency === "PKR"
+          ? Math.round((Number.isFinite(salary) ? salary : 10000) / 278.5)
+          : currency === "GBP"
+            ? Math.round((Number.isFinite(salary) ? salary : 10000) / 0.79)
+            : (Number.isFinite(salary) ? salary : 10000),
         target_path: nodes.jobCategory.value
       })
     });
@@ -2414,8 +2440,23 @@ async function runFeature3Arbitrage() {
         history
       }
     });
+    
+    // Update match score display
+    updateFeature3MatchScoreDisplay();
+    
+    // Update enhanced ROI display
+    updateEnhancedRoiDisplay();
 
     setStatus(`Skill Arbitrage complete - match ${gap.match_score}, callback ${roi.callback_probability.probability}%`);
+    
+    // Fix 3: Refresh dashboard readiness score — backend uses feature3.match_score in calculation
+    loadCoreDailyPlan();
+
+    // Auto-show sprint modal after successful arbitrage
+    setTimeout(() => {
+      showSprintModal();
+    }, 500);
+    
   } catch (error) {
     setStatus(handleApiError(error, "Skill Arbitrage"));
   } finally {
@@ -2489,6 +2530,1030 @@ function renderFeature3Output() {
 
   nodes.feature3Output.innerHTML = blocks.map((b) => `<div class='thin-glass rounded px-2 py-1'>${b}</div>`).join("");
 }
+
+// ─── Sprint Plan Modal Functions ──────────────────────────────────────────────
+
+function showSprintModal() {
+  const sprint = AppState.feature3?.sprint;
+  if (!sprint) {
+    alert('No sprint data available. Please run Full Arbitrage first.');
+    return;
+  }
+  
+  const modal = document.getElementById('sprint-modal');
+  if (!modal) return;
+  
+  // Populate modal content
+  document.getElementById('sprint-modal-skill').textContent = `Primary Skill: ${sprint.primary_skill}`;
+  document.getElementById('sprint-status-text').textContent = sprint.sprint_status || 'Active';
+  document.getElementById('sprint-target-role').textContent = sprint.target_role || '--';
+  
+  // Render day-by-day plan
+  const dayPlanContainer = document.getElementById('sprint-day-plan');
+  if (sprint.curated_day_plan && Array.isArray(sprint.curated_day_plan)) {
+    dayPlanContainer.innerHTML = sprint.curated_day_plan.map((day, index) => `
+      <div class="p-3" style="background:rgba(255,255,255,0.05);border-radius:10px;border:1px solid rgba(255,255,255,0.1)">
+        <div class="flex items-center justify-between mb-2">
+          <h4 style="font-size:0.9rem;font-weight:600;color:#818cf8">Day ${day.day || index + 1}: ${day.objective || day.title || day.topic || 'Learning'}</h4>
+          <span style="font-size:0.75rem;color:rgba(255,255,255,0.5)">${day.duration || '2-3 hours'}</span>
+        </div>
+        <p style="font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.5;margin-bottom:8px">${day.deliverable || day.description || day.goal || ''}</p>
+        ${day.resource ? `
+          <div class="flex flex-wrap gap-2 mt-2">
+            <a href="${day.resource.url || '#'}" target="_blank" class="text-xs px-2 py-1 rounded" style="background:rgba(59,130,246,0.2);color:#60a5fa;text-decoration:none;border:1px solid rgba(59,130,246,0.3)">
+              ${day.resource.title || 'Resource'}
+            </a>
+          </div>
+        ` : (day.resources && day.resources.length > 0 ? `
+          <div class="flex flex-wrap gap-2 mt-2">
+            ${day.resources.map(resource => `
+              <a href="${resource.url || '#'}" target="_blank" class="text-xs px-2 py-1 rounded" style="background:rgba(59,130,246,0.2);color:#60a5fa;text-decoration:none;border:1px solid rgba(59,130,246,0.3)">
+                ${resource.title || resource.name || 'Resource'}
+              </a>
+            `).join('')}
+          </div>
+        ` : '')}
+      </div>
+    `).join('');
+  } else {
+    dayPlanContainer.innerHTML = '<p style="color:rgba(255,255,255,0.5)">No day plan available</p>';
+  }
+  
+  // Render MVP prompt — Bug 3 fix: backend returns .brief not .prompt/.description
+  const mvpPromptContainer = document.getElementById('sprint-mvp-prompt');
+  if (sprint.mvp_prompt) {
+    const promptText = typeof sprint.mvp_prompt === 'string'
+      ? sprint.mvp_prompt
+      : sprint.mvp_prompt.brief || sprint.mvp_prompt.prompt || sprint.mvp_prompt.description || 'Build a project to demonstrate your skills';
+    mvpPromptContainer.textContent = promptText;
+  } else {
+    mvpPromptContainer.textContent = 'Build a project to demonstrate your skills with ' + sprint.primary_skill;
+  }
+  
+  // Render peer group tags
+  const peerTagsContainer = document.getElementById('sprint-peer-tags');
+  if (sprint.peer_group_tags && Array.isArray(sprint.peer_group_tags)) {
+    peerTagsContainer.innerHTML = sprint.peer_group_tags.map(tag => `
+      <span class="px-3 py-1 rounded-full text-xs" style="background:rgba(168,85,247,0.2);color:#c084fc;border:1px solid rgba(168,85,247,0.3)">
+        ${tag}
+      </span>
+    `).join('');
+  } else {
+    peerTagsContainer.innerHTML = '<p style="color:rgba(255,255,255,0.5);font-size:0.85rem">No peer group data</p>';
+  }
+  
+  // Show modal
+  modal.style.display = 'flex';
+  
+  // Store sprint_id for quiz and resume inject
+  window.currentSprintId = sprint.sprint_id;
+}
+
+function closeSprintModal() {
+  const modal = document.getElementById('sprint-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// Sprint modal event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  const sprintModalClose = document.getElementById('sprint-modal-close');
+  const sprintModalCloseBtn = document.getElementById('sprint-modal-close-btn');
+  const sprintModalQuiz = document.getElementById('sprint-modal-quiz');
+  const sprintModalResume = document.getElementById('sprint-modal-resume');
+  
+  if (sprintModalClose) {
+    sprintModalClose.addEventListener('click', closeSprintModal);
+  }
+  if (sprintModalCloseBtn) {
+    sprintModalCloseBtn.addEventListener('click', closeSprintModal);
+  }
+  if (sprintModalQuiz) {
+    sprintModalQuiz.addEventListener('click', function() {
+      closeSprintModal();
+      showQuizModal();
+    });
+  }
+  if (sprintModalResume) {
+    sprintModalResume.addEventListener('click', function() {
+      closeSprintModal();
+      showResumeModal();
+    });
+  }
+  
+  // Close modal on backdrop click
+  const sprintModal = document.getElementById('sprint-modal');
+  if (sprintModal) {
+    sprintModal.addEventListener('click', function(e) {
+      if (e.target === sprintModal) {
+        closeSprintModal();
+      }
+    });
+  }
+});
+
+// ─── Quiz Modal Functions ─────────────────────────────────────────────────────
+
+function showQuizModal() {
+  const sprint = AppState.feature3?.sprint;
+  if (!sprint || !sprint.quick_quiz) {
+    alert('No quiz data available. Please run Full Arbitrage first.');
+    return;
+  }
+  
+  const quiz = sprint.quick_quiz;
+  const modal = document.getElementById('quiz-modal');
+  if (!modal) return;
+  
+  // Populate modal content
+  document.getElementById('quiz-modal-skill').textContent = `Day ${quiz.day || 3} Checkpoint - ${sprint.primary_skill}`;
+  document.getElementById('quiz-pass-mark').textContent = `${quiz.pass_mark || 70}%`;
+  
+  // Render quiz questions
+  const questionsContainer = document.getElementById('quiz-questions-container');
+  if (quiz.questions && Array.isArray(quiz.questions)) {
+    questionsContainer.innerHTML = quiz.questions.map((question, index) => `
+      <div class="p-4" style="background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1)">
+        <label style="font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:8px;display:block">
+          Question ${index + 1}:
+        </label>
+        <p style="font-size:0.85rem;color:rgba(255,255,255,0.7);margin-bottom:12px;line-height:1.5">${question}</p>
+        <textarea 
+          id="quiz-answer-${index}" 
+          class="jt-input jt-textarea" 
+          placeholder="Your answer... (Focus on trade-offs, constraints, and measurable impact)"
+          rows="4"
+          style="width:100%;resize:vertical"
+        ></textarea>
+      </div>
+    `).join('');
+  } else {
+    questionsContainer.innerHTML = '<p style="color:rgba(255,255,255,0.5)">No questions available</p>';
+  }
+  
+  // Reset results section
+  document.getElementById('quiz-results').style.display = 'none';
+  document.getElementById('quiz-submit-btn').style.display = 'block';
+  document.getElementById('quiz-retry-btn').style.display = 'none';
+  
+  // Show modal
+  modal.style.display = 'flex';
+  
+  // Store quiz data for submission
+  window.currentQuizData = quiz;
+}
+
+function closeQuizModal() {
+  const modal = document.getElementById('quiz-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function submitQuiz() {
+  const sprint = AppState.feature3?.sprint;
+  const quiz = window.currentQuizData;
+
+  if (!sprint || !quiz) {
+    alert('Quiz data not available. Please run Full Arbitrage first.');
+    return;
+  }
+
+  // Collect answers
+  const answers = [];
+  for (let i = 0; i < quiz.questions.length; i++) {
+    const answerElement = document.getElementById(`quiz-answer-${i}`);
+    answers.push(answerElement ? answerElement.value.trim() : '');
+  }
+
+  // Validate BEFORE disabling the button so it never gets stuck
+  if (answers.some(a => !a)) {
+    alert('Please answer all questions before submitting.');
+    return;
+  }
+
+  // Validate sprint_id exists and is a real number
+  const sprintId = sprint.sprint_id;
+  if (!sprintId || typeof sprintId !== 'number') {
+    alert('Sprint ID missing. Please run Full Arbitrage again.');
+    return;
+  }
+
+  const submitBtn = document.getElementById('quiz-submit-btn');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Evaluating...';
+  }
+
+  try {
+    setStatus("Evaluating quiz answers...");
+
+    const response = await apiFetch(`${API_BASE}/api/feature3/sprint/${sprintId}/quiz`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers })
+    });
+
+    if (!response.ok) throw new Error(await response.text());
+
+    const result = await response.json();
+
+    AppState.setState({
+      feature3: {
+        ...AppState.feature3,
+        quizResult: result
+      }
+    });
+
+    displayQuizResults(result);
+    setStatus(`Quiz complete - Score: ${Math.round(result.score)}%`);
+
+  } catch (error) {
+    setStatus(`Quiz submission error: ${String(error.message).slice(0, 120)}`);
+    alert('Failed to submit quiz. Please try again.');
+  } finally {
+    // Always re-enable the button — prevents permanent "Evaluating..." stuck state
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Answers';
+    }
+  }
+}
+
+function displayQuizResults(result) {
+  const resultsContainer = document.getElementById('quiz-results');
+  const scoreValue = document.getElementById('quiz-score-value');
+  const statusBadge = document.getElementById('quiz-status-badge');
+  const feedbackList = document.getElementById('quiz-feedback-list');
+  
+  if (!resultsContainer) return;
+  
+  // Show results section
+  resultsContainer.style.display = 'block';
+  
+  // Display score
+  const score = Math.round(result.score || 0);
+  scoreValue.textContent = `${score}%`;
+  scoreValue.style.color = result.passed ? '#34d399' : '#f87171';
+  
+  // Display pass/fail badge
+  if (result.passed) {
+    statusBadge.style.background = 'rgba(34,197,94,0.2)';
+    statusBadge.style.border = '1px solid rgba(34,197,94,0.4)';
+    statusBadge.style.color = '#34d399';
+    statusBadge.textContent = '✅ PASSED - Checkpoint Complete!';
+  } else {
+    statusBadge.style.background = 'rgba(239,68,68,0.2)';
+    statusBadge.style.border = '1px solid rgba(239,68,68,0.4)';
+    statusBadge.style.color = '#f87171';
+    statusBadge.textContent = '❌ Not Passed - Review and Retry';
+  }
+  
+  // Display feedback
+  if (result.feedback && Array.isArray(result.feedback)) {
+    feedbackList.innerHTML = result.feedback.map(fb => `
+      <div class="p-3" style="background:rgba(59,130,246,0.1);border-radius:8px;border:1px solid rgba(59,130,246,0.3)">
+        <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);line-height:1.5">${fb}</p>
+      </div>
+    `).join('');
+  } else {
+    feedbackList.innerHTML = '<p style="color:rgba(255,255,255,0.5);font-size:0.85rem">No feedback available</p>';
+  }
+  
+  // Hide submit button, show retry button
+  document.getElementById('quiz-submit-btn').style.display = 'none';
+  document.getElementById('quiz-retry-btn').style.display = 'block';
+}
+
+function retryQuiz() {
+  // Reset quiz
+  showQuizModal();
+}
+
+// Quiz modal event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  const quizModalClose = document.getElementById('quiz-modal-close');
+  const quizModalCloseBtn = document.getElementById('quiz-modal-close-btn');
+  const quizSubmitBtn = document.getElementById('quiz-submit-btn');
+  const quizRetryBtn = document.getElementById('quiz-retry-btn');
+  
+  if (quizModalClose) {
+    quizModalClose.addEventListener('click', closeQuizModal);
+  }
+  if (quizModalCloseBtn) {
+    quizModalCloseBtn.addEventListener('click', closeQuizModal);
+  }
+  if (quizSubmitBtn) {
+    quizSubmitBtn.addEventListener('click', submitQuiz);
+  }
+  if (quizRetryBtn) {
+    quizRetryBtn.addEventListener('click', retryQuiz);
+  }
+  
+  // Close modal on backdrop click
+  const quizModal = document.getElementById('quiz-modal');
+  if (quizModal) {
+    quizModal.addEventListener('click', function(e) {
+      if (e.target === quizModal) {
+        closeQuizModal();
+      }
+    });
+  }
+});
+
+// ─── Resume Inject Modal Functions ────────────────────────────────────────────
+
+function showResumeModal() {
+  const sprint = AppState.feature3?.sprint;
+  if (!sprint || !sprint.sprint_id) {
+    alert('No sprint data available. Please run Full Arbitrage first.');
+    return;
+  }
+  
+  const modal = document.getElementById('resume-modal');
+  if (!modal) return;
+  
+  // Populate modal content
+  document.getElementById('resume-modal-skill').textContent = `Skill: ${sprint.primary_skill}`;
+  
+  // Reset form
+  document.getElementById('resume-project-name').value = '';
+  document.getElementById('resume-baseline-context').value = '';
+  document.getElementById('resume-impact-metric').value = '';
+  
+  // Hide results
+  document.getElementById('resume-results').style.display = 'none';
+  document.getElementById('resume-input-form').style.display = 'block';
+  document.getElementById('resume-generate-btn').style.display = 'block';
+  
+  // Show modal
+  modal.style.display = 'flex';
+}
+
+function closeResumeModal() {
+  const modal = document.getElementById('resume-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function generateResumeBullets() {
+  const sprint = AppState.feature3?.sprint;
+  if (!sprint || !sprint.sprint_id) {
+    alert('Sprint data not available. Please run Full Arbitrage first.');
+    return;
+  }
+
+  const projectName = document.getElementById('resume-project-name').value.trim();
+  const baselineContext = document.getElementById('resume-baseline-context').value.trim();
+  const impactMetric = document.getElementById('resume-impact-metric').value.trim();
+
+  // Validate BEFORE disabling button
+  if (!projectName || !baselineContext || !impactMetric) {
+    alert('Please fill in all required fields.');
+    return;
+  }
+
+  const generateBtn = document.getElementById('resume-generate-btn');
+  if (generateBtn) {
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Generating...';
+  }
+
+  try {
+    setStatus("Generating resume bullets...");
+
+    const response = await apiFetch(`${API_BASE}/api/feature3/sprint/${sprint.sprint_id}/resume-inject`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        project_name: projectName,
+        baseline_context: baselineContext,
+        impact_metric_hint: impactMetric
+      })
+    });
+
+    if (!response.ok) throw new Error(await response.text());
+
+    const result = await response.json();
+
+    AppState.setState({
+      feature3: {
+        ...AppState.feature3,
+        resumeInject: result
+      }
+    });
+
+    displayResumeBullets(result);
+    setStatus("Resume bullets generated successfully");
+
+  } catch (error) {
+    setStatus(`Resume generation error: ${String(error.message).slice(0, 120)}`);
+    alert('Failed to generate resume bullets. Please try again.');
+  } finally {
+    // Always re-enable — prevents permanent "Generating..." stuck state
+    if (generateBtn) {
+      generateBtn.disabled = false;
+      generateBtn.textContent = 'Generate Bullets';
+    }
+  }
+}
+
+function displayResumeBullets(result) {
+  const resultsContainer = document.getElementById('resume-results');
+  const bulletsList = document.getElementById('resume-bullets-list');
+  const linkedinSnippet = document.getElementById('resume-linkedin-snippet');
+  
+  if (!resultsContainer) return;
+  
+  // Show results section
+  resultsContainer.style.display = 'block';
+  
+  // Hide input form
+  document.getElementById('resume-input-form').style.display = 'none';
+  document.getElementById('resume-generate-btn').style.display = 'none';
+  
+  // Display bullets
+  if (result.star_bullets && Array.isArray(result.star_bullets)) {
+    bulletsList.innerHTML = result.star_bullets.map((bullet, index) => `
+      <div class="p-3" style="background:rgba(34,197,94,0.1);border-radius:8px;border:1px solid rgba(34,197,94,0.3)">
+        <div class="flex items-start gap-2">
+          <span style="color:#34d399;font-weight:600;font-size:0.85rem;flex-shrink:0">${index + 1}.</span>
+          <p style="font-size:0.85rem;color:rgba(255,255,255,0.85);line-height:1.6">${bullet}</p>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    bulletsList.innerHTML = '<p style="color:rgba(255,255,255,0.5)">No bullets generated</p>';
+  }
+  
+  // Display LinkedIn snippet
+  if (result.linkedin_snippet) {
+    linkedinSnippet.textContent = result.linkedin_snippet;
+  } else {
+    linkedinSnippet.textContent = 'No LinkedIn snippet available';
+  }
+}
+
+function copyResumeBullets() {
+  const result = AppState.feature3?.resumeInject;
+  if (!result || !result.star_bullets) {
+    alert('No bullets to copy');
+    return;
+  }
+  
+  const text = result.star_bullets.map((bullet, index) => `• ${bullet}`).join('\n\n');
+  
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-bullets-btn');
+    if (btn) {
+      const originalText = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      btn.style.color = '#34d399';
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.color = '';
+      }, 2000);
+    }
+    setStatus('Resume bullets copied to clipboard');
+  }).catch(() => {
+    alert('Failed to copy to clipboard');
+  });
+}
+
+function copyLinkedInSnippet() {
+  const result = AppState.feature3?.resumeInject;
+  if (!result || !result.linkedin_snippet) {
+    alert('No LinkedIn snippet to copy');
+    return;
+  }
+  
+  navigator.clipboard.writeText(result.linkedin_snippet).then(() => {
+    const btn = document.getElementById('copy-linkedin-btn');
+    if (btn) {
+      const originalText = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      btn.style.color = '#34d399';
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.color = '';
+      }, 2000);
+    }
+    setStatus('LinkedIn snippet copied to clipboard');
+  }).catch(() => {
+    alert('Failed to copy to clipboard');
+  });
+}
+
+// Resume modal event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  const resumeModalClose = document.getElementById('resume-modal-close');
+  const resumeModalCloseBtn = document.getElementById('resume-modal-close-btn');
+  const resumeGenerateBtn = document.getElementById('resume-generate-btn');
+  const copyBulletsBtn = document.getElementById('copy-bullets-btn');
+  const copyLinkedInBtn = document.getElementById('copy-linkedin-btn');
+  
+  if (resumeModalClose) {
+    resumeModalClose.addEventListener('click', closeResumeModal);
+  }
+  if (resumeModalCloseBtn) {
+    resumeModalCloseBtn.addEventListener('click', closeResumeModal);
+  }
+  if (resumeGenerateBtn) {
+    resumeGenerateBtn.addEventListener('click', generateResumeBullets);
+  }
+  if (copyBulletsBtn) {
+    copyBulletsBtn.addEventListener('click', copyResumeBullets);
+  }
+  if (copyLinkedInBtn) {
+    copyLinkedInBtn.addEventListener('click', copyLinkedInSnippet);
+  }
+  
+  // Close modal on backdrop click
+  const resumeModal = document.getElementById('resume-modal');
+  if (resumeModal) {
+    resumeModal.addEventListener('click', function(e) {
+      if (e.target === resumeModal) {
+        closeResumeModal();
+      }
+    });
+  }
+});
+
+// ─── Enhanced ROI Display Functions ───────────────────────────────────────────
+
+function updateEnhancedRoiDisplay() {
+  const roi = AppState.feature3?.roi;
+  const enhancedSection = document.getElementById('feature3-roi-enhanced');
+  
+  if (!roi || !enhancedSection) return;
+  
+  // Show enhanced ROI section
+  enhancedSection.style.display = 'block';
+  
+  // Update callback probability
+  const callbackProb = roi.callback_probability || {};
+  const callbackValue = document.getElementById('roi-callback-value');
+  const callbackDelta = document.getElementById('roi-callback-delta');
+  
+  if (callbackValue) {
+    callbackValue.textContent = `${Math.round(callbackProb.probability || 0)}%`;
+  }
+  if (callbackDelta) {
+    const increase = callbackProb.increase_percentage || 0;
+    callbackDelta.textContent = `+${Math.round(increase)}%`;
+  }
+  
+  // Update lifetime value
+  const ltv = roi.lifetime_value || {};
+  const ltvValue = document.getElementById('roi-lifetime-value');
+  const annualValue = document.getElementById('roi-annual-value');
+  
+  if (ltvValue) {
+    const delta = ltv.five_year_value_delta_usd || 0;
+    ltvValue.textContent = `$${Math.round(delta).toLocaleString()}`;
+  }
+  if (annualValue) {
+    const delta = ltv.five_year_value_delta_usd || 0;
+    const annual = delta / 5;
+    annualValue.textContent = `$${Math.round(annual).toLocaleString()}`;
+  }
+}
+
+function showRoiModal() {
+  const roi = AppState.feature3?.roi;
+  if (!roi) {
+    alert('No ROI data available. Please run Full Arbitrage first.');
+    return;
+  }
+  
+  const modal = document.getElementById('roi-modal');
+  if (!modal) return;
+  
+  // Populate callback probability
+  const callback = roi.callback_probability || {};
+  document.getElementById('roi-modal-callback-current').textContent = `${Math.round(callback.baseline_probability || 0)}%`;
+  document.getElementById('roi-modal-callback-after').textContent = `${Math.round(callback.probability || 0)}%`;
+  document.getElementById('roi-modal-callback-increase').textContent = `+${Math.round(callback.increase_percentage || 0)}%`;
+  document.getElementById('roi-modal-callback-reasoning').textContent = callback.reasoning || 'Closing skill gaps increases interview callback rates.';
+  
+  // Populate lifetime value
+  const ltv = roi.lifetime_value || {};
+  const fiveYearDelta = ltv.five_year_value_delta_usd || 0;
+  const annualIncrease = fiveYearDelta / 5;
+  const roiMultiple = ltv.roi_multiple || 0;
+  
+  document.getElementById('roi-modal-ltv-5year').textContent = `$${Math.round(fiveYearDelta).toLocaleString()}`;
+  document.getElementById('roi-modal-ltv-annual').textContent = `$${Math.round(annualIncrease).toLocaleString()}`;
+  document.getElementById('roi-modal-ltv-multiple').textContent = `${roiMultiple.toFixed(1)}x`;
+  document.getElementById('roi-modal-ltv-explanation').textContent = ltv.explanation || 'Projected earnings increase over 5 years based on market data and skill gap closure.';
+  
+  // Populate skill impact — Bug 12 fix: backend returns {baseline_match_rate, projected_match_rate, delta_points}
+  const skillImpact = roi.skill_impact || {};
+  const skillImpactContainer = document.getElementById('roi-modal-skill-impact');
+  if (skillImpact.delta_points !== undefined) {
+    const gap = AppState.feature3?.gap;
+    const niche = gap?.niche_recommendations || [];
+    const nicheRows = niche.slice(0, 5).map(rec => [
+      '<div class="p-3" style="background:rgba(168,85,247,0.1);border-radius:8px;border:1px solid rgba(168,85,247,0.3)">',
+      '<div class="flex items-center justify-between">',
+      '<span style="font-size:0.9rem;font-weight:600;color:#fff">' + (rec.skill || 'Skill') + '</span>',
+      '<span style="font-size:0.85rem;color:#c084fc">Score: ' + Math.round(rec.opportunity_score || 0) + '</span>',
+      '</div>',
+      '<p style="font-size:0.8rem;color:rgba(255,255,255,0.6);margin-top:4px">' + (rec.why || 'High-demand skill with strong market value') + '</p>',
+      '</div>'
+    ].join('')).join('');
+    const summaryRow = [
+      '<div class="p-3 mb-2" style="background:rgba(59,130,246,0.1);border-radius:8px;border:1px solid rgba(59,130,246,0.3)">',
+      '<div class="flex items-center justify-between"><span style="font-size:0.85rem;color:rgba(255,255,255,0.7)">Match Rate Baseline</span><span style="font-size:0.9rem;font-weight:600;color:#60a5fa">' + (skillImpact.baseline_match_rate || 0) + '%</span></div>',
+      '<div class="flex items-center justify-between mt-1"><span style="font-size:0.85rem;color:rgba(255,255,255,0.7)">After Upskilling</span><span style="font-size:0.9rem;font-weight:600;color:#34d399">' + (skillImpact.projected_match_rate || 0) + '%</span></div>',
+      '<div class="flex items-center justify-between mt-1"><span style="font-size:0.85rem;color:rgba(255,255,255,0.7)">Delta</span><span style="font-size:0.9rem;font-weight:700;color:#34d399">+' + (skillImpact.delta_points || 0) + '%</span></div>',
+      '</div>'
+    ].join('');
+    skillImpactContainer.innerHTML = summaryRow + (nicheRows || '<p style="color:rgba(255,255,255,0.5);font-size:0.85rem">Run analysis to see skill breakdown</p>');
+  } else {
+    skillImpactContainer.innerHTML = '<p style="color:rgba(255,255,255,0.5);font-size:0.85rem">No skill impact data available</p>';
+  }
+  
+  // Populate path comparison
+  const pathComparison = roi.path_comparison || {};
+  const pathContainer = document.getElementById('roi-modal-path-comparison');
+  if (pathComparison.paths && Array.isArray(pathComparison.paths)) {
+    const maxSalary = Math.max(...pathComparison.paths.map(p => p.projected_salary_usd || 0), 1);
+    pathContainer.innerHTML = pathComparison.paths.map(path => {
+      const pct = ((path.projected_salary_usd || 0) / maxSalary) * 100;
+      return `
+        <div class="p-3" style="background:rgba(255,255,255,0.05);border-radius:8px;border:1px solid rgba(255,255,255,0.1)">
+          <div class="flex items-center justify-between mb-2">
+            <span style="font-size:0.9rem;font-weight:600;color:#fff">${path.path || 'Career Path'}</span>
+            <span style="font-size:0.9rem;font-weight:700;color:#60a5fa">$${Math.round(path.projected_salary_usd || 0).toLocaleString()}</span>
+          </div>
+          <div style="width:100%;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:linear-gradient(90deg, #3b82f6, #8b5cf6);border-radius:4px"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } else {
+    pathContainer.innerHTML = '<p style="color:rgba(255,255,255,0.5);font-size:0.85rem">No path comparison data available</p>';
+  }
+  
+  // Populate success stories
+  const successStories = roi.success_stories || [];
+  const storiesContainer = document.getElementById('roi-modal-success-stories');
+  if (successStories.length > 0) {
+    storiesContainer.innerHTML = successStories.map(story => `
+      <div class="p-3" style="background:rgba(34,197,94,0.1);border-radius:8px;border:1px solid rgba(34,197,94,0.3)">
+        <div class="flex items-start gap-2">
+          <span style="font-size:1.2rem">✨</span>
+          <div style="flex:1">
+            <p style="font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:4px">${story.persona || 'Career Changer'}</p>
+            <p style="font-size:0.85rem;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:4px">${story.result || story.story || story.description || ''}</p>
+            <div class="flex items-center gap-3 mt-1">
+              ${story.timeline_weeks ? `<span style="font-size:0.75rem;color:rgba(255,255,255,0.5)">⏱ ${story.timeline_weeks} weeks</span>` : ''}
+              ${story.match_rate_lift_points ? `<span style="font-size:0.75rem;color:#34d399">+${story.match_rate_lift_points} match pts</span>` : ''}
+              ${story.bucket ? `<span style="font-size:0.7rem;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,0.2);color:#34d399">${story.bucket.replace('_', ' ')}</span>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    storiesContainer.innerHTML = '<p style="color:rgba(255,255,255,0.5);font-size:0.85rem">No success stories available</p>';
+  }
+  
+  // Show modal
+  modal.style.display = 'flex';
+}
+
+function closeRoiModal() {
+  const modal = document.getElementById('roi-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ROI modal event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  const roiDetailsBtn = document.getElementById('feature3-roi-details-btn');
+  const roiModalClose = document.getElementById('roi-modal-close');
+  const roiModalCloseBtn = document.getElementById('roi-modal-close-btn');
+  
+  if (roiDetailsBtn) {
+    roiDetailsBtn.addEventListener('click', showRoiModal);
+  }
+  if (roiModalClose) {
+    roiModalClose.addEventListener('click', closeRoiModal);
+  }
+  if (roiModalCloseBtn) {
+    roiModalCloseBtn.addEventListener('click', closeRoiModal);
+  }
+  
+  // Close modal on backdrop click
+  const roiModal = document.getElementById('roi-modal');
+  if (roiModal) {
+    roiModal.addEventListener('click', function(e) {
+      if (e.target === roiModal) {
+        closeRoiModal();
+      }
+    });
+  }
+});
+
+// ─── History Modal Functions ──────────────────────────────────────────────────
+
+function showHistoryModal() {
+  const history = AppState.feature3?.history;
+  if (!history || !history.monthly_snapshots || history.monthly_snapshots.length === 0) {
+    alert('No historical data available. Run Skill Arbitrage multiple times to build history.');
+    return;
+  }
+  
+  const modal = document.getElementById('history-modal');
+  if (!modal) return;
+  
+  // Populate trend summary
+  const trend = history.trend || { monthly_delta: 0, confidence: 0 };
+  const delta = trend.monthly_delta || 0;
+  const confidence = Math.round((trend.confidence || 0) * 100);
+  
+  document.getElementById('history-trend-delta').textContent = delta > 0 ? `+${delta}%` : `${delta}%`;
+  document.getElementById('history-trend-confidence').textContent = `${confidence}%`;
+  
+  // Set trend message
+  let trendMessage = '';
+  if (delta > 5) {
+    trendMessage = '🚀 Your skills are improving! Keep up the momentum.';
+  } else if (delta < -5) {
+    trendMessage = '⚠️ Market requirements are shifting. Time to upskill.';
+  } else {
+    trendMessage = '📊 Your skill match is stable. Consider targeting high-ROI skills.';
+  }
+  document.getElementById('history-trend-message').textContent = trendMessage;
+  
+  // Draw timeline chart
+  drawHistoryChart(history.monthly_snapshots);
+  
+  // Populate monthly snapshots list
+  const snapshotsList = document.getElementById('history-snapshots-list');
+  if (snapshotsList) {
+    snapshotsList.innerHTML = history.monthly_snapshots.map(snapshot => {
+      const month = snapshot.month || 'Unknown';
+      const score = snapshot.avg_match_score || 0;
+      const samples = snapshot.samples || 0;
+      
+      return `
+        <div class="p-3" style="background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <p style="font-size:0.9rem;font-weight:600;color:#fff">${month}</p>
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:2px">${samples} sample${samples !== 1 ? 's' : ''}</p>
+          </div>
+          <div class="text-right">
+            <p style="font-size:1.2rem;font-weight:700;color:#818cf8">${score}%</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  // Show modal
+  modal.style.display = 'flex';
+}
+
+function closeHistoryModal() {
+  const modal = document.getElementById('history-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function drawHistoryChart(snapshots) {
+  const canvas = document.getElementById('history-chart-canvas');
+  if (!canvas || !snapshots || snapshots.length === 0) return;
+  
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  
+  // Set canvas size
+  const width = canvas.offsetWidth || 700;
+  const height = 180;
+  canvas.width = width;
+  canvas.height = height;
+  
+  // Clear canvas
+  ctx.clearRect(0, 0, width, height);
+  
+  // Chart dimensions
+  const padding = { top: 20, right: 20, bottom: 40, left: 50 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  
+  // Extract data
+  const scores = snapshots.map(s => s.avg_match_score || 0);
+  const labels = snapshots.map(s => s.month || '');
+  
+  // Calculate scales
+  const minScore = Math.max(0, Math.min(...scores) - 10);
+  const maxScore = Math.min(100, Math.max(...scores) + 10);
+  const scoreRange = maxScore - minScore;
+  
+  // Draw grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = padding.top + (chartHeight / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(padding.left + chartWidth, y);
+    ctx.stroke();
+    
+    // Y-axis labels
+    const scoreValue = maxScore - (scoreRange / 4) * i;
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${Math.round(scoreValue)}%`, padding.left - 10, y + 4);
+  }
+  
+  // Draw line chart
+  if (scores.length > 0) {
+    ctx.strokeStyle = '#818cf8';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    
+    // Bug 15 fix: compute divisor once — handles single data point correctly
+    const divisor = scores.length > 1 ? scores.length - 1 : 1;
+    
+    scores.forEach((score, index) => {
+      const x = scores.length === 1 ? padding.left + chartWidth / 2 : padding.left + (chartWidth / divisor) * index;
+      const y = padding.top + chartHeight - ((score - minScore) / scoreRange) * chartHeight;
+      
+      if (index === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    
+    ctx.stroke();
+    
+    // Draw data points
+    scores.forEach((score, index) => {
+      const x = scores.length === 1 ? padding.left + chartWidth / 2 : padding.left + (chartWidth / divisor) * index;
+      const y = padding.top + chartHeight - ((score - minScore) / scoreRange) * chartHeight;
+      
+      // Point circle
+      ctx.fillStyle = '#818cf8';
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Point border
+      ctx.strokeStyle = '#1e1b4b';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+  }
+  
+  // Draw X-axis labels — Bug 15 fix: use same divisor logic
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = '10px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  const labelDivisor = labels.length > 1 ? labels.length - 1 : 1;
+  labels.forEach((label, index) => {
+    const x = labels.length === 1 ? padding.left + chartWidth / 2 : padding.left + (chartWidth / labelDivisor) * index;
+    const y = height - padding.bottom + 20;
+    ctx.fillText(label, x, y);
+  });
+}
+
+// History modal event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  const historyModalClose = document.getElementById('history-modal-close');
+  const historyModalCloseBtn = document.getElementById('history-modal-close-btn');
+  
+  if (historyModalClose) {
+    historyModalClose.addEventListener('click', closeHistoryModal);
+  }
+  if (historyModalCloseBtn) {
+    historyModalCloseBtn.addEventListener('click', closeHistoryModal);
+  }
+  
+  // Close modal on backdrop click
+  const historyModal = document.getElementById('history-modal');
+  if (historyModal) {
+    historyModal.addEventListener('click', function(e) {
+      if (e.target === historyModal) {
+        closeHistoryModal();
+      }
+    });
+  }
+});
+
+// ─── Export Modal Functions ───────────────────────────────────────────────────
+
+function showExportModal() {
+  const candidateId = nodes.candidateId.value.trim() || "candidate-001";
+  
+  // Check if there's any data to export
+  const hasData = AppState.feature3?.marketSnapshot || 
+                  AppState.feature3?.gapAnalysis || 
+                  AppState.feature3?.sprint || 
+                  AppState.feature3?.roiReport;
+  
+  if (!hasData) {
+    alert('No analysis data available. Please run Full Arbitrage first.');
+    return;
+  }
+  
+  const modal = document.getElementById('export-modal');
+  if (!modal) return;
+  
+  // Reset status
+  const statusDiv = document.getElementById('export-status');
+  if (statusDiv) statusDiv.style.display = 'none';
+  
+  // Show modal
+  modal.style.display = 'flex';
+}
+
+function closeExportModal() {
+  const modal = document.getElementById('export-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function selectExportFormat(format) {
+  const candidateId = nodes.candidateId.value.trim() || "candidate-001";
+  const statusDiv = document.getElementById('export-status');
+  const statusText = document.getElementById('export-status-text');
+  
+  if (!statusDiv || !statusText) return;
+  
+  // Show loading status
+  statusDiv.style.display = 'block';
+  statusText.textContent = `Preparing ${format.toUpperCase()} export...`;
+  
+  try {
+    setStatus(`Exporting analysis as ${format.toUpperCase()}...`);
+    
+    const response = await apiFetch(
+      `${API_BASE}/api/feature3/candidate/${encodeURIComponent(candidateId)}/export?format=${format}`,
+      { method: "GET" }
+    );
+    
+    if (!response.ok) throw new Error("Export failed");
+    
+    // Get filename from Content-Disposition header or use default
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = `career_os_analysis_${candidateId}.${format}`;
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+      if (filenameMatch) filename = filenameMatch[1];
+    }
+    
+    // Get the blob
+    const blob = await response.blob();
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    // Show success status
+    statusText.textContent = `✅ ${format.toUpperCase()} export downloaded successfully!`;
+    setStatus(`Analysis exported as ${format.toUpperCase()}`);
+    
+    // Close modal after 2 seconds
+    setTimeout(() => {
+      closeExportModal();
+    }, 2000);
+    
+  } catch (error) {
+    statusText.textContent = `❌ Export failed: ${error.message}`;
+    setStatus(`Export error: ${String(error.message).slice(0, 120)}`);
+  }
+}
+
+// Export modal event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  const exportModalClose = document.getElementById('export-modal-close');
+  const exportModalCloseBtn = document.getElementById('export-modal-close-btn');
+  
+  if (exportModalClose) {
+    exportModalClose.addEventListener('click', closeExportModal);
+  }
+  if (exportModalCloseBtn) {
+    exportModalCloseBtn.addEventListener('click', closeExportModal);
+  }
+  
+  // Close modal on backdrop click
+  const exportModal = document.getElementById('export-modal');
+  if (exportModal) {
+    exportModal.addEventListener('click', function(e) {
+      if (e.target === exportModal) {
+        closeExportModal();
+      }
+    });
+  }
+});
 
 function processResume(fileName = "Resume.pdf", fileObject = null) {
   AppState.setState({
@@ -3055,6 +4120,29 @@ function setupNavigation() {
   nodes.feature3WorkspaceHistory?.addEventListener("click", loadFeature3History);
   nodes.feature3WorkspaceExport?.addEventListener("click", exportFeature3Snapshot);
   nodes.feature3WorkspaceQuiz?.addEventListener("click", runFeature3SprintQuiz);
+
+  // Fix 2: Auto-fill skills from Feature 1 resume
+  document.getElementById("feature3-autofill-skills")?.addEventListener("click", async function() {
+    const candidateId = nodes.candidateId.value.trim() || "candidate-001";
+    this.textContent = "...";
+    this.disabled = true;
+    try {
+      const res = await apiFetch(`${API_BASE}/api/feature1/candidate/${encodeURIComponent(candidateId)}/skills`);
+      if (!res.ok) throw new Error("No resume analysis found");
+      const data = await res.json();
+      if (data.skills && data.skills.length > 0) {
+        nodes.feature3CurrentSkills.value = data.skills.join(", ");
+        setStatus(`Auto-filled ${data.skills.length} skills from your resume.`);
+      } else {
+        setStatus("No skills found in resume. Run Lens analysis first.");
+      }
+    } catch {
+      setStatus("Run Lens (Feature 1) first to enable skill auto-fill.");
+    } finally {
+      this.textContent = "↑ Resume";
+      this.disabled = false;
+    }
+  });
   nodes.feature3WorkspaceResumeInject?.addEventListener("click", runFeature3ResumeInjector);
   nodes.coreLoadPlan?.addEventListener("click", loadCoreDailyPlan);
   nodes.metricsLogApplication?.addEventListener("click", logApplication);

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 class Feature3MarketSnapshotRequest(BaseModel):
 	candidate_id: str = Field(min_length=2, max_length=120)
 	target_role: str = Field(default="Software Engineer")
-	region: str = Field(default="PK")
+	region: str = Field(default="gb")   # Bug 14 fix: "PK" is not a valid Adzuna region; use "gb" as default
 	remote_only: bool = Field(default=False)
 	search_terms: List[str] = Field(default_factory=list)
 	# Chunk 4 enhancements
@@ -153,7 +153,7 @@ class Feature3FullRunRequest(BaseModel):
 	"""Request for complete skill arbitrage analysis (market → gap → sprint → ROI)."""
 	candidate_id: str = Field(min_length=2, max_length=120)
 	target_role: str = Field(default="Software Engineer")
-	region: str = Field(default="PK")
+	region: str = Field(default="gb")   # Bug 14 fix: use valid Adzuna region code
 	remote_only: bool = Field(default=False)
 	current_skills: List[str] = Field(default_factory=list)
 	years_experience: float = Field(default=1.5, ge=0, le=40)
