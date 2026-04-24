@@ -2,22 +2,17 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# System deps
+# Minimal system deps — opencv-python-headless bundles its own GL libs
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libglib2.0-0 \
-    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python deps first (layer cache)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend code
+# Copy application code
 COPY . .
-
-# Copy frontend so FastAPI can serve it as static files
-COPY ../Frontend /Frontend
 
 # Persistent data directories
 RUN mkdir -p data/uploads data/reports

@@ -1,14 +1,13 @@
 # ── Career OS — Railway Production Dockerfile ────────────────────────────────
-# Build context: repo root (so we can copy both Backend/ and Frontend/)
+# Build context: repo root (copies both Backend/ and Frontend/)
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# System deps
+# Minimal system deps — only build tools needed for compiled Python packages
+# opencv-python-headless bundles its own GL/glib libs, no system GL needed
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libglib2.0-0 \
-    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python deps (layer cache — copy requirements first)
@@ -24,7 +23,7 @@ COPY Frontend/ /Frontend
 # Persistent data directories
 RUN mkdir -p data/uploads data/reports
 
-# Railway injects $PORT; default 8000 for local docker run
+# Railway injects $PORT at runtime; default 8000 for local docker run
 ENV PORT=8000
 
 EXPOSE $PORT
