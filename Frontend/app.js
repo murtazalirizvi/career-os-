@@ -1139,11 +1139,11 @@ function renderReboundWorkspace() {
         blocks.push(`<div class="workspace-list-card"><span style="color:rgba(255,255,255,0.9);font-weight:600">Autopsy #${f2.interview.interview_id}</span></div>`);
         blocks.push(`<div class="workspace-list-card">Overall Score: <strong style="color:#34d399">${s.overall_autopsy_score ?? "n/a"}</strong></div>`);
         blocks.push(`<div class="workspace-list-card text-xs">Technical Accuracy: ${s.technical_accuracy ?? "n/a"} &nbsp;|&nbsp; Behavioral: ${s.behavioral_quality ?? "n/a"} &nbsp;|&nbsp; Recovery: ${s.strategic_recovery_readiness ?? "n/a"}</div>`);
-        const tech = f2.interview.technical_autopsy || {};
+        const tech = f2.interview.technical || {};
         if (tech.false_confidence_zones?.length) {
           blocks.push(`<div class="workspace-list-card text-xs" style="border-color:rgba(248,113,113,0.3)">⚠ False confidence: ${tech.false_confidence_zones.slice(0,2).join(", ")}</div>`);
         }
-        const behav = f2.interview.behavioral_critique || {};
+        const behav = f2.interview.behavioral || {};
         if (behav.filler_word_count) {
           blocks.push(`<div class="workspace-list-card text-xs">Filler words: ${behav.filler_word_count} &nbsp;|&nbsp; STAR compliance: ${behav.star_compliance_score ?? "n/a"}</div>`);
         }
@@ -1441,6 +1441,320 @@ async function compareLatestFeature4Sessions() {
   } catch (error) {
     setStatus(`Persona Coach compare error: ${String(error.message).slice(0, 120)}`);
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FEATURE 4: INTERACTIVE TURN-BY-TURN MOCK INTERVIEW FUNCTIONS
+// Member 2 implementation - simplified browser-friendly flow
+// ═══════════════════════════════════════════════════════════════════════════
+
+let currentMockSessionId = null;
+let currentQuestionIndex = 0;
+let conversationLog = [];
+let interactiveMode = false; // Toggle between batch mode and interactive mode
+
+/**
+ * Start a new mock interview session (interactive mode)
+ * Uses the simplified /turn-text endpoint for browser-friendly interaction
+ * This is called when user wants turn-by-turn interaction
+ */
+async function startMockInterview() {
+  const candidateId = getCurrentCandidateId();
+  const roleName = nodes.feature4WorkspaceTopic?.value?.trim() || "Software Engineer";
+  const personaMode = nodes.feature4WorkspacePersonaMode?.value || "blind";
+  const language = nodes.feature4WorkspaceLanguage?.value || "english";
+  const targetCompany = "";
+
+  if (!roleName) {
+    alert('Please enter target role or interview topic');
+    return;
+  }
+
+  try {
+    setStatus("Starting mock interview session...");
+    setUiFlag("feature4Loading", true);
+    if (nodes.feature4WorkspaceRun) nodes.feature4WorkspaceRun.disabled = true;
+    if (nodes.feature4WorkspaceRunPanel) nodes.feature4WorkspaceRunPanel.disabled = true;
+
+    // Create session
+    const response = await apiFetch(`${API_BASE}/api/feature4/sessions`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        candidate_id: candidateId,
+        role_name: roleName,
+        persona_mode: personaMode,
+        selected_persona: personaMode === 'blind' ? null : personaMode,
+        target_company: targetCompany,
+        language: language,
+        include_video: false
+      })
+    });
+
+    if (!response.ok) throw new Error('Failed to start session');
+
+    const data = await response.json();
+    currentMockSessionId = data.session_id;
+    currentQuestionIndex = 0;
+    conversationLog = [];
+    interactiveMode = true;
+
+    // Update AppState
+    AppState.setState({
+      feature4: {
+        ...AppState.feature4,
+        session: data,
+        turns: [],
+        lastTurn: null,
+        final: null
+      }
+    });
+
+    // Display first question
+    const firstQuestion = data.opening_questions?.[0]?.question_text || "Tell me about yourself.";
+    addToConversationLog('interviewer', firstQuestion);
+
+    setStatus(`Mock interview started - ${data.persona.label}. Type your answer in the Topic field and click Submit Answer.`);
+    setUiFlag("feature4Loading", false);
+    if (nodes.feature4WorkspaceRun) nodes.feature4WorkspaceRun.disabled = false;
+    if (nodes.feature4WorkspaceRunPanel) nodes.feature4WorkspaceRunPanel.disabled = false;
+
+  } catch (error) {
+    console.error('Session start error:', error);
+    setStatus(handleApiError(error, "Mock Interview"));
+    setUiFlag("feature4Loading", false);
+    if (nodes.feature4WorkspaceRun) nodes.feature4WorkspaceRun.disabled = false;
+    if (nodes.feature4WorkspaceRunPanel) nodes.feature4WorkspaceRunPanel.disabled = false;
+  }
+}
+
+/**
+ * Submit a single answer turn (interactive mode)
+ * Uses the simplified /turn-text endpoint
+ */
+async function submitAnswer() {
+  if (!currentMockSessionId) {
+    alert('Please start a mock interview first');
+    return;
+  }
+
+  // Get answer from workspace topic input (reused as answer input during session)
+  const answerText = nodes.feature4WorkspaceTopic?.value?.trim() || "";
+
+  if (!answerText) {
+    alert('Please enter your answer in the Interview Topic field');
+    return;
+  }
+
+  try {
+    setStatus("Analyzing your answer...");
+    setUiFlag("feature4Loading", true);
+
+    // Use simplified turn-text endpoint (browser-friendly, no signal params needed)
+    const response = await apiFetch(`${API_BASE}/api/feature4/sessions/${currentMockSessionId}/turn-text`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        utterance: answerText
+      })
+    });
+
+    if (!response.ok) throw new Error('Failed to submit answer');
+
+    const data = await response.json();
+
+    // Add answer to conversation
+    addToConversationLog('candidate', answerText);
+
+    // Update AppState with turn data
+    const updatedTurns = [...(AppState.feature4.turns || []), data];
+    AppState.setState({
+      feature4: {
+        ...AppState.feature4,
+        lastTurn: data,
+        turns: updatedTurns
+      }
+    });
+
+    // Show real-time feedback
+    if (nodes.feature4LiveHints) {
+      // Calculate depth score from available signals
+      const fillerScore = data.realtime_signals?.filler_tracker?.score || 0;
+      const confidenceScore = data.realtime_signals?.pitch_analysis?.confidence_score || 0;
+      const silenceScore = data.realtime_signals?.silence_detection?.score || 0;
+      const gazeScore = data.realtime_signals?.gaze_tracking?.eye_contact_score || 0;
+      
+      // Average of all signal scores as depth indicator
+      const depthScore = Math.round((fillerScore + confidenceScore + silenceScore + gazeScore) / 4);
+      
+      const whisperHint = data.whisper_hint || "Keep going...";
+      const tradeoffDepth = data.deep_logic?.analysis?.tradeoff_depth || "needs_depth";
+      const hedgeDetected = data.deep_logic?.analysis?.hedge_detected || false;
+      
+      nodes.feature4LiveHints.innerHTML = `
+        <div class="workspace-list-card text-xs" style="border-left:3px solid rgba(99,102,241,0.9)">💡 <strong>Whisper Hint:</strong> ${whisperHint}</div>
+        <div class="workspace-list-card text-xs">Depth Score: <strong style="color:${depthScore >= 70 ? '#34d399' : depthScore >= 50 ? '#fbbf24' : '#f87171'}">${depthScore}/100</strong></div>
+        <div class="workspace-list-card text-xs">Filler: ${Math.round(fillerScore)} | Confidence: ${Math.round(confidenceScore)} | Silence: ${Math.round(silenceScore)} | Gaze: ${Math.round(gazeScore)}</div>
+        ${tradeoffDepth === 'needs_depth' ? `<div class="workspace-list-card text-xs" style="color:rgba(248,113,113,0.9)">⚠️ Add explicit tradeoffs and downsides</div>` : ''}
+        ${hedgeDetected ? `<div class="workspace-list-card text-xs" style="color:rgba(251,191,36,0.9)">⚠️ Reduce hedging language</div>` : ''}
+        <div class="workspace-list-card text-xs">Turn: ${updatedTurns.length}</div>
+      `;
+    }
+
+    // Add next question after a brief delay
+    if (data.next_question) {
+      setTimeout(() => {
+        addToConversationLog('interviewer', data.next_question.question_text);
+        // Clear answer input
+        if (nodes.feature4WorkspaceTopic) {
+          nodes.feature4WorkspaceTopic.value = '';
+          nodes.feature4WorkspaceTopic.placeholder = 'Type your answer here...';
+        }
+        currentQuestionIndex++;
+      }, 1500);
+    } else {
+      // No more questions - suggest ending session
+      setStatus(`Turn ${updatedTurns.length} complete. Click "End Session" to get your final report.`);
+    }
+
+    setStatus(`Turn ${updatedTurns.length} analyzed - depth score: ${Math.round((data.realtime_signals?.filler_tracker?.score || 0 + data.realtime_signals?.pitch_analysis?.confidence_score || 0 + data.realtime_signals?.silence_detection?.score || 0 + data.realtime_signals?.gaze_tracking?.eye_contact_score || 0) / 4)}`);
+    setUiFlag("feature4Loading", false);
+
+  } catch (error) {
+    console.error('Answer submission error:', error);
+    setStatus(handleApiError(error, "Mock Interview"));
+    setUiFlag("feature4Loading", false);
+  }
+}
+
+/**
+ * End the mock interview session and get final report
+ */
+async function endSession() {
+  if (!currentMockSessionId) {
+    alert('No active session to end');
+    return;
+  }
+
+  if (!confirm('Are you sure you want to end the interview and get your final report?')) return;
+
+  try {
+    setStatus("Finalizing interview session...");
+    setUiFlag("feature4Loading", true);
+
+    const response = await apiFetch(`${API_BASE}/api/feature4/sessions/${currentMockSessionId}/finalize`, {
+      method: 'POST'
+    });
+
+    if (!response.ok) throw new Error('Failed to finalize session');
+
+    const data = await response.json();
+
+    // Update AppState with final report
+    AppState.setState({
+      feature4: {
+        ...AppState.feature4,
+        final: data
+      }
+    });
+
+    // Display final report in coach board
+    if (nodes.feature4CoachBoard) {
+      const scorecard = data.scorecard || {};
+      const strengths = data.synthesis?.strengths || [];
+      const weaknesses = data.synthesis?.weaknesses || [];
+      const badges = data.badges?.earned || [];
+      
+      nodes.feature4CoachBoard.innerHTML = `
+        <div class="workspace-list-card"><span style="color:rgba(255,255,255,0.9);font-weight:600">📊 Final Interview Report</span></div>
+        <div class="workspace-list-card">Overall Score: <strong style="color:#34d399">${scorecard.overall || 'N/A'}</strong></div>
+        <div class="workspace-list-card text-xs">Logic Depth: ${scorecard.logic_depth || 'N/A'} | Behavioral: ${scorecard.behavioral_control || 'N/A'} | Confidence: ${scorecard.confidence_delivery || 'N/A'}</div>
+        ${badges.length ? `<div class="workspace-list-card text-xs"><strong>🏆 Badges Earned:</strong> ${badges.join(', ')}</div>` : ''}
+        ${strengths.length ? `<div class="workspace-list-card text-xs"><strong style="color:#34d399">✅ Strengths:</strong><br>${strengths.slice(0, 3).join('<br>')}</div>` : ''}
+        ${weaknesses.length ? `<div class="workspace-list-card text-xs"><strong style="color:#fbbf24">⚠️ Areas to Improve:</strong><br>${weaknesses.slice(0, 3).join('<br>')}</div>` : ''}
+        <div class="workspace-list-card text-xs" style="color:rgba(165,180,252,0.9)">Session #${currentMockSessionId} completed with ${(AppState.feature4.turns || []).length} turns</div>
+      `;
+    }
+
+    // Show AI coaching insights if available
+    if (data.ai_coaching_report && nodes.feature4LiveHints) {
+      const coaching = data.ai_coaching_report;
+      nodes.feature4LiveHints.innerHTML = `
+        <div class="workspace-list-card text-xs"><strong>🎯 AI Coaching Summary:</strong></div>
+        <div class="workspace-list-card text-xs" style="color:rgba(255,255,255,0.8)">${coaching.summary || 'Great job! Keep practicing.'}</div>
+      `;
+    }
+
+    // Reset session state
+    currentMockSessionId = null;
+    currentQuestionIndex = 0;
+    conversationLog = [];
+    interactiveMode = false;
+
+    // Reset topic input placeholder
+    if (nodes.feature4WorkspaceTopic) {
+      nodes.feature4WorkspaceTopic.value = '';
+      nodes.feature4WorkspaceTopic.placeholder = 'e.g. System Design, React, Behavioral';
+    }
+
+    setStatus("Interview session completed! Check the Coach Board for your final report.");
+    setUiFlag("feature4Loading", false);
+
+    // Load history to show this session
+    await loadFeature4History();
+
+  } catch (error) {
+    console.error('Session end error:', error);
+    setStatus(handleApiError(error, "Mock Interview"));
+    setUiFlag("feature4Loading", false);
+  }
+}
+
+/**
+ * Helper function to add messages to conversation log
+ * Displays in the session board
+ */
+function addToConversationLog(speaker, text) {
+  conversationLog.push({ speaker, text, timestamp: new Date() });
+
+  if (nodes.feature4SessionBoard) {
+    const messages = conversationLog.map((msg, idx) => {
+      const isInterviewer = msg.speaker === 'interviewer';
+      const color = isInterviewer ? 'rgba(99,102,241,0.9)' : 'rgba(34,197,94,0.9)';
+      const label = isInterviewer ? '🎤 Interviewer' : '💬 You';
+      const turnNum = Math.floor(idx / 2) + 1;
+      return `
+        <div class="workspace-list-card text-xs" style="border-left:3px solid ${color}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <strong style="color:${color}">${label}</strong>
+            <span style="color:rgba(255,255,255,0.4);font-size:10px">Turn ${turnNum}</span>
+          </div>
+          <p style="color:rgba(255,255,255,0.85);line-height:1.4">${text}</p>
+        </div>
+      `;
+    }).join('');
+
+    const header = `
+      <div class="workspace-list-card" style="background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.3)">
+        <strong style="color:rgba(99,102,241,0.9)">💬 Interview Conversation</strong>
+        <span style="color:rgba(255,255,255,0.6);font-size:11px;margin-left:8px">${conversationLog.length} messages</span>
+      </div>
+    `;
+
+    nodes.feature4SessionBoard.innerHTML = header + messages;
+    // Auto-scroll to bottom
+    nodes.feature4SessionBoard.scrollTop = nodes.feature4SessionBoard.scrollHeight;
+  }
+}
+
+/**
+ * Helper function to get current candidate ID from various sources
+ */
+function getCurrentCandidateId() {
+  return nodes.feature4WorkspaceCandidateId?.value?.trim() 
+    || nodes.candidateId?.value?.trim() 
+    || sessionStorage.getItem("cos_candidate")
+    || "candidate-001";
 }
 
 function renderFeature4Output() {
@@ -3030,6 +3344,10 @@ function setupNavigation() {
   nodes.feature4WorkspaceShare?.addEventListener("click", shareFeature4Session);
   nodes.feature4WorkspaceHistory?.addEventListener("click", loadFeature4History);
   nodes.feature4WorkspaceCompare?.addEventListener("click", compareLatestFeature4Sessions);
+  // Feature 4 Interactive Mode buttons (Member 2 implementation)
+  document.getElementById("feature4-start-interactive")?.addEventListener("click", startMockInterview);
+  document.getElementById("feature4-submit-answer")?.addEventListener("click", submitAnswer);
+  document.getElementById("feature4-end-session")?.addEventListener("click", endSession);
   nodes.feature5LoadHistory?.addEventListener("click", loadFeature5History);
   nodes.feature5Export?.addEventListener("click", exportFeature5Bundle);
   nodes.feature5Download?.addEventListener("click", downloadFeature5Bundle);
