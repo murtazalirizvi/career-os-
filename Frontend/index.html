@@ -418,11 +418,32 @@
                     </div>
                     <div>
                       <label class="jt-label" for="feature3-current-skills">Current Skills</label>
-                      <textarea id="feature3-current-skills" class="jt-input jt-textarea" placeholder="e.g. react, javascript, python, sql">react, javascript, python, sql</textarea>
+                      <div class="relative">
+                        <textarea id="feature3-current-skills" class="jt-input jt-textarea" placeholder="e.g. react, javascript, python, sql" style="padding-right:80px">react, javascript, python, sql</textarea>
+                        <button id="feature3-autofill-skills" title="Auto-fill from uploaded resume" style="position:absolute;top:8px;right:8px;font-size:0.7rem;padding:3px 8px;background:rgba(99,102,241,0.25);border:1px solid rgba(99,102,241,0.5);border-radius:6px;color:#a5b4fc;cursor:pointer;white-space:nowrap">↑ Resume</button>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label class="jt-label" for="feature3-years-exp">Years Exp.</label>
+                        <input id="feature3-years-exp" type="number" class="jt-input" placeholder="e.g. 3" value="2" min="0" max="40" step="0.5" />
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature3-currency">Currency</label>
+                        <select id="feature3-currency" class="jt-input" style="padding-top:7px;padding-bottom:7px">
+                          <option value="USD">USD</option>
+                          <option value="GBP">GBP</option>
+                          <option value="PKR">PKR</option>
+                        </select>
+                      </div>
                     </div>
                     <div>
-                      <label class="jt-label" for="feature3-salary">Current Salary (USD/yr)</label>
+                      <label class="jt-label" for="feature3-salary">Current Salary (per yr)</label>
                       <input id="feature3-salary" type="number" class="jt-input" placeholder="e.g. 60000" value="10000" />
+                    </div>
+                    <div>
+                      <label class="jt-label" for="feature3-github">GitHub Username <span style="color:rgba(255,255,255,0.35);font-weight:400">(optional)</span></label>
+                      <input id="feature3-github" type="text" class="jt-input" placeholder="e.g. torvalds" />
                     </div>
                     <label class="flex items-center gap-2 text-xs cursor-pointer" style="color:rgba(255,255,255,0.6)">
                       <input id="feature3-remote-only" type="checkbox" class="accent-indigo-400" />

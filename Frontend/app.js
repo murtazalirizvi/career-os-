@@ -455,6 +455,9 @@ const nodes = {
   feature3CurrentSkills: document.getElementById("feature3-current-skills"),
   feature3RemoteOnly: document.getElementById("feature3-remote-only"),
   feature3Salary: document.getElementById("feature3-salary"),
+  feature3YearsExp: document.getElementById("feature3-years-exp"),
+  feature3Currency: document.getElementById("feature3-currency"),
+  feature3Github: document.getElementById("feature3-github"),
   feature3LoadHistory: document.getElementById("feature3-load-history"),
   feature3RunQuiz: document.getElementById("feature3-run-quiz"),
   feature3ResumeInject: document.getElementById("feature3-resume-inject"),
@@ -2298,10 +2301,13 @@ async function runFeature3Arbitrage() {
   ]);
   const candidateId = nodes.candidateId.value.trim() || "candidate-001";
   const targetRole = (nodes.feature3TargetRole.value || "").trim() || roleFromCategory(nodes.jobCategory.value);
-  const region = (nodes.feature3Region.value || "").trim() || "PK";
+  const region = (nodes.feature3Region.value || "").trim() || "gb";
   const currentSkills = parseCommaSkills(nodes.feature3CurrentSkills.value || "");
   const salary = Number(nodes.feature3Salary.value || 10000);
   const remoteOnly = Boolean(nodes.feature3RemoteOnly.checked);
+  const yearsExp = parseFloat(nodes.feature3YearsExp?.value || "2") || 2.0;
+  const currency = nodes.feature3Currency?.value || "USD";
+  const githubUsername = (nodes.feature3Github?.value || "").trim();
   const searchTerms = extractSearchTerms();
 
   if (!currentSkills.length) errs.push("Current Skills is required.");
@@ -2330,7 +2336,8 @@ async function runFeature3Arbitrage() {
         target_role: targetRole,
         region,
         remote_only: remoteOnly,
-        search_terms: searchTerms
+        search_terms: searchTerms,
+        salary_currency: currency
       })
     });
     if (!marketResponse.ok) throw new Error(await marketResponse.text());
@@ -2349,8 +2356,8 @@ async function runFeature3Arbitrage() {
         candidate_id: candidateId,
         market_snapshot_id: market.snapshot_id,
         current_skills: currentSkills,
-        years_experience: 2.0,
-        github_username: ""
+        years_experience: yearsExp,
+        github_username: githubUsername
       })
     });
     if (!gapResponse.ok) throw new Error(await gapResponse.text());
@@ -2396,7 +2403,12 @@ async function runFeature3Arbitrage() {
         candidate_id: candidateId,
         market_snapshot_id: market.snapshot_id,
         gap_snapshot_id: gap.gap_snapshot_id,
-        current_salary_usd: Number.isFinite(salary) ? salary : 10000,
+        // Normalize to USD for backend — PKR and GBP users enter local amounts
+        current_salary_usd: currency === "PKR"
+          ? Math.round((Number.isFinite(salary) ? salary : 10000) / 278.5)
+          : currency === "GBP"
+            ? Math.round((Number.isFinite(salary) ? salary : 10000) / 0.79)
+            : (Number.isFinite(salary) ? salary : 10000),
         target_path: nodes.jobCategory.value
       })
     });
@@ -2435,6 +2447,9 @@ async function runFeature3Arbitrage() {
 
     setStatus(`Skill Arbitrage complete - match ${gap.match_score}, callback ${roi.callback_probability.probability}%`);
     
+    // Fix 3: Refresh dashboard readiness score — backend uses feature3.match_score in calculation
+    loadCoreDailyPlan();
+
     // Auto-show sprint modal after successful arbitrage
     setTimeout(() => {
       showSprintModal();
@@ -2693,65 +2708,66 @@ function closeQuizModal() {
 async function submitQuiz() {
   const sprint = AppState.feature3?.sprint;
   const quiz = window.currentQuizData;
-  
+
   if (!sprint || !quiz) {
-    alert('Quiz data not available');
+    alert('Quiz data not available. Please run Full Arbitrage first.');
     return;
   }
-  
+
   // Collect answers
   const answers = [];
   for (let i = 0; i < quiz.questions.length; i++) {
     const answerElement = document.getElementById(`quiz-answer-${i}`);
-    if (answerElement) {
-      answers.push(answerElement.value.trim());
-    }
+    answers.push(answerElement ? answerElement.value.trim() : '');
   }
-  
-  // Validate all questions answered
+
+  // Validate BEFORE disabling the button so it never gets stuck
   if (answers.some(a => !a)) {
-    alert('Please answer all questions before submitting');
+    alert('Please answer all questions before submitting.');
     return;
   }
-  
-  // Disable submit button
+
+  // Validate sprint_id exists and is a real number
+  const sprintId = sprint.sprint_id;
+  if (!sprintId || typeof sprintId !== 'number') {
+    alert('Sprint ID missing. Please run Full Arbitrage again.');
+    return;
+  }
+
   const submitBtn = document.getElementById('quiz-submit-btn');
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Evaluating...';
   }
-  
+
   try {
     setStatus("Evaluating quiz answers...");
-    
-    const response = await apiFetch(`${API_BASE}/api/feature3/sprint/${sprint.sprint_id}/quiz`, {
+
+    const response = await apiFetch(`${API_BASE}/api/feature3/sprint/${sprintId}/quiz`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ answers })
     });
-    
+
     if (!response.ok) throw new Error(await response.text());
-    
+
     const result = await response.json();
-    
-    // Update AppState
-    AppState.setState({ 
-      feature3: { 
-        ...AppState.feature3, 
-        quizResult: result 
-      } 
+
+    AppState.setState({
+      feature3: {
+        ...AppState.feature3,
+        quizResult: result
+      }
     });
-    
-    // Display results
+
     displayQuizResults(result);
-    
     setStatus(`Quiz complete - Score: ${Math.round(result.score)}%`);
-    
+
   } catch (error) {
     setStatus(`Quiz submission error: ${String(error.message).slice(0, 120)}`);
     alert('Failed to submit quiz. Please try again.');
-    
-    // Re-enable submit button
+  } finally {
+    // Always re-enable the button — prevents permanent "Evaluating..." stuck state
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit Answers';
@@ -2877,31 +2893,29 @@ function closeResumeModal() {
 async function generateResumeBullets() {
   const sprint = AppState.feature3?.sprint;
   if (!sprint || !sprint.sprint_id) {
-    alert('Sprint data not available');
+    alert('Sprint data not available. Please run Full Arbitrage first.');
     return;
   }
-  
-  // Get form values
+
   const projectName = document.getElementById('resume-project-name').value.trim();
   const baselineContext = document.getElementById('resume-baseline-context').value.trim();
   const impactMetric = document.getElementById('resume-impact-metric').value.trim();
-  
-  // Validate inputs
+
+  // Validate BEFORE disabling button
   if (!projectName || !baselineContext || !impactMetric) {
-    alert('Please fill in all required fields');
+    alert('Please fill in all required fields.');
     return;
   }
-  
-  // Disable generate button
+
   const generateBtn = document.getElementById('resume-generate-btn');
   if (generateBtn) {
     generateBtn.disabled = true;
     generateBtn.textContent = 'Generating...';
   }
-  
+
   try {
     setStatus("Generating resume bullets...");
-    
+
     const response = await apiFetch(`${API_BASE}/api/feature3/sprint/${sprint.sprint_id}/resume-inject`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -2911,29 +2925,26 @@ async function generateResumeBullets() {
         impact_metric_hint: impactMetric
       })
     });
-    
+
     if (!response.ok) throw new Error(await response.text());
-    
+
     const result = await response.json();
-    
-    // Update AppState
-    AppState.setState({ 
-      feature3: { 
-        ...AppState.feature3, 
-        resumeInject: result 
-      } 
+
+    AppState.setState({
+      feature3: {
+        ...AppState.feature3,
+        resumeInject: result
+      }
     });
-    
-    // Display results
+
     displayResumeBullets(result);
-    
     setStatus("Resume bullets generated successfully");
-    
+
   } catch (error) {
     setStatus(`Resume generation error: ${String(error.message).slice(0, 120)}`);
     alert('Failed to generate resume bullets. Please try again.');
-    
-    // Re-enable generate button
+  } finally {
+    // Always re-enable — prevents permanent "Generating..." stuck state
     if (generateBtn) {
       generateBtn.disabled = false;
       generateBtn.textContent = 'Generate Bullets';
@@ -4102,6 +4113,29 @@ function setupNavigation() {
   nodes.feature3WorkspaceHistory?.addEventListener("click", loadFeature3History);
   nodes.feature3WorkspaceExport?.addEventListener("click", exportFeature3Snapshot);
   nodes.feature3WorkspaceQuiz?.addEventListener("click", runFeature3SprintQuiz);
+
+  // Fix 2: Auto-fill skills from Feature 1 resume
+  document.getElementById("feature3-autofill-skills")?.addEventListener("click", async function() {
+    const candidateId = nodes.candidateId.value.trim() || "candidate-001";
+    this.textContent = "...";
+    this.disabled = true;
+    try {
+      const res = await apiFetch(`${API_BASE}/api/feature1/candidate/${encodeURIComponent(candidateId)}/skills`);
+      if (!res.ok) throw new Error("No resume analysis found");
+      const data = await res.json();
+      if (data.skills && data.skills.length > 0) {
+        nodes.feature3CurrentSkills.value = data.skills.join(", ");
+        setStatus(`Auto-filled ${data.skills.length} skills from your resume.`);
+      } else {
+        setStatus("No skills found in resume. Run Lens analysis first.");
+      }
+    } catch {
+      setStatus("Run Lens (Feature 1) first to enable skill auto-fill.");
+    } finally {
+      this.textContent = "↑ Resume";
+      this.disabled = false;
+    }
+  });
   nodes.feature3WorkspaceResumeInject?.addEventListener("click", runFeature3ResumeInjector);
   nodes.coreLoadPlan?.addEventListener("click", loadCoreDailyPlan);
   nodes.metricsLogApplication?.addEventListener("click", logApplication);

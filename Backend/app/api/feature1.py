@@ -163,6 +163,60 @@ def get_latest_analysis(candidate_id: str, session: Session = Depends(get_sessio
     return _to_response(row)
 
 
+@router.get("/candidate/{candidate_id}/skills")
+def get_resume_skills(candidate_id: str, session: Session = Depends(get_session)):
+    """
+    Extract skill tokens from the candidate's latest resume analysis.
+    Used by Feature 3 to auto-fill the Current Skills field.
+    Returns a deduplicated, sorted list of skill strings.
+    """
+    import json, re
+
+    q = (
+        select(Feature1Analysis)
+        .where(Feature1Analysis.candidate_id == candidate_id)
+        .order_by(Feature1Analysis.version_number.desc())
+    )
+    row = session.exec(q).first()
+    if row is None:
+        raise HTTPException(status_code=404, detail="No resume analysis found for this candidate.")
+
+    skills: set[str] = set()
+
+    # Source 1: benchmark metrics → rare_skill_hits (most reliable)
+    try:
+        metrics = json.loads(row.metrics_json) if row.metrics_json else {}
+        rare_hits = metrics.get("benchmark", {}).get("rare_skill_hits", [])
+        for s in rare_hits:
+            if isinstance(s, str) and len(s) >= 2:
+                skills.add(s.lower().strip())
+    except Exception:
+        pass
+
+    # Source 2: raw_resume_text → match against Feature 3 SKILL_LEXICON
+    SKILL_LEXICON = {
+        "react", "typescript", "javascript", "python", "fastapi", "django", "sql",
+        "postgres", "mysql", "redis", "docker", "kubernetes", "aws", "gcp", "azure",
+        "terraform", "kafka", "grpc", "graphql", "node", "nextjs", "pandas", "numpy",
+        "spark", "airflow", "dbt", "llm", "prompting", "agents", "rag", "ci", "cd",
+        "testing", "playwright", "pytest", "webassembly", "rust", "go",
+        "java", "kotlin", "swift", "flutter", "react-native", "mongodb", "elasticsearch",
+        "nginx", "linux", "git", "github", "gitlab", "jenkins", "ansible", "prometheus",
+        "grafana", "celery", "rabbitmq", "firebase", "supabase", "vercel", "netlify",
+    }
+    try:
+        text = (row.raw_resume_text or "").lower()
+        if text:
+            for skill in SKILL_LEXICON:
+                # word-boundary match to avoid partial hits (e.g. "go" in "google")
+                if re.search(r'\b' + re.escape(skill) + r'\b', text):
+                    skills.add(skill)
+    except Exception:
+        pass
+
+    return {"candidate_id": candidate_id, "skills": sorted(skills)}
+
+
 @router.get("/versions/{candidate_id}", response_model=List[Feature1VersionSummary])
 def list_versions(candidate_id: str, session: Session = Depends(get_session)):
     q = (
