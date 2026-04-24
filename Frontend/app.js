@@ -1127,8 +1127,8 @@ function renderDashboard() {
       "Preparing analytics cards and status summary..."
     ], "loading");
     nodes.dashboardPlan.innerHTML = stateStack([
-      "Waiting for live dashboard payload...",
-      "Refresh if the backend has just finished processing your data."
+      "Loading your readiness signals...",
+      "Syncing resume, interview, and market data..."
     ], "loading");
     renderDashboardBreakdown([]);
     renderDashboardChart([]);
@@ -1149,29 +1149,29 @@ function renderDashboard() {
       {
         done: hasLens,
         title: "Step 1: Resume intelligence",
-        desc: latestAnalysis.summary || "Run Feature 1 to populate the resume baseline."
+        desc: latestAnalysis.summary || "Analyze your resume for ATS and semantic fit."
       },
       {
         done: hasRebound,
         title: "Step 2: Interview recovery",
-        desc: interviewAnalysis.summary || "Capture interview signals to improve the next conversation."
+        desc: interviewAnalysis.summary || "Debrief interviews and identify next steps."
       },
       {
         done: hasArbitrage,
         title: "Step 3: Skill gap + market fit",
-        desc: marketAnalysis.summary || "Map your current skills to the target role market."
+        desc: marketAnalysis.summary || "Find high-ROI skills to accelerate your fit."
       },
       {
         done: hasNarrative,
         title: "Step 4: Narrative + portfolio",
-        desc: "Turn projects into STAR stories and export the final portfolio pack."
+        desc: "Build STAR stories and exportable portfolio."
       },
     ];
 
     nodes.dashboardProgress.innerHTML = [
       data.readiness_score != null
-        ? `<div class="workspace-list-card"><div class="flex items-center justify-between"><span class="text-white/90">Readiness snapshot</span><span class="text-[11px]" style="color:${scoreMeta.tone}">${readiness.label || scoreMeta.label}</span></div><div class="text-xs text-white/65 mt-1">${readiness.formula || "Normalized weighted average of the available signals."}</div></div>`
-        : `<div class="dashboard-empty-state">No dashboard snapshot yet. Run Feature 1 to create the first real readiness signal.</div>`,
+        ? `<div class="workspace-list-card"><div class="flex items-center justify-between"><span class="text-white/90">Overall readiness</span><span class="text-[11px]" style="color:${scoreMeta.tone}">${readiness.label || scoreMeta.label}</span></div><div class="text-xs text-white/65 mt-1">${readiness.formula || "Normalized weighted average of the available signals."}</div></div>`
+        : `<div class="dashboard-empty-state">No readiness score yet. Start with Feature 1 to generate your first signal.</div>`,
       ...steps.map((step) => `<div class="workspace-list-card"><div class="flex items-center justify-between"><span class="text-white/90">${step.title}</span><span class="text-[11px] ${step.done ? "text-emerald-300" : "text-amber-300"}">${step.done ? "Done" : "Pending"}</span></div><div class="text-xs text-white/65 mt-1">${step.desc}</div></div>`)
     ].join("");
 
@@ -1182,7 +1182,7 @@ function renderDashboard() {
       .join(" · ");
 
     nodes.dashboardPlan.innerHTML = `
-      <div class="workspace-list-card"><div class="flex items-center justify-between gap-2"><span class="text-white/90">${topAction.label.replace(/^Next Best Action:\s*/, "")}</span><span class="text-[11px]" style="color:${scoreMeta.tone}">${statusIndicators.ready_to_apply ? "Ready to Apply" : scoreMeta.label}</span></div><div class="text-xs text-white/65 mt-1">${topAction.reason || readiness.formula || "Use the dashboard to pick the next best action."}</div></div>
+      <div class="workspace-list-card"><div class="flex items-center justify-between gap-2"><span class="text-white/90">${topAction.label.replace(/^Next Best Action:\s*/, "")}</span><span class="text-[11px]" style="color:${scoreMeta.tone}">${statusIndicators.ready_to_apply ? "Ready to Apply" : scoreMeta.label}</span></div><div class="text-xs text-white/65 mt-1">${topAction.reason || "Recommended next step based on your readiness signals."}</div></div>
       <div class="workspace-list-card text-xs">Pipeline: ${pipelineSummary || "No jobs logged yet."}</div>
       <div class="workspace-list-card text-xs">Current mode: ${(AppState.ui?.mode || "beginner").toUpperCase()}</div>
     `;
