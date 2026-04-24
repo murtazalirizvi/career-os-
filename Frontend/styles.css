@@ -347,8 +347,9 @@ textarea:focus-visible,select:focus-visible,a:focus-visible{
 .jt-col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .jt-col-title{font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.7);flex:1;letter-spacing:0.06em;text-transform:uppercase}
 .jt-col-count{font-size:0.68rem;font-weight:600;color:var(--text-dim);background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:999px;padding:1px 8px}
-.jt-cards{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:8px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0) transparent}
+.jt-cards{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:8px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0) transparent;transition:background-color 0.15s ease,border-color 0.15s ease}
 .jt-cards:hover{scrollbar-color:rgba(255,255,255,0.15) transparent}
+.jt-cards.drag-over{background-color:rgba(99,102,241,0.08);border-radius:var(--r-md)}
 .jt-cards::-webkit-scrollbar{width:3px}
 .jt-cards::-webkit-scrollbar-track{background:transparent}
 .jt-cards::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:999px}
@@ -359,9 +360,10 @@ textarea:focus-visible,select:focus-visible,a:focus-visible{
 .jt-card{
   background:rgba(255,255,255,0.03);border:1px solid var(--border);
   border-radius:var(--r-lg);padding:12px 14px;
-  transition:transform 0.2s ease,box-shadow 0.2s ease,border-color 0.2s ease;
-  animation:jtFadeInUp 0.28s ease both;cursor:default;min-width:0;
+  transition:transform 0.2s ease,box-shadow 0.2s ease,border-color 0.2s ease,opacity 0.15s ease;
+  animation:jtFadeInUp 0.28s ease both;cursor:grab;min-width:0;
 }
+.jt-card:active{cursor:grabbing}
 .jt-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(99,102,241,0.25);border-color:rgba(99,102,241,0.3)}
 .jt-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:3px}
 .jt-card-company{font-size:0.84rem;font-weight:700;color:rgba(255,255,255,0.92);line-height:1.2;word-break:break-word}

@@ -1734,11 +1734,14 @@ async function runFeature5NarrativeArchitect() {
   const candidateId = nodes.candidateId.value.trim() || "candidate-001";
   const repoSubpath = nodes.feature5RepoSubpath?.value?.trim() || ".";
 
-  // Validate GitHub URL if provided
-  if (githubRepo && !githubRepo.startsWith("https://github.com/")) {
-    setStatus("Narrative: Please enter a valid GitHub URL (https://github.com/username/repo).");
-    if (githubUrlEl) githubUrlEl.style.borderColor = "rgba(248,113,113,0.7)";
-    return;
+  // Validate GitHub URL — must be https://github.com/user/repo format
+  if (githubRepo) {
+    const githubRegex = /^https:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+\/?$/;
+    if (!githubRegex.test(githubRepo)) {
+      setStatus("Narrative: Invalid GitHub URL. Use format: https://github.com/username/repo");
+      if (githubUrlEl) githubUrlEl.style.borderColor = "rgba(248,113,113,0.7)";
+      return;
+    }
   }
   if (githubUrlEl) githubUrlEl.style.borderColor = "";
 
@@ -4309,6 +4312,7 @@ const JT = (() => {
     const card = document.createElement("article");
     card.className = "jt-card";
     card.dataset.id = job.id;
+    card.draggable = true;
     card.innerHTML = `
       <div class="jt-card-header">
         <div class="jt-card-company">${escHtml(job.company)}</div>
@@ -4494,6 +4498,65 @@ const JT = (() => {
     // Load jobs when the view becomes active
     AppState.subscribe((s) => {
       if (s.view === "job-tracker" && !state.loading) fetchJobs();
+    });
+
+    // ── Drag & Drop Support ──────────────────────────────────────────────
+    let draggedCard = null;
+
+    document.addEventListener("dragstart", (e) => {
+      const card = e.target.closest(".jt-card");
+      if (!card) return;
+      draggedCard = card;
+      card.style.opacity = "0.5";
+      e.dataTransfer.effectAllowed = "move";
+    });
+
+    document.addEventListener("dragend", (e) => {
+      if (draggedCard) {
+        draggedCard.style.opacity = "1";
+        draggedCard = null;
+      }
+      // Clear drag-over state from all columns
+      document.querySelectorAll(".jt-cards").forEach((col) => {
+        col.classList.remove("drag-over");
+      });
+    });
+
+    document.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      
+      // Add visual feedback to the target column
+      const col = e.target.closest(".jt-cards");
+      if (col) {
+        document.querySelectorAll(".jt-cards").forEach((c) => {
+          c.classList.toggle("drag-over", c === col);
+        });
+      }
+    });
+
+    document.addEventListener("drop", (e) => {
+      e.preventDefault();
+      if (!draggedCard) return;
+
+      const col = e.target.closest(".jt-cards");
+      if (!col) return;
+
+      const status = col.closest(".jt-column")?.dataset?.status ||
+                     (col.classList.contains("jt-cards-row") ? "Rejected" : null);
+      if (!status) return;
+
+      const jobId = Number(draggedCard.dataset.id);
+      if (jobId) {
+        updateJob(jobId, { status }).catch((err) => {
+          console.error("[JT] drag-drop status update failed:", err);
+        });
+      }
+      
+      // Clear drag-over state
+      document.querySelectorAll(".jt-cards").forEach((c) => {
+        c.classList.remove("drag-over");
+      });
     });
   }
 
