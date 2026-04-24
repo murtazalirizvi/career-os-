@@ -6,6 +6,7 @@ import re
 import secrets
 from datetime import datetime, timedelta, timezone
 
+import httpx
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from passlib.context import CryptContext
 from slowapi import Limiter
@@ -232,3 +233,113 @@ def logout(payload: LogoutRequest, db: Session = Depends(get_session)):
     db.add(token)
     db.commit()
     return {"ok": True, "revoked": True}
+
+
+# ── Google OAuth ──────────────────────────────────────────────────────────────
+
+_GOOGLE_TOKEN_URL   = "https://oauth2.googleapis.com/token"
+_GOOGLE_USERINFO    = "https://www.googleapis.com/oauth2/v3/userinfo"
+_GOOGLE_CLIENT_ID   = "725587084001-uom0v453423j1g26rfdgd7m6981rh5ea.apps.googleusercontent.com"
+_GOOGLE_CLIENT_SECRET = "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"
+
+
+def _google_client_id() -> str:
+    return os.getenv("GOOGLE_CLIENT_ID", _GOOGLE_CLIENT_ID)
+
+
+def _google_client_secret() -> str:
+    return os.getenv("GOOGLE_CLIENT_SECRET", _GOOGLE_CLIENT_SECRET)
+
+
+def _google_redirect_uri(request: Request) -> str:
+    """Build redirect URI from the incoming request origin."""
+    override = os.getenv("GOOGLE_REDIRECT_URI", "")
+    if override:
+        return override
+    # Use the request's base URL so it works on both localhost and Railway
+    base = str(request.base_url).rstrip("/")
+    return f"{base}/api/auth/google/callback"
+
+
+@router.get("/google/url")
+def google_auth_url(request: Request):
+    """Return the Google OAuth consent URL for the frontend to redirect to."""
+    import urllib.parse
+    params = {
+        "client_id": _google_client_id(),
+        "redirect_uri": _google_redirect_uri(request),
+        "response_type": "code",
+        "scope": "openid email profile",
+        "access_type": "offline",
+        "prompt": "select_account",
+    }
+    url = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode(params)
+    return {"url": url}
+
+
+@router.get("/google/callback")
+def google_callback(code: str, request: Request, db: Session = Depends(get_session)):
+    """
+    Exchange Google auth code for tokens, fetch user info,
+    create/find account, issue Career OS session, redirect to app.
+    """
+    # 1. Exchange code for Google access token
+    try:
+        with httpx.Client(timeout=15.0) as client:
+            token_res = client.post(_GOOGLE_TOKEN_URL, data={
+                "code": code,
+                "client_id": _google_client_id(),
+                "client_secret": _google_client_secret(),
+                "redirect_uri": _google_redirect_uri(request),
+                "grant_type": "authorization_code",
+            })
+        if token_res.status_code != 200:
+            raise HTTPException(status_code=400, detail=f"Google token exchange failed: {token_res.text}")
+        token_data = token_res.json()
+        access_token = token_data.get("access_token", "")
+        if not access_token:
+            raise HTTPException(status_code=400, detail="No access token from Google")
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=502, detail=f"Google OAuth network error: {e}")
+
+    # 2. Fetch user info
+    try:
+        with httpx.Client(timeout=10.0) as client:
+            info_res = client.get(_GOOGLE_USERINFO, headers={"Authorization": f"Bearer {access_token}"})
+        if info_res.status_code != 200:
+            raise HTTPException(status_code=400, detail="Could not fetch Google user info")
+        info = info_res.json()
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=502, detail=f"Google userinfo network error: {e}")
+
+    email: str = info.get("email", "").lower().strip()
+    full_name: str = info.get("name", "") or info.get("given_name", "")
+    if not email:
+        raise HTTPException(status_code=400, detail="Google account has no email")
+
+    # 3. Find or create user
+    user = db.exec(select(UserAccount).where(UserAccount.email == email)).first()
+    if user is None:
+        base_id = re.sub(r"[^a-zA-Z0-9_-]", "-", email.split("@")[0])[:40].strip("-") or "user"
+        candidate_id = _unique_candidate_id(base_id, db)
+        user = UserAccount(
+            candidate_id=candidate_id,
+            email=email,
+            full_name=full_name,
+            # Random password hash — Google users never use password login
+            password_hash=_hash_password(secrets.token_urlsafe(32)),
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    # 4. Issue Career OS session
+    session = _make_session(user.id, db, label="google-oauth")
+
+    # 5. Redirect to frontend with token in URL fragment
+    # The frontend reads #google_token=... on load and stores it
+    from fastapi.responses import RedirectResponse
+    base = str(request.base_url).rstrip("/")
+    frontend_url = os.getenv("FRONTEND_URL", base)
+    redirect_url = f"{frontend_url}/#google_token={session.access_token}&candidate_id={user.candidate_id}"
+    return RedirectResponse(url=redirect_url, status_code=302)

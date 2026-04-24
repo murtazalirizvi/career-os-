@@ -183,6 +183,33 @@ async function submitAuth() {
   }
 }
 
+async function signInWithGoogle() {
+  const errEl = document.getElementById("auth-error");
+  errEl.style.display = "none";
+
+  // GitHub Pages — no backend available
+  if (!API_BASE) {
+    errEl.textContent = "No backend available on GitHub Pages. Use 'Continue without account' or run locally.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  try {
+    // Get the Google OAuth URL from backend
+    const res = await fetch(`${API_BASE}/api/auth/google/url`);
+    if (!res.ok) {
+      throw new Error("Failed to get Google OAuth URL");
+    }
+    const data = await res.json();
+    
+    // Redirect to Google OAuth consent screen
+    window.location.href = data.url;
+  } catch (error) {
+    errEl.textContent = "Cannot connect to server. Make sure the backend is running.";
+    errEl.style.display = "block";
+  }
+}
+
 async function apiFetch(url, options = {}) {
   const token = sessionStorage.getItem("cos_token");
   const headers = { ...(options.headers ?? {}) };
@@ -268,6 +295,35 @@ function navigateTo(viewName) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  // Check for Google OAuth token in URL fragment
+  const hash = window.location.hash.substring(1);
+  const params = new URLSearchParams(hash);
+  const googleToken = params.get("google_token");
+  const candidateId = params.get("candidate_id");
+  
+  if (googleToken && candidateId) {
+    // Store the token and candidate ID
+    sessionStorage.setItem("cos_token", googleToken);
+    sessionStorage.setItem("cos_candidate", candidateId);
+    
+    // Clean up URL
+    window.history.replaceState(null, "", window.location.pathname);
+    
+    // Show the app
+    const landing = document.getElementById("landing-page");
+    const app = document.getElementById("app-shell");
+    if (landing) landing.style.display = "none";
+    if (app) app.style.display = "block";
+    
+    // Update candidate ID fields
+    document.querySelectorAll("[id*='candidate']").forEach((el) => {
+      if (el.tagName === "INPUT") el.value = candidateId;
+    });
+    
+    lucide.createIcons();
+    return;
+  }
+
   // Never auto-show auth modal — user must come through the landing page CTA
   // Only auto-skip to app if already authenticated
   if (sessionStorage.getItem("cos_token")) {
