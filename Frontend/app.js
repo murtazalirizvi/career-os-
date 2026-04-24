@@ -2453,6 +2453,9 @@ async function runFeature3Arbitrage() {
         history
       }
     });
+    
+    // Update match score display
+    updateFeature3MatchScoreDisplay();
 
     setStatus(`Skill Arbitrage complete - match ${gap.match_score}, callback ${roi.callback_probability.probability}%`);
   } catch (error) {
