@@ -116,10 +116,14 @@ write_limiter = Limiter(key_func=get_remote_address)
 
 @app.on_event("startup")
 def on_startup() -> None:
+    # Ensure data directories exist before creating DB tables
+    from pathlib import Path
+    Path("/app/data/uploads").mkdir(parents=True, exist_ok=True)
+    Path("/app/data/reports").mkdir(parents=True, exist_ok=True)
     create_db_and_tables()
 
 
-@app.get("/health")
+@app.get("/health", include_in_schema=False)
 def health():
     return {"status": "ok", "version": "0.1.0"}
 
@@ -249,23 +253,36 @@ app.include_router(core_router)
 
 # ── Static frontend (Railway single-service deployment) ───────────────────────
 # In the Railway image, Frontend is copied to /Frontend.
-# In local dev the frontend runs on its own port via serve.py — skip mounting.
+# Wrapped in try/except so a missing dir never crashes startup.
 _frontend_dir = Path("/Frontend")
 if not _frontend_dir.exists():
-    # Fallback for local dev: look relative to repo root
     _frontend_dir = Path(__file__).resolve().parent.parent.parent / "Frontend"
 
 if _frontend_dir.exists():
-    app.mount("/static", StaticFiles(directory=str(_frontend_dir)), name="static")
+    try:
+        app.mount("/static", StaticFiles(directory=str(_frontend_dir)), name="static")
+        logger.info(f"Frontend static files mounted from {_frontend_dir}")
+    except Exception as e:
+        logger.warning(f"Could not mount static files: {e}")
 
     @app.get("/", include_in_schema=False)
     def serve_index():
-        return FileResponse(str(_frontend_dir / "index.html"))
+        _idx = _frontend_dir / "index.html"
+        if _idx.exists():
+            return FileResponse(str(_idx))
+        return JSONResponse({"status": "ok", "message": "Career OS API"})
 
     @app.get("/{full_path:path}", include_in_schema=False)
     def serve_spa(full_path: str):
-        """Catch-all: serve index.html for any non-API path (SPA routing)."""
+        # Never intercept API routes — let them 404 naturally
+        if full_path.startswith("api/") or full_path == "health" or full_path == "docs" or full_path == "openapi.json":
+            return JSONResponse(status_code=404, content={"detail": "Not found"})
         file_path = _frontend_dir / full_path
         if file_path.exists() and file_path.is_file():
             return FileResponse(str(file_path))
-        return FileResponse(str(_frontend_dir / "index.html"))
+        _idx = _frontend_dir / "index.html"
+        if _idx.exists():
+            return FileResponse(str(_idx))
+        return JSONResponse({"status": "ok", "message": "Career OS API"})
+else:
+    logger.info("Frontend directory not found — serving API only")
