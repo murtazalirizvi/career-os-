@@ -163,9 +163,15 @@
                   <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Career OS Control Room</h1>
                   <p class="text-sm mt-1" style="color:var(--text-dim)">Follow this sequence and Career OS builds interview momentum step by step.</p>
                 </div>
-                <div class="mode-toggle-wrap">
-                  <button id="ui-mode-beginner" class="mode-toggle-btn active" type="button">Beginner</button>
-                  <button id="ui-mode-expert" class="mode-toggle-btn" type="button">Expert</button>
+                <div class="flex flex-col items-end gap-2">
+                  <div class="flex items-center gap-2">
+                    <span id="dashboard-sync-status" class="dashboard-sync-pill">Dashboard idle</span>
+                    <button id="dashboard-refresh" class="btn-ghost text-xs px-3 py-2" type="button">Refresh Dashboard</button>
+                  </div>
+                  <div class="mode-toggle-wrap">
+                    <button id="ui-mode-beginner" class="mode-toggle-btn active" type="button">Beginner</button>
+                    <button id="ui-mode-expert" class="mode-toggle-btn" type="button">Expert</button>
+                  </div>
                 </div>
               </header>
               <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
@@ -173,6 +179,21 @@
                   <div class="flex items-center justify-between mb-3">
                     <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Guided Journey</h2>
                     <span class="text-xs" style="color:var(--text-muted)">4-step flow</span>
+                  </div>
+                  <div class="grid grid-cols-12 gap-3 mb-3">
+                    <div class="col-span-12 md:col-span-5 rounded-xl border p-3 dashboard-score-card" style="border-color:var(--border);background:rgba(0,0,0,0.2)">
+                      <p class="text-[11px] uppercase tracking-[0.16em]" style="color:var(--text-muted)">Readiness Score</p>
+                      <div id="dashboard-readiness-score" class="dashboard-score-value">--</div>
+                      <div id="dashboard-readiness-label" class="text-sm font-semibold mt-1" style="color:rgba(255,255,255,0.86)">Awaiting dashboard data</div>
+                      <div id="dashboard-readiness-summary" class="text-xs mt-2" style="color:var(--text-dim)">Connects your resume, interview, and market signals into one score.</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-7 rounded-xl border p-3" style="border-color:var(--border);background:rgba(0,0,0,0.2)">
+                      <div class="flex items-center justify-between mb-2 gap-2">
+                        <p class="text-[11px] uppercase tracking-[0.16em]" style="color:var(--text-muted)">Score Breakdown</p>
+                        <span id="dashboard-generated-at" class="text-[11px]" style="color:var(--text-muted)">Not loaded</span>
+                      </div>
+                      <div id="dashboard-score-breakdown" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+                    </div>
                   </div>
                   <div id="dashboard-progress" class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-2 text-sm"></div>
                 </section>
@@ -182,6 +203,13 @@
                     <span class="text-xs" style="color:var(--text-muted)">Next action</span>
                   </div>
                   <div id="dashboard-plan" class="space-y-2 text-sm"></div>
+                  <div class="mt-3 rounded-xl border p-3" style="border-color:var(--border);background:rgba(0,0,0,0.2)">
+                    <div class="flex items-center justify-between mb-2">
+                      <p class="text-[11px] uppercase tracking-[0.16em]" style="color:var(--text-muted)">Activity Chart</p>
+                      <span id="dashboard-chart-note" class="text-[11px]" style="color:var(--text-muted)">Live metrics</span>
+                    </div>
+                    <div id="dashboard-chart" class="dashboard-chart space-y-2"></div>
+                  </div>
                   <div class="mt-3 grid grid-cols-1 gap-2">
                     <button id="dashboard-next-action" class="btn-primary w-full justify-center">Run Next Action</button>
                     <button id="dashboard-open-workspace" class="btn-ghost w-full justify-center">Open Full Workspace</button>
