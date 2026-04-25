@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,900 +9,1185 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="mesh-bg text-white antialiased">
 
-<!-- ═══════════════════════════════════════════════════════
+<body class="mesh-bg text-[#004643] antialiased">
+
+  <!-- ═══════════════════════════════════════════════════════
      LANDING PAGE
      ═══════════════════════════════════════════════════════ -->
-<div id="landing-page">
-  <!-- Nav -->
-  <nav class="landing-nav">
-    <div class="landing-logo">
-      <span class="landing-logo-dot"></span>
-      Career OS
+  <div id="landing-page">
+    <!-- Nav -->
+    <nav class="landing-nav px-2">
+      <div class="landing-logo">
+        <span class="landing-logo-dot"></span>
+        Career OS
+      </div>
+      <div class="landing-nav-actions">
+        <button class="btn-ghost" onclick="showApp()">Sign In</button>
+        <button class="btn-primary" onclick="showApp()">Get Started Free</button>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero-section">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        AI-Powered Career Intelligence
+      </div>
+      <h1 class="hero-headline">The OS for Your<br />Professional Growth</h1>
+      <p class="hero-sub">Track applications, analyze your resume with AI, prep for interviews, and close the skill gap
+        — all in one dark, beautiful workspace.</p>
+      <div class="hero-cta-row">
+        <button class="hero-cta-primary" onclick="showApp()">
+          <i data-lucide="zap" style="width:16px;height:16px;display:inline;vertical-align:middle;margin-right:6px"></i>
+          Launch Your Career OS
+        </button>
+        <button class="hero-cta-secondary" onclick="showApp()">View Dashboard →</button>
+      </div>
+
+      <!-- Floating dashboard preview -->
+      <div class="dashboard-preview">
+        <div class="preview-titlebar">
+          <div class="preview-dot" style="background:#ef4444"></div>
+          <div class="preview-dot" style="background:#f59e0b"></div>
+          <div class="preview-dot" style="background:#10b981"></div>
+          <span class="preview-title">Career OS — Job Tracker</span>
+        </div>
+        <div class="preview-body">
+          <div class="preview-col">
+            <div class="preview-col-label">Wishlist</div>
+            <div class="preview-mini-card">
+              <div class="preview-mini-card-co">Stripe</div>
+              <div class="preview-mini-card-role">Senior Engineer</div><span class="preview-mini-badge"
+                style="background:rgba(99,102,241,0.15);color:#a5b4fc">Wishlist</span>
+            </div>
+            <div class="preview-mini-card">
+              <div class="preview-mini-card-co">Linear</div>
+              <div class="preview-mini-card-role">Frontend Lead</div><span class="preview-mini-badge"
+                style="background:rgba(99,102,241,0.15);color:#a5b4fc">Wishlist</span>
+            </div>
+          </div>
+          <div class="preview-col">
+            <div class="preview-col-label">Applied</div>
+            <div class="preview-mini-card">
+              <div class="preview-mini-card-co">Vercel</div>
+              <div class="preview-mini-card-role">DX Engineer</div><span class="preview-mini-badge"
+                style="background:rgba(245,158,11,0.15);color:#fcd34d">Applied</span>
+            </div>
+            <div class="preview-mini-card">
+              <div class="preview-mini-card-co">Figma</div>
+              <div class="preview-mini-card-role">Full Stack</div><span class="preview-mini-badge"
+                style="background:rgba(245,158,11,0.15);color:#fcd34d">Applied</span>
+            </div>
+          </div>
+          <div class="preview-col">
+            <div class="preview-col-label">Interviewing</div>
+            <div class="preview-mini-card">
+              <div class="preview-mini-card-co">Notion</div>
+              <div class="preview-mini-card-role">Backend Eng</div><span class="preview-mini-badge"
+                style="background:rgba(6,182,212,0.15);color:#67e8f9">Round 2</span>
+            </div>
+          </div>
+          <div class="preview-col">
+            <div class="preview-col-label">Offered</div>
+            <div class="preview-mini-card">
+              <div class="preview-mini-card-co">Loom</div>
+              <div class="preview-mini-card-role">Staff Engineer</div><span class="preview-mini-badge"
+                style="background:rgba(16,185,129,0.15);color:#6ee7b7">$180k</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust logos -->
+    <div class="trust-section">
+      <p class="trust-label">Trusted by engineers targeting</p>
+      <div class="trust-logos">
+        <span class="trust-logo">Google</span>
+        <span class="trust-logo">Meta</span>
+        <span class="trust-logo">Stripe</span>
+        <span class="trust-logo">Vercel</span>
+        <span class="trust-logo">Linear</span>
+        <span class="trust-logo">Figma</span>
+        <span class="trust-logo">Notion</span>
+      </div>
     </div>
-    <div class="landing-nav-actions">
-      <button class="btn-ghost" onclick="showApp()">Sign In</button>
-      <button class="btn-primary" onclick="showApp()">Get Started Free</button>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+     MAIN APP (hidden until auth)
+     ═══════════════════════════════════════════════════════ -->
+  <div id="app-shell" style="display:none" class="relative z-10" style="height:100vh;min-height:100dvh">
+    <div id="spotlight" class="spotlight" aria-hidden="true"></div>
+
+    <div style="height:100vh;min-height:100dvh" class="p-4 md:p-5 lg:p-6">
+      <div class="h-full w-full rounded-3xl thin-glass soft-ring overflow-hidden">
+        <div id="layout-grid" class="h-full grid grid-cols-[80px_1fr] relative">
+
+          <!-- Sidebar -->
+          <aside id="sidebar" class="group h-full p-2 md:p-3 spring-gentle">
+            <div class="h-full flex flex-col justify-between">
+              <div class="space-y-1 pt-1">
+                <div class="px-2 py-3 mb-2">
+                  <div class="landing-logo-dot mx-auto" style="width:10px;height:10px"></div>
+                </div>
+                <button class="nav-btn" data-view="dashboard">
+                  <span class="icon-wrap"><i data-lucide="layout-dashboard" class="w-4 h-4"></i></span>
+                  <span class="nav-label">Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="command-center">
+                  <span class="icon-wrap"><i data-lucide="upload-cloud" class="w-4 h-4"></i></span>
+                  <span class="nav-label">Upload</span>
+                </button>
+                <button class="nav-btn" data-view="job-tracker">
+                  <span class="icon-wrap"><i data-lucide="kanban" class="w-4 h-4"></i></span>
+                  <span class="nav-label">Jobs</span>
+                </button>
+                <button class="nav-btn" data-view="lens-engine">
+                  <span class="icon-wrap"><i data-lucide="scan-search" class="w-4 h-4"></i></span>
+                  <span class="nav-label">Lens</span>
+                </button>
+                <button class="nav-btn" data-view="rebound">
+                  <span class="icon-wrap"><i data-lucide="mic" class="w-4 h-4"></i></span>
+                  <span class="nav-label">Rebound</span>
+                </button>
+                <button class="nav-btn" data-view="arbitrage">
+                  <span class="icon-wrap"><i data-lucide="candlestick-chart" class="w-4 h-4"></i></span>
+                  <span class="nav-label">Arbitrage</span>
+                </button>
+                <button class="nav-btn" data-view="persona-play">
+                  <span class="icon-wrap"><i data-lucide="audio-lines" class="w-4 h-4"></i></span>
+                  <span class="nav-label">Persona</span>
+                </button>
+                <button class="nav-btn" data-view="narrative">
+                  <span class="icon-wrap"><i data-lucide="book-open-text" class="w-4 h-4"></i></span>
+                  <span class="nav-label">Narrative</span>
+                </button>
+              </div>
+              <div class="space-y-1 pb-1">
+                <button class="nav-btn" id="logout-btn">
+                  <span class="icon-wrap"><i data-lucide="log-out" class="w-4 h-4"></i></span>
+                  <span class="nav-label">Logout</span>
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Main content -->
+          <main class="h-full overflow-hidden p-3 md:p-4 lg:p-5">
+            <section id="view-root" class="h-full view-swap-enter view-swap-active">
+
+
+              <!-- ── DASHBOARD VIEW ── -->
+              <section id="dashboard-view" class="h-full workspace-shell">
+                <header class="mb-3 md:mb-4 workspace-header">
+                  <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Career OS
+                      Control Room</h1>
+                    <p class="text-sm mt-1" style="color:var(--text-dim)">Follow this sequence and Career OS builds
+                      interview momentum step by step.</p>
+                  </div>
+                  <div class="mode-toggle-wrap">
+                    <button id="ui-mode-beginner" class="mode-toggle-btn active" type="button">Beginner</button>
+                    <button id="ui-mode-expert" class="mode-toggle-btn" type="button">Expert</button>
+                  </div>
+                </header>
+                <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-8 row-span-4 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Guided Journey</h2>
+                      <span class="text-xs" style="color:var(--text-muted)">4-step flow</span>
+                    </div>
+                    <div id="dashboard-progress"
+                      class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-2 text-sm"></div>
+                  </section>
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-4 row-span-4 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Today's Focus</h2>
+                      <span class="text-xs" style="color:var(--text-muted)">Next action</span>
+                    </div>
+                    <div id="dashboard-plan" class="space-y-2 text-sm"></div>
+                    <div class="mt-3 grid grid-cols-1 gap-2">
+                      <button id="dashboard-next-action" class="btn-primary w-full justify-center">Run Next
+                        Action</button>
+                      <button id="dashboard-open-workspace" class="btn-ghost w-full justify-center">Open Full
+                        Workspace</button>
+                    </div>
+                    <div id="dashboard-feature-explainer" class="mt-3 space-y-2"></div>
+                  </section>
+                  <section
+                    class="reactive-card card-live col-span-12 row-span-2 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="grid grid-cols-12 gap-3 h-full">
+                      <div class="col-span-12 lg:col-span-8 rounded-xl border p-3"
+                        style="border-color:var(--border);background:rgba(0,0,0,0.2)">
+                        <div class="flex items-center justify-between mb-2">
+                          <h2 class="text-sm font-bold text-hero">Quick Start Wizard</h2>
+                          <span id="onboarding-status" class="text-xs" style="color:var(--text-muted)">Step 1 of
+                            4</span>
+                        </div>
+                        <div class="grid grid-cols-12 gap-2">
+                          <input id="onboarding-candidate-id" type="text" value="candidate-001"
+                            class="col-span-12 md:col-span-4 rounded-lg px-3 py-2 text-xs text-white outline-none"
+                            style="background:rgba(0,0,0,0.3);border:1px solid var(--border)"
+                            placeholder="Candidate ID" />
+                          <select id="onboarding-job-category"
+                            class="col-span-12 md:col-span-3 rounded-lg px-3 py-2 text-xs text-white outline-none"
+                            style="background:rgba(0,0,0,0.3);border:1px solid var(--border)">
+                            <option value="frontend">Frontend</option>
+                            <option value="backend">Backend</option>
+                            <option value="fullstack">Fullstack</option>
+                            <option value="data">Data</option>
+                          </select>
+                          <button id="onboarding-upload-resume"
+                            class="col-span-12 md:col-span-5 rounded-lg px-3 py-2 text-xs btn-ghost">Upload Resume
+                            PDF</button>
+                          <textarea id="onboarding-job-description"
+                            class="col-span-12 rounded-lg px-3 py-2 text-xs h-16 custom-scroll outline-none"
+                            style="background:rgba(0,0,0,0.3);border:1px solid var(--border);color:rgba(255,255,255,0.9)"
+                            placeholder="Paste job description for your target role..."></textarea>
+                        </div>
+                        <p id="onboarding-resume-name" class="text-xs mt-2" style="color:var(--text-muted)">No resume
+                          selected yet.</p>
+                        <details class="control-accordion mt-3 text-xs" style="color:var(--text-dim)">
+                          <summary class="font-medium outline-none opacity-80 hover:opacity-100 transition-opacity">
+                            Resume Upload Rules</summary>
+                          <ul class="pl-4 mt-2 mb-1 list-disc space-y-1" style="color:var(--text-muted)">
+                            <li>PDF format only (Max 5MB)</li>
+                            <li>Standard formatting (No scattered text boxes)</li>
+                            <li>Text must be highlightable/selectable</li>
+                          </ul>
+                        </details>
+                      </div>
+                      <div class="col-span-12 lg:col-span-4 rounded-xl border p-3"
+                        style="border-color:var(--border);background:rgba(0,0,0,0.2)">
+                        <p class="text-xs mb-2" style="color:var(--text-dim)">Run each step in order:</p>
+                        <div class="grid grid-cols-1 gap-2">
+                          <button id="onboarding-run-lens" class="btn-primary text-xs py-2">1. Run Lens</button>
+                          <button id="onboarding-run-rebound" class="btn-ghost text-xs py-2">2. Run Rebound</button>
+                          <button id="onboarding-run-narrative" class="btn-ghost text-xs py-2">3. Run Narrative</button>
+                          <button id="onboarding-open-workspace" class="btn-ghost text-xs py-2">4. Open
+                            Workspace</button>
+                        </div>
+                      </div>
+                      <div class="col-span-12 rounded-xl border p-3"
+                        style="border-color:var(--border);background:rgba(0,0,0,0.2)">
+                        <div class="flex items-center justify-between mb-2">
+                          <h3 class="text-sm font-semibold" style="color:rgba(255,255,255,0.9)">Live Activity</h3>
+                          <span class="text-xs" style="color:var(--text-muted)">Real-time</span>
+                        </div>
+                        <div id="dashboard-activity" class="space-y-1 max-h-20 overflow-y-auto custom-scroll text-xs"
+                          style="color:rgba(255,255,255,0.6)"></div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </section>
+
+
+              <!-- ── COMMAND CENTER VIEW ── -->
+              <section id="command-center-view" class="h-full workspace-shell">
+                <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
+                  <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Resume Upload
+                    </h1>
+                    <p class="text-sm mt-1" style="color:var(--text-dim)">Upload your resume PDF and run the Lens
+                      analysis to get started.</p>
+                  </div>
+                  <div class="command-actions">
+                    <button id="analyze-feature1" class="btn-primary">Analyze Resume</button>
+                    <button id="simulate-upload" class="btn-ghost">Simulate Upload</button>
+                    <button id="rerender-heatmap" class="btn-ghost">Render Heatmap</button>
+                  </div>
+                </header>
+                <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
+                  <section id="zone-engine"
+                    class="reactive-card card-live col-span-12 lg:col-span-7 row-span-6 glass-card rounded-2xl p-4 md:p-5 relative overflow-hidden custom-scroll">
+                    <div class="absolute inset-0 gradient-accent opacity-60 pointer-events-none"></div>
+                    <div class="relative">
+                      <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Resume Upload</h2>
+                        <span id="upload-status" class="text-xs px-3 py-1 rounded-full"
+                          style="border:1px solid var(--border);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6)"
+                          role="status" aria-live="polite">Awaiting Resume.pdf</span>
+                      </div>
+                      <div id="upload-zone"
+                        class="relative rounded-2xl h-[280px] md:h-[310px] flex items-center justify-center text-center spring-gentle"
+                        style="border:1px dashed rgba(0, 70, 67, 0.2);background:rgba(0, 70, 67, 0.03)">
+                        <input id="pdf-input" type="file" accept="application/pdf" class="hidden" />
+                        <div class="space-y-3 px-4">
+                          <div class="mx-auto w-20 h-24 rounded-xl relative overflow-hidden"
+                            style="background:rgba(255,255,255,0.03);border:1px solid var(--border)">
+                            <div class="absolute inset-0 flex items-center justify-center"><i data-lucide="file-text"
+                                class="w-9 h-9" style="color:rgba(0, 70, 67, 0.4)"></i></div>
+                            <div id="scanner-line" class="scanner-line"></div>
+                          </div>
+                          <p style="color:rgba(0, 70, 67, 0.8)" class="font-medium">Drop resume or click to upload PDF
+                          </p>
+                          <p class="text-sm" style="color:rgba(0, 70, 67, 0.5)">Maps visual hierarchy, ATS structure,
+                            and semantic salience.</p>
+                        </div>
+                        <div id="resume-canvas"
+                          class="absolute inset-5 rounded-xl pointer-events-none opacity-0 spring-gentle"></div>
+                      </div>
+                      <div class="mt-3 grid grid-cols-12 gap-2">
+                        <input id="candidate-id" type="text" value="candidate-001"
+                          class="col-span-12 md:col-span-4 rounded-lg px-3 py-2 text-sm text-white outline-none"
+                          style="background:rgba(0,0,0,0.3);border:1px solid var(--border)"
+                          placeholder="Candidate ID" />
+                        <select id="job-category"
+                          class="col-span-12 md:col-span-3 rounded-lg px-3 py-2 text-sm text-white outline-none"
+                          style="background:rgba(0,0,0,0.3);border:1px solid var(--border)">
+                          <option value="frontend">Frontend</option>
+                          <option value="backend">Backend</option>
+                          <option value="fullstack">Fullstack</option>
+                          <option value="data">Data</option>
+                        </select>
+                        <button id="fetch-versions" class="col-span-12 md:col-span-5 btn-ghost text-sm">Load Version
+                          History</button>
+                        <textarea id="job-description"
+                          class="col-span-12 rounded-lg px-3 py-2 text-sm h-24 custom-scroll outline-none"
+                          style="background:rgba(0,0,0,0.3);border:1px solid var(--border);color:rgba(255,255,255,0.9)"
+                          placeholder="Paste job description here..."></textarea>
+                      </div>
+                    </div>
+                  </section>
+                  <section id="zone-system"
+                    class="reactive-card card-live col-span-12 lg:col-span-5 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.03em">Analysis Output</h2>
+                      <button id="fetch-versions-output" class="btn-ghost text-xs">Load Versions</button>
+                    </div>
+                    <div class="h-[calc(100%-36px)] overflow-y-auto custom-scroll pr-1 space-y-3">
+                      <div id="analysis-summary-cards" class="space-y-2">
+                        <div class="state-card">Hiring Lens API: Awaiting analysis run.</div>
+                        <div class="state-card">Version tracker: Not loaded.</div>
+                      </div>
+                      <div class="rounded-xl p-3 text-xs"
+                        style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
+                        <p class="font-semibold mb-2" style="color:rgba(255,255,255,0.85)">Version History</p>
+                        <div id="version-list" class="space-y-1 max-h-28 overflow-y-auto custom-scroll"
+                          style="color:rgba(255,255,255,0.6)"></div>
+                      </div>
+                      <div class="rounded-xl p-3 text-xs"
+                        style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
+                        <div class="flex items-center justify-between mb-2">
+                          <p class="font-semibold" style="color:rgba(255,255,255,0.85)">Daily Plan</p>
+                          <button id="core-load-plan" class="btn-ghost text-xs py-0.5 px-2">Refresh</button>
+                        </div>
+                        <div id="core-daily-plan" class="space-y-1 max-h-28 overflow-y-auto custom-scroll"
+                          style="color:rgba(255,255,255,0.6)" role="status" aria-live="polite">
+                          <p>Core plan not loaded.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </section>
+
+
+              <!-- ── JOB TRACKER VIEW ── -->
+              <section id="job-tracker-view" class="h-full hidden workspace-shell">
+                <header class="mb-3 md:mb-4 workspace-header flex items-center justify-between">
+                  <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Job Tracker</h1>
+                    <p class="text-sm mt-1" style="color:var(--text-dim)">Your personal Kanban pipeline — track every
+                      application from wishlist to offer.</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button id="jt-add-btn" class="btn-primary flex items-center gap-2"><i data-lucide="plus"
+                        class="w-4 h-4"></i> Add Job</button>
+                    <button id="jt-refresh-btn" class="btn-ghost px-3"><i data-lucide="refresh-cw"
+                        class="w-4 h-4"></i></button>
+                  </div>
+                </header>
+                <div id="jt-board" class="jt-board">
+                  <div class="jt-column" data-status="Wishlist">
+                    <div class="jt-col-header"><span class="jt-col-dot" style="background:#6366f1"></span><span
+                        class="jt-col-title">Wishlist</span><span class="jt-col-count" id="jt-count-Wishlist">0</span>
+                    </div>
+                    <div class="jt-cards" id="jt-col-Wishlist"></div>
+                  </div>
+                  <div class="jt-column" data-status="Applied">
+                    <div class="jt-col-header"><span class="jt-col-dot" style="background:#f59e0b"></span><span
+                        class="jt-col-title">Applied</span><span class="jt-col-count" id="jt-count-Applied">0</span>
+                    </div>
+                    <div class="jt-cards" id="jt-col-Applied"></div>
+                  </div>
+                  <div class="jt-column" data-status="Interviewing">
+                    <div class="jt-col-header"><span class="jt-col-dot" style="background:#06b6d4"></span><span
+                        class="jt-col-title">Interviewing</span><span class="jt-col-count"
+                        id="jt-count-Interviewing">0</span></div>
+                    <div class="jt-cards" id="jt-col-Interviewing"></div>
+                  </div>
+                  <div class="jt-column" data-status="Offered">
+                    <div class="jt-col-header"><span class="jt-col-dot" style="background:#10b981"></span><span
+                        class="jt-col-title">Offered</span><span class="jt-col-count" id="jt-count-Offered">0</span>
+                    </div>
+                    <div class="jt-cards" id="jt-col-Offered"></div>
+                  </div>
+                </div>
+                <div class="jt-rejected-strip">
+                  <div class="jt-col-header mb-2"><span class="jt-col-dot" style="background:#ef4444"></span><span
+                      class="jt-col-title" style="color:rgba(255,255,255,0.45)">Rejected</span><span
+                      class="jt-col-count" id="jt-count-Rejected">0</span></div>
+                  <div class="jt-cards jt-cards-row" id="jt-col-Rejected"></div>
+                </div>
+              </section>
+
+              <!-- ── LENS WORKSPACE ── -->
+              <section id="lens-workspace" class="h-full hidden workspace-shell">
+                <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
+                  <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Lens Engine</h1>
+                    <p class="text-sm mt-1" style="color:var(--text-dim)">ATS integrity, semantic score, and version
+                      evolution.</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button id="lens-run-feature1" class="btn-primary">
+                      <i data-lucide="play" class="w-4 h-4 btn-icon"></i>
+                      <i data-lucide="loader-2" class="w-4 h-4 spinner hidden" id="lens-spinner-top"></i>
+                      <span>Run Lens Analysis</span>
+                    </button>
+                    <button id="lens-load-versions" class="btn-ghost">Load Versions</button>
+                  </div>
+                </header>
+                <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
+                  <!-- Input Panel -->
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-4 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Configuration</h2>
+                      <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
+                    </div>
+                    <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
+                      <div>
+                        <label class="jt-label" for="lens-candidate-id">Candidate ID</label>
+                        <input id="lens-candidate-id" type="text" class="jt-input" placeholder="e.g. candidate-001"
+                          value="candidate-001" />
+                      </div>
+                      <div>
+                        <label class="jt-label" for="lens-job-category">Job Category</label>
+                        <select id="lens-job-category" class="jt-input">
+                          <option value="frontend">Frontend</option>
+                          <option value="backend">Backend</option>
+                          <option value="fullstack" selected>Fullstack</option>
+                          <option value="data">Data</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="lens-upload-btn">Resume PDF *</label>
+                        <button id="lens-upload-btn" class="btn-ghost w-full justify-center text-sm">
+                          <i data-lucide="upload" class="w-4 h-4"></i> Upload Resume PDF
+                        </button>
+                        <p id="lens-resume-name" class="text-xs mt-2" style="color:var(--text-muted)">No resume
+                          selected.</p>
+                        <details class="control-accordion mt-3 text-xs" style="color:var(--text-dim)">
+                          <summary class="font-medium outline-none opacity-80 hover:opacity-100 transition-opacity">
+                            Resume Upload Rules</summary>
+                          <ul class="pl-4 mt-2 mb-1 list-disc space-y-1" style="color:var(--text-muted)">
+                            <li>PDF format only (Max 5MB)</li>
+                            <li>Standard formatting (No scattered text boxes)</li>
+                            <li>Text must be highlightable/selectable</li>
+                          </ul>
+                        </details>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="lens-job-description">Job Description</label>
+                        <textarea id="lens-job-description" class="jt-input jt-textarea"
+                          placeholder="Paste the target job description here..."></textarea>
+                      </div>
+                      <div class="pt-1">
+                        <button id="lens-run-feature1-panel" class="btn-primary w-full justify-center">
+                          <i data-lucide="play" class="w-4 h-4 btn-icon"></i>
+                          <i data-lucide="loader-2" class="w-4 h-4 spinner hidden" id="lens-spinner-panel"></i>
+                          <span>Run Lens Analysis</span>
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-8 row-span-4 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Lens Scoreboard</h2><span
+                        class="text-xs" style="color:var(--text-muted)">Hiring Lens core</span>
+                    </div>
+                    <div id="lens-summary-board"
+                      class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2"
+                      style="color:rgba(255,255,255,0.75)"></div>
+                  </section>
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-8 row-span-2 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Version Timeline</h2><span
+                        class="text-xs" style="color:var(--text-muted)">History</span>
+                    </div>
+                    <div id="lens-versions-board"
+                      class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2"
+                      style="color:rgba(255,255,255,0.75)"></div>
+                  </section>
+                </div>
+              </section>
+
+              <!-- ── SKILL ARBITRAGE WORKSPACE ── -->
+              <section id="feature3-workspace" class="h-full hidden workspace-shell">
+                <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
+                  <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Skill Arbitrage
+                    </h1>
+                    <p class="text-sm mt-1" style="color:var(--text-dim)">Market intelligence, gap mapping, sprint
+                      execution, and ROI command deck.</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button id="feature3-workspace-run" class="btn-primary">Run Full Arbitrage</button>
+                    <button id="feature3-workspace-history" class="btn-ghost">Load History</button>
+                    <button id="feature3-workspace-export" class="btn-ghost">Export</button>
+                  </div>
+                </header>
+                <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
+                  <!-- Input Panel -->
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-4 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Configuration</h2>
+                      <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
+                    </div>
+                    <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
+                      <div>
+                        <label class="jt-label" for="feature3-target-role">Target Role</label>
+                        <input id="feature3-target-role" type="text" class="jt-input"
+                          placeholder="e.g. Fullstack Engineer" value="Fullstack Engineer" />
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature3-region">Region</label>
+                        <input id="feature3-region" type="text" class="jt-input" placeholder="e.g. US, PK, EU"
+                          value="PK" />
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature3-current-skills">Current Skills</label>
+                        <textarea id="feature3-current-skills" class="jt-input jt-textarea"
+                          placeholder="e.g. react, javascript, python, sql">react, javascript, python, sql</textarea>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature3-salary">Current Salary (USD/yr)</label>
+                        <input id="feature3-salary" type="number" class="jt-input" placeholder="e.g. 60000"
+                          value="10000" />
+                      </div>
+                      <label class="flex items-center gap-2 text-xs cursor-pointer" style="color:rgba(255,255,255,0.6)">
+                        <input id="feature3-remote-only" type="checkbox" class="accent-indigo-400" />
+                        Remote only roles
+                      </label>
+                      <div class="pt-1">
+                        <button id="feature3-workspace-run-panel" class="btn-primary w-full justify-center">Run Full
+                          Arbitrage</button>
+                      </div>
+                      <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button id="feature3-load-history" class="btn-ghost text-xs py-2">Load History</button>
+                        <button id="feature3-run-quiz" class="btn-ghost text-xs py-2">Sprint Quiz</button>
+                        <button id="feature3-resume-inject" class="btn-ghost text-xs py-2">Resume Inject</button>
+                        <button id="feature3-export" class="btn-ghost text-xs py-2">Export</button>
+                      </div>
+                    </div>
+                  </section>
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Market Board</h2><span
+                        class="text-xs" style="color:var(--text-muted)">Live snapshot</span>
+                    </div>
+                    <div id="feature3-market-table"
+                      class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2"
+                      style="color:rgba(255,255,255,0.75)"></div>
+                  </section>
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Gap Radar + ROI</h2><span
+                        class="text-xs" style="color:var(--text-muted)">Top-decile pursuit</span>
+                    </div>
+                    <canvas class="radar-canvas" id="feature3-radar-workspace"></canvas>
+                    <div id="feature3-roi-bars-workspace" class="space-y-2 mt-3"></div>
+                  </section>
+                </div>
+              </section>
+
+              <!-- ── PERSONA COACH WORKSPACE ── -->
+              <section id="feature4-workspace" class="h-full hidden workspace-shell">
+                <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
+                  <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Persona Coach
+                    </h1>
+                    <p class="text-sm mt-1" style="color:var(--text-dim)">Adversarial mock interviews with realtime
+                      coaching and shareable review artifacts.</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button id="feature4-workspace-run" class="btn-primary">Run Persona Session</button>
+                    <button id="feature4-workspace-finalize" class="btn-ghost">Finalize Coach</button>
+                    <button id="feature4-workspace-share" class="btn-ghost">Share</button>
+                    <button id="feature4-workspace-history" class="btn-ghost">History</button>
+                  </div>
+                </header>
+                <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
+                  <!-- Input Panel -->
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-4 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Session Setup</h2>
+                      <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
+                    </div>
+                    <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
+                      <div>
+                        <label class="jt-label" for="feature4-workspace-persona-mode">Persona Mode</label>
+                        <select id="feature4-workspace-persona-mode" class="jt-input">
+                          <option value="blind" selected>Blind Mode</option>
+                          <option value="stone_faced">Stone Faced</option>
+                          <option value="rushed_founder">Rushed Founder</option>
+                          <option value="non_tech_hr">Non-Tech HR</option>
+                          <option value="deep_diver">Deep Diver</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature4-workspace-language">Language</label>
+                        <select id="feature4-workspace-language" class="jt-input">
+                          <option value="english" selected>English</option>
+                          <option value="hinglish">Hinglish</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature4-workspace-topic">Interview Topic</label>
+                        <input id="feature4-workspace-topic" type="text" class="jt-input"
+                          placeholder="e.g. System Design, React, Behavioral" />
+                      </div>
+                      <div>
+                        <label class="jt-label" for="feature4-workspace-candidate-id">Candidate ID</label>
+                        <input id="feature4-workspace-candidate-id" type="text" class="jt-input"
+                          placeholder="e.g. candidate-001" value="candidate-001" />
+                      </div>
+                      <div class="pt-1">
+                        <button id="feature4-workspace-run-panel" class="btn-primary w-full justify-center">Run Persona
+                          Session</button>
+                      </div>
+                      <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button id="feature4-finalize" class="btn-ghost text-xs py-2">Finalize Coach</button>
+                        <button id="feature4-share" class="btn-ghost text-xs py-2">Share Session</button>
+                      </div>
+                    </div>
+                  </section>
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Realtime Signal Timeline
+                      </h2><span class="text-xs" style="color:var(--text-muted)">Filler, confidence, freeze</span>
+                    </div>
+                    <div id="feature4-interviewer-prompt" class="workspace-list-card interviewer-prompt text-sm mb-2"
+                      style="color:rgba(255,255,255,0.8)">Interviewer prompt will appear here during multi-turn run.
+                    </div>
+                    <canvas id="feature4-signal-chart" class="radar-canvas"></canvas>
+                    <div id="feature4-live-hints" class="mt-2 space-y-2"></div>
+                  </section>
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Coach + Badges</h2><span
+                        class="text-xs" style="color:var(--text-muted)">Scorecard</span>
+                    </div>
+                    <div id="feature4-coach-board"
+                      class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2"
+                      style="color:rgba(255,255,255,0.75)"></div>
+                  </section>
+                </div>
+              </section>
+
+              <!-- ── NARRATIVE ARCHITECT WORKSPACE ── -->
+              <section id="feature5-workspace" class="hidden workspace-shell"
+                style="height:100%;display:none;flex-direction:column">
+                <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header" style="flex-shrink:0">
+                  <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Narrative
+                      Architect</h1>
+                    <p class="text-sm mt-1" style="color:var(--text-dim)">Deep codebase analysis, STAR storytelling,
+                      talk-track prep, and export-sync bundle.</p>
+                  </div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <button id="feature5-workspace-run" class="btn-primary"><i data-lucide="play" class="w-4 h-4"></i>
+                      Run Analysis</button>
+                    <button id="feature5-workspace-export" class="btn-ghost"><i data-lucide="package"
+                        class="w-4 h-4"></i> Export Bundle</button>
+                    <button id="feature5-workspace-download" class="btn-ghost"><i data-lucide="file-text"
+                        class="w-4 h-4"></i> .md</button>
+                    <button id="feature5-workspace-download-pdf" class="btn-ghost"><i data-lucide="file"
+                        class="w-4 h-4"></i> PDF</button>
+                    <button id="feature5-workspace-download-site" class="btn-ghost"><i data-lucide="globe"
+                        class="w-4 h-4"></i> .zip</button>
+                    <button id="feature5-workspace-history" class="btn-ghost"><i data-lucide="history"
+                        class="w-4 h-4"></i> History</button>
+                  </div>
+                </header>
+
+                <!-- Two-column layout: inputs left, results right -->
+                <div style="flex:1;min-height:0;display:grid;grid-template-columns:340px 1fr;gap:16px;overflow:hidden">
+
+                  <!-- LEFT: Input Panel (fixed width, scrollable) -->
+                  <div class="glass-card rounded-2xl p-5 overflow-y-auto custom-scroll"
+                    style="display:flex;flex-direction:column;gap:16px">
+                    <div>
+                      <p class="text-xs font-bold mb-3"
+                        style="color:var(--accent-l);letter-spacing:0.08em;text-transform:uppercase">Configuration</p>
+                      <div style="display:flex;flex-direction:column;gap:12px">
+                        <div>
+                          <label class="jt-label" for="feature5-workspace-github-url">
+                            <i data-lucide="github"
+                              style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px"></i>
+                            GitHub Repository URL *
+                          </label>
+                          <input id="feature5-workspace-github-url" type="url" class="jt-input"
+                            placeholder="https://github.com/username/repo" />
+                          <p class="text-xs mt-1" style="color:var(--text-muted)">Full URL of the repo to analyze</p>
+                        </div>
+                        <div>
+                          <label class="jt-label" for="feature5-workspace-target-role">
+                            <i data-lucide="briefcase"
+                              style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px"></i>
+                            Target Role
+                          </label>
+                          <input id="feature5-workspace-target-role" type="text" class="jt-input"
+                            placeholder="e.g. Senior Backend Engineer" />
+                        </div>
+                        <div>
+                          <label class="jt-label" for="feature5-workspace-tone">Narrative Tone</label>
+                          <select id="feature5-workspace-tone" class="jt-input">
+                            <option value="technical">Technical</option>
+                            <option value="balanced" selected>Balanced</option>
+                            <option value="business">Business-Focused</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="jt-label" for="feature5-workspace-projects">Selected Projects</label>
+                          <input id="feature5-workspace-projects" type="text" class="jt-input"
+                            placeholder="Backend, Frontend, API" value="Backend, Frontend" />
+                          <p class="text-xs mt-1" style="color:var(--text-muted)">Comma-separated project names</p>
+                        </div>
+                        <div>
+                          <label class="jt-label" for="feature5-workspace-jd">Job Description (Optional)</label>
+                          <textarea id="feature5-workspace-jd" class="jt-input" style="min-height:100px;resize:vertical"
+                            placeholder="Paste target JD to tailor narratives..."></textarea>
+                        </div>
+                        <button id="feature5-workspace-run-2" class="btn-primary w-full justify-center"
+                          style="margin-top:4px">
+                          <i data-lucide="zap" class="w-4 h-4"></i> Run Narrative Architect
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- RIGHT: Results (scrollable, tabbed) -->
+                  <div style="display:flex;flex-direction:column;gap:12px;overflow-y:auto;min-height:0"
+                    class="custom-scroll">
+
+                    <!-- Deep Analysis Card -->
+                    <div class="glass-card rounded-2xl p-5" id="f5-analysis-card">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div
+                          style="width:32px;height:32px;border-radius:8px;background:rgba(99,102,241,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                          <i data-lucide="scan-search" style="width:16px;height:16px;color:#818cf8"></i>
+                        </div>
+                        <div>
+                          <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Deep Analysis</h2>
+                          <p class="text-xs" style="color:var(--text-muted)">Architecture · Sophistication · Code
+                            quality</p>
+                        </div>
+                      </div>
+                      <div id="feature5-analysis-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
+                        <div class="state-card">Run Narrative Architect to generate architecture and sophistication
+                          insights.</div>
+                      </div>
+                    </div>
+
+                    <!-- Narrative Constructor Card -->
+                    <div class="glass-card rounded-2xl p-5" id="f5-narrative-card">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div
+                          style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                          <i data-lucide="book-open-text" style="width:16px;height:16px;color:#34d399"></i>
+                        </div>
+                        <div>
+                          <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">STAR Narratives</h2>
+                          <p class="text-xs" style="color:var(--text-muted)">Problem → Solution → Impact stories</p>
+                        </div>
+                      </div>
+                      <div id="feature5-narrative-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
+                        <div class="state-card">Problem-solution narrative and STAR bullets appear after run.</div>
+                      </div>
+                    </div>
+
+                    <!-- Talk Track Card -->
+                    <div class="glass-card rounded-2xl p-5" id="f5-talk-card">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div
+                          style="width:32px;height:32px;border-radius:8px;background:rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                          <i data-lucide="mic" style="width:16px;height:16px;color:#fbbf24"></i>
+                        </div>
+                        <div>
+                          <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Talk Track Assistant
+                          </h2>
+                          <p class="text-xs" style="color:var(--text-muted)">Code walkthrough scripts · Interview
+                            Q&amp;A prep</p>
+                        </div>
+                      </div>
+                      <div id="feature5-talk-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
+                        <div class="state-card">Talk-track script appears after run.</div>
+                      </div>
+                    </div>
+
+                    <!-- Skill Gaps Card -->
+                    <div class="glass-card rounded-2xl p-5" id="f5-gap-card">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div
+                          style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                          <i data-lucide="alert-triangle" style="width:16px;height:16px;color:#f87171"></i>
+                        </div>
+                        <div>
+                          <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Skill Gaps Identified
+                          </h2>
+                          <p class="text-xs" style="color:var(--text-muted)">Documentation · Coverage · Senior add-ons
+                          </p>
+                        </div>
+                      </div>
+                      <div id="feature5-gap-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
+                        <div class="state-card">Portfolio gap analysis appears after run.</div>
+                      </div>
+                    </div>
+
+                    <!-- Export & History Card -->
+                    <div class="glass-card rounded-2xl p-5" id="f5-export-card">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div
+                          style="width:32px;height:32px;border-radius:8px;background:rgba(139,92,246,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                          <i data-lucide="download" style="width:16px;height:16px;color:#a78bfa"></i>
+                        </div>
+                        <div>
+                          <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Export &amp; Session
+                            History</h2>
+                          <p class="text-xs" style="color:var(--text-muted)">Top projects · Consistency warnings · Past
+                            sessions</p>
+                        </div>
+                      </div>
+                      <div id="feature5-export-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
+                        <div class="state-card">Export sync bundle appears after run/export.</div>
+                      </div>
+                      <div class="flex gap-2 mt-3 flex-wrap">
+                        <button id="feature5-workspace-export-2" class="btn-ghost text-xs"><i data-lucide="package"
+                            class="w-3 h-3"></i> Export Bundle</button>
+                        <button id="feature5-workspace-download-2" class="btn-ghost text-xs"><i data-lucide="file-text"
+                            class="w-3 h-3"></i> Download .md</button>
+                        <button id="feature5-workspace-download-pdf-2" class="btn-ghost text-xs"><i data-lucide="file"
+                            class="w-3 h-3"></i> Case Study PDF</button>
+                        <button id="feature5-workspace-download-site-2" class="btn-ghost text-xs"><i data-lucide="globe"
+                            class="w-3 h-3"></i> Portfolio .zip</button>
+                      </div>
+                    </div>
+
+                    <!-- LinkedIn Post Card -->
+                    <div class="glass-card rounded-2xl p-5" id="f5-linkedin-card">
+                      <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                          <div
+                            style="width:32px;height:32px;border-radius:8px;background:rgba(10,102,194,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <i data-lucide="linkedin" style="width:16px;height:16px;color:#60a5fa"></i>
+                          </div>
+                          <div>
+                            <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">LinkedIn Post</h2>
+                            <p class="text-xs" style="color:var(--text-muted)">AI-generated, ready to paste · under 1300
+                              chars</p>
+                          </div>
+                        </div>
+                        <div class="flex gap-2">
+                          <button id="feature5-generate-linkedin" class="btn-ghost text-xs">
+                            <i data-lucide="sparkles" class="w-3 h-3"></i> Generate Post
+                          </button>
+                          <button id="feature5-copy-linkedin" class="btn-ghost text-xs" style="display:none">
+                            <i data-lucide="copy" class="w-3 h-3"></i> Copy
+                          </button>
+                        </div>
+                      </div>
+                      <div id="feature5-linkedin-board">
+                        <div class="state-card" style="text-align:center;padding:20px;color:rgba(255,255,255,0.4)">
+                          Run analysis first, then click <strong style="color:rgba(255,255,255,0.7)">Generate
+                            Post</strong> to create your LinkedIn post.
+                        </div>
+                      </div>
+                    </div>
+
+                  </div><!-- /right column -->
+                </div><!-- /two-column -->
+              </section>
+
+              <!-- ── REBOUND WORKSPACE (Feature 2 - Post-Interview Autopsy) ── -->
+              <section id="rebound-workspace" class="h-full hidden workspace-shell">
+                <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
+                  <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">The Rebound</h1>
+                    <p class="text-sm mt-1" style="color:var(--text-dim)">Post-interview autopsy — technical accuracy,
+                      behavioral critique, and strategic recovery actions.</p>
+                  </div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <button id="rebound-workspace-run" class="btn-primary">Run Full Autopsy</button>
+                    <button id="rebound-workspace-quick-debrief" class="btn-ghost">Quick Debrief</button>
+                    <button id="rebound-workspace-load-trend" class="btn-ghost">Load Trend</button>
+                  </div>
+                </header>
+                <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
+
+                  <!-- Input Panel -->
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-5 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Interview Details</h2>
+                      <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
+                    </div>
+                    <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
+                      <div class="grid grid-cols-2 gap-3">
+                        <div>
+                          <label class="jt-label" for="rebound-workspace-company">Company *</label>
+                          <input id="rebound-workspace-company" type="text" class="jt-input" placeholder="e.g. Google"
+                            value="Acme" />
+                        </div>
+                        <div>
+                          <label class="jt-label" for="rebound-workspace-role">Role *</label>
+                          <input id="rebound-workspace-role" type="text" class="jt-input"
+                            placeholder="e.g. Backend Engineer" value="Frontend Engineer" />
+                        </div>
+                        <div>
+                          <label class="jt-label" for="rebound-workspace-round">Interview Round</label>
+                          <select id="rebound-workspace-round" class="jt-input">
+                            <option value="screening">Screening</option>
+                            <option value="tech" selected>Technical</option>
+                            <option value="hr">HR</option>
+                            <option value="manager">Manager</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="jt-label" for="rebound-workspace-vibe">Interviewer Vibe</label>
+                          <select id="rebound-workspace-vibe" class="jt-input">
+                            <option value="friendly">Friendly</option>
+                            <option value="neutral" selected>Neutral</option>
+                            <option value="cold">Cold</option>
+                            <option value="hostile">Hostile</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="rebound-workspace-notes">Voice Notes / Debrief</label>
+                        <textarea id="rebound-workspace-notes" class="jt-input jt-textarea"
+                          placeholder="Write your post-interview thoughts, what went well, what didn't..."></textarea>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="rebound-workspace-transcript">Transcript / VTT</label>
+                        <textarea id="rebound-workspace-transcript" class="jt-input" style="min-height:80px"
+                          placeholder="Paste interview transcript or VTT file content..."></textarea>
+                      </div>
+                      <div>
+                        <label class="jt-label" for="rebound-workspace-audio-url">Audio URL (Optional)</label>
+                        <input id="rebound-workspace-audio-url" type="url" class="jt-input"
+                          placeholder="https://... public audio URL" />
+                      </div>
+                      <label class="flex items-center gap-2 text-xs cursor-pointer" style="color:rgba(255,255,255,0.6)">
+                        <input id="rebound-workspace-use-assembly" type="checkbox" class="accent-indigo-400" />
+                        Use AssemblyAI for transcription
+                      </label>
+                    </div>
+                  </section>
+
+                  <!-- Autopsy Output -->
+                  <section
+                    class="reactive-card card-live col-span-12 lg:col-span-7 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Autopsy Results</h2>
+                      <span class="text-xs" style="color:var(--text-muted)">Technical + Behavioral</span>
+                    </div>
+                    <div id="rebound-output-board"
+                      class="h-[calc(100%-28px)] overflow-y-auto custom-scroll text-sm space-y-2"
+                      style="color:rgba(255,255,255,0.75)">
+                      <div class="state-card">Run Full Autopsy to see technical accuracy, behavioral critique, and
+                        recovery actions.</div>
+                    </div>
+                  </section>
+
+                  <!-- Trend & Forecast -->
+                  <section
+                    class="reactive-card card-live col-span-12 md:col-span-6 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Growth Trend</h2>
+                      <span class="text-xs" style="color:var(--text-muted)">Across interviews</span>
+                    </div>
+                    <div id="rebound-trend-board"
+                      class="h-[calc(100%-28px)] overflow-y-auto custom-scroll text-sm space-y-2"
+                      style="color:rgba(255,255,255,0.75)">
+                      <div class="state-card">Load Trend to see your interview performance over time.</div>
+                    </div>
+                  </section>
+
+                  <!-- Recovery Actions -->
+                  <section
+                    class="reactive-card card-live col-span-12 md:col-span-6 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Recovery Actions</h2>
+                      <span class="text-xs" style="color:var(--text-muted)">Emails, scripts, patches</span>
+                    </div>
+                    <div id="rebound-actions-board"
+                      class="h-[calc(100%-28px)] overflow-y-auto custom-scroll text-sm space-y-2"
+                      style="color:rgba(255,255,255,0.75)">
+                      <div class="state-card">Recovery actions (clarification email, follow-up cadence, negotiation
+                        scripts) appear after autopsy.</div>
+                    </div>
+                  </section>
+
+                </div>
+              </section>
+
+            </section><!-- /view-root -->
+          </main>
+        </div>
+      </div>
+    </div>
+  </div><!-- /app-shell -->
+
+
+  <!-- ═══════════════════════════════════════════════════════
+     AUTH MODAL
+     ═══════════════════════════════════════════════════════ -->
+  <div id="auth-modal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(16px);z-index:999;align-items:center;justify-content:center;">
+    <div class="auth-box">
+      <div style="text-align:center;margin-bottom:8px">
+        <div class="landing-logo-dot" style="width:12px;height:12px;margin:0 auto 12px"></div>
+        <h2 style="font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-0.04em;margin-bottom:6px">Welcome to
+          Career OS</h2>
+        <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:20px">Sign in to save your progress across
+          sessions.</p>
+      </div>
+      <div class="auth-tab-bar">
+        <button onclick="switchAuthTab('login')" id="tab-login" class="auth-tab active">Sign In</button>
+        <button onclick="switchAuthTab('register')" id="tab-register" class="auth-tab">Register</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input id="auth-email" type="email" placeholder="Email address" class="auth-input" />
+        <input id="auth-password" type="password" placeholder="Password" class="auth-input" />
+        <input id="auth-fullname" type="text" placeholder="Full name (register only)" class="auth-input"
+          style="display:none" />
+      </div>
+      <p id="auth-error" style="font-size:12px;color:#f87171;margin-top:8px;display:none"></p>
+      <button onclick="submitAuth()"
+        style="margin-top:16px;width:100%;padding:12px;border-radius:var(--r-md);background:var(--accent-grad);color:#fff;font-size:0.9rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;box-shadow:0 0 24px rgba(99,102,241,0.4),inset 0 1px 0 rgba(255,255,255,0.15);transition:transform 0.2s var(--ease-spring),box-shadow 0.2s ease,filter 0.2s ease"
+        onmouseover="this.style.transform='scale(1.02)';this.style.filter='brightness(1.1)'"
+        onmouseout="this.style.transform='scale(1)';this.style.filter='brightness(1)'">Continue</button>
+      <p style="text-align:center;margin-top:12px;font-size:0.75rem;color:var(--text-muted)">
+        <button onclick="skipAuth()"
+          style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-family:inherit;font-size:0.75rem;text-decoration:underline">Continue
+          without account →</button>
+      </p>
+    </div>
+  </div>
+
+  <!-- ── JOB TRACKER MODAL ── -->
+  <div id="jt-modal" class="jt-modal-backdrop" style="display:none;" role="dialog" aria-modal="true"
+    aria-labelledby="jt-modal-title">
+    <div class="jt-modal-box">
+      <div class="flex items-center justify-between mb-4">
+        <h2 id="jt-modal-title" style="font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:-0.03em">Add Job</h2>
+        <button id="jt-modal-close"
+          style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:4px;border-radius:8px;transition:color 0.15s ease"
+          onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'"
+          aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <input type="hidden" id="jt-edit-id" value="" />
+      <input type="hidden" id="candidate-id" value="candidate-001" />
+      <input type="hidden" id="job-category" value="frontend" />
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div><label class="jt-label" for="jt-company">Company *</label><input id="jt-company" type="text"
+            class="jt-input" placeholder="e.g. Stripe" /></div>
+        <div><label class="jt-label" for="jt-position">Position *</label><input id="jt-position" type="text"
+            class="jt-input" placeholder="e.g. Senior Frontend Engineer" /></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label class="jt-label" for="jt-status">Status</label><select id="jt-status" class="jt-input">
+              <option value="Wishlist">Wishlist</option>
+              <option value="Applied">Applied</option>
+              <option value="Interviewing">Interviewing</option>
+              <option value="Offered">Offered</option>
+              <option value="Rejected">Rejected</option>
+            </select></div>
+          <div><label class="jt-label" for="jt-date">Date Applied</label><input id="jt-date" type="date"
+              class="jt-input" /></div>
+        </div>
+        <div><label class="jt-label" for="jt-salary">Salary Range</label><input id="jt-salary" type="text"
+            class="jt-input" placeholder="e.g. $120k–$150k" /></div>
+        <div><label class="jt-label" for="jt-notes">Notes</label><textarea id="jt-notes" class="jt-input jt-textarea"
+            placeholder="Recruiter name, referral, next steps…"></textarea></div>
+      </div>
+      <p id="jt-modal-error" style="font-size:12px;color:#f87171;margin-top:8px;display:none"></p>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button id="jt-modal-save" class="btn-primary" style="flex:1;justify-content:center;padding:11px">Save</button>
+        <button id="jt-modal-cancel" class="btn-ghost"
+          style="flex:1;justify-content:center;padding:11px">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile nav -->
+  <nav id="mobile-nav"
+    style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(5,5,5,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);z-index:100;padding:8px 0 env(safe-area-inset-bottom)">
+    <div style="display:flex;justify-content:space-around;align-items:center">
+      <button onclick="navigateTo('dashboard')"
+        style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i
+          data-lucide="layout-dashboard" style="width:18px;height:18px"></i>Home</button>
+      <button onclick="navigateTo('job-tracker')"
+        style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i
+          data-lucide="kanban" style="width:18px;height:18px"></i>Jobs</button>
+      <button onclick="navigateTo('lens-engine')"
+        style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i
+          data-lucide="scan-search" style="width:18px;height:18px"></i>Lens</button>
+      <button onclick="navigateTo('rebound')"
+        style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i
+          data-lucide="mic" style="width:18px;height:18px"></i>Rebound</button>
+      <button onclick="navigateTo('persona-play')"
+        style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i
+          data-lucide="audio-lines" style="width:18px;height:18px"></i>Coach</button>
+      <button onclick="navigateTo('narrative')"
+        style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i
+          data-lucide="book-open-text" style="width:18px;height:18px"></i>Portfo</button>
     </div>
   </nav>
 
-  <!-- Hero -->
-  <section class="hero-section">
-    <div class="hero-badge">
-      <span class="hero-badge-dot"></span>
-      AI-Powered Career Intelligence
-    </div>
-    <h1 class="hero-headline">The OS for Your<br/>Professional Growth</h1>
-    <p class="hero-sub">Track applications, analyze your resume with AI, prep for interviews, and close the skill gap — all in one dark, beautiful workspace.</p>
-    <div class="hero-cta-row">
-      <button class="hero-cta-primary" onclick="showApp()">
-        <i data-lucide="zap" style="width:16px;height:16px;display:inline;vertical-align:middle;margin-right:6px"></i>
-        Launch Your Career OS
-      </button>
-      <button class="hero-cta-secondary" onclick="showApp()">View Dashboard →</button>
-    </div>
-
-    <!-- Floating dashboard preview -->
-    <div class="dashboard-preview">
-      <div class="preview-titlebar">
-        <div class="preview-dot" style="background:#ef4444"></div>
-        <div class="preview-dot" style="background:#f59e0b"></div>
-        <div class="preview-dot" style="background:#10b981"></div>
-        <span class="preview-title">Career OS — Job Tracker</span>
-      </div>
-      <div class="preview-body">
-        <div class="preview-col">
-          <div class="preview-col-label">Wishlist</div>
-          <div class="preview-mini-card"><div class="preview-mini-card-co">Stripe</div><div class="preview-mini-card-role">Senior Engineer</div><span class="preview-mini-badge" style="background:rgba(99,102,241,0.15);color:#a5b4fc">Wishlist</span></div>
-          <div class="preview-mini-card"><div class="preview-mini-card-co">Linear</div><div class="preview-mini-card-role">Frontend Lead</div><span class="preview-mini-badge" style="background:rgba(99,102,241,0.15);color:#a5b4fc">Wishlist</span></div>
-        </div>
-        <div class="preview-col">
-          <div class="preview-col-label">Applied</div>
-          <div class="preview-mini-card"><div class="preview-mini-card-co">Vercel</div><div class="preview-mini-card-role">DX Engineer</div><span class="preview-mini-badge" style="background:rgba(245,158,11,0.15);color:#fcd34d">Applied</span></div>
-          <div class="preview-mini-card"><div class="preview-mini-card-co">Figma</div><div class="preview-mini-card-role">Full Stack</div><span class="preview-mini-badge" style="background:rgba(245,158,11,0.15);color:#fcd34d">Applied</span></div>
-        </div>
-        <div class="preview-col">
-          <div class="preview-col-label">Interviewing</div>
-          <div class="preview-mini-card"><div class="preview-mini-card-co">Notion</div><div class="preview-mini-card-role">Backend Eng</div><span class="preview-mini-badge" style="background:rgba(6,182,212,0.15);color:#67e8f9">Round 2</span></div>
-        </div>
-        <div class="preview-col">
-          <div class="preview-col-label">Offered</div>
-          <div class="preview-mini-card"><div class="preview-mini-card-co">Loom</div><div class="preview-mini-card-role">Staff Engineer</div><span class="preview-mini-badge" style="background:rgba(16,185,129,0.15);color:#6ee7b7">$180k</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Trust logos -->
-  <div class="trust-section">
-    <p class="trust-label">Trusted by engineers targeting</p>
-    <div class="trust-logos">
-      <span class="trust-logo">Google</span>
-      <span class="trust-logo">Meta</span>
-      <span class="trust-logo">Stripe</span>
-      <span class="trust-logo">Vercel</span>
-      <span class="trust-logo">Linear</span>
-      <span class="trust-logo">Figma</span>
-      <span class="trust-logo">Notion</span>
-    </div>
-  </div>
-</div>
-
-
-<!-- ═══════════════════════════════════════════════════════
-     MAIN APP (hidden until auth)
-     ═══════════════════════════════════════════════════════ -->
-<div id="app-shell" style="display:none" class="relative z-10" style="height:100vh;min-height:100dvh">
-  <div id="spotlight" class="spotlight" aria-hidden="true"></div>
-
-  <div style="height:100vh;min-height:100dvh" class="p-4 md:p-5 lg:p-6">
-    <div class="h-full w-full rounded-3xl thin-glass soft-ring overflow-hidden">
-      <div class="h-full grid grid-cols-[auto_1fr]">
-
-        <!-- Sidebar -->
-        <aside id="sidebar" class="group h-full p-2 md:p-3 spring-gentle w-[68px] hover:w-[200px] overflow-hidden">
-          <div class="h-full flex flex-col justify-between">
-            <div class="space-y-1 pt-1">
-              <div class="px-2 py-3 mb-2">
-                <div class="landing-logo-dot mx-auto" style="width:10px;height:10px"></div>
-              </div>
-              <button class="nav-btn" data-view="dashboard">
-                <span class="icon-wrap"><i data-lucide="layout-dashboard" class="w-4 h-4"></i></span>
-                <span class="nav-label">Dashboard</span>
-              </button>
-              <button class="nav-btn" data-view="command-center">
-                <span class="icon-wrap"><i data-lucide="upload-cloud" class="w-4 h-4"></i></span>
-                <span class="nav-label">Upload</span>
-              </button>
-              <button class="nav-btn" data-view="job-tracker">
-                <span class="icon-wrap"><i data-lucide="kanban" class="w-4 h-4"></i></span>
-                <span class="nav-label">Jobs</span>
-              </button>
-              <button class="nav-btn" data-view="lens-engine">
-                <span class="icon-wrap"><i data-lucide="scan-search" class="w-4 h-4"></i></span>
-                <span class="nav-label">Lens</span>
-              </button>
-              <button class="nav-btn" data-view="rebound">
-                <span class="icon-wrap"><i data-lucide="mic" class="w-4 h-4"></i></span>
-                <span class="nav-label">Rebound</span>
-              </button>
-              <button class="nav-btn" data-view="arbitrage">
-                <span class="icon-wrap"><i data-lucide="candlestick-chart" class="w-4 h-4"></i></span>
-                <span class="nav-label">Arbitrage</span>
-              </button>
-              <button class="nav-btn" data-view="persona-play">
-                <span class="icon-wrap"><i data-lucide="audio-lines" class="w-4 h-4"></i></span>
-                <span class="nav-label">Persona</span>
-              </button>
-              <button class="nav-btn" data-view="narrative">
-                <span class="icon-wrap"><i data-lucide="book-open-text" class="w-4 h-4"></i></span>
-                <span class="nav-label">Narrative</span>
-              </button>
-            </div>
-            <div class="space-y-1 pb-1">
-              <button class="nav-btn" id="logout-btn">
-                <span class="icon-wrap"><i data-lucide="log-out" class="w-4 h-4"></i></span>
-                <span class="nav-label">Logout</span>
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        <!-- Main content -->
-        <main class="h-full overflow-hidden p-3 md:p-4 lg:p-5">
-          <section id="view-root" class="h-full view-swap-enter view-swap-active">
-
-
-            <!-- ── DASHBOARD VIEW ── -->
-            <section id="dashboard-view" class="h-full workspace-shell">
-              <header class="mb-3 md:mb-4 workspace-header">
-                <div>
-                  <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Career OS Control Room</h1>
-                  <p class="text-sm mt-1" style="color:var(--text-dim)">Follow this sequence and Career OS builds interview momentum step by step.</p>
-                </div>
-                <div class="mode-toggle-wrap">
-                  <button id="ui-mode-beginner" class="mode-toggle-btn active" type="button">Beginner</button>
-                  <button id="ui-mode-expert" class="mode-toggle-btn" type="button">Expert</button>
-                </div>
-              </header>
-              <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
-                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-4 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Guided Journey</h2>
-                    <span class="text-xs" style="color:var(--text-muted)">4-step flow</span>
-                  </div>
-                  <div id="dashboard-progress" class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-2 text-sm"></div>
-                </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-4 row-span-4 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Today's Focus</h2>
-                    <span class="text-xs" style="color:var(--text-muted)">Next action</span>
-                  </div>
-                  <div id="dashboard-plan" class="space-y-2 text-sm"></div>
-                  <div class="mt-3 grid grid-cols-1 gap-2">
-                    <button id="dashboard-next-action" class="btn-primary w-full justify-center">Run Next Action</button>
-                    <button id="dashboard-open-workspace" class="btn-ghost w-full justify-center">Open Full Workspace</button>
-                  </div>
-                  <div id="dashboard-feature-explainer" class="mt-3 space-y-2"></div>
-                </section>
-                <section class="reactive-card card-live col-span-12 row-span-2 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="grid grid-cols-12 gap-3 h-full">
-                    <div class="col-span-12 lg:col-span-8 rounded-xl border p-3" style="border-color:var(--border);background:rgba(0,0,0,0.2)">
-                      <div class="flex items-center justify-between mb-2">
-                        <h2 class="text-sm font-bold text-hero">Quick Start Wizard</h2>
-                        <span id="onboarding-status" class="text-xs" style="color:var(--text-muted)">Step 1 of 4</span>
-                      </div>
-                      <div class="grid grid-cols-12 gap-2">
-                        <input id="onboarding-candidate-id" type="text" value="candidate-001" class="col-span-12 md:col-span-4 rounded-lg px-3 py-2 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Candidate ID" />
-                        <select id="onboarding-job-category" class="col-span-12 md:col-span-3 rounded-lg px-3 py-2 text-xs text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)">
-                          <option value="frontend">Frontend</option><option value="backend">Backend</option><option value="fullstack">Fullstack</option><option value="data">Data</option>
-                        </select>
-                        <button id="onboarding-upload-resume" class="col-span-12 md:col-span-5 rounded-lg px-3 py-2 text-xs btn-ghost">Upload Resume PDF</button>
-                        <textarea id="onboarding-job-description" class="col-span-12 rounded-lg px-3 py-2 text-xs h-16 custom-scroll outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border);color:rgba(255,255,255,0.9)" placeholder="Paste job description for your target role..."></textarea>
-                      </div>
-                      <p id="onboarding-resume-name" class="text-xs mt-2" style="color:var(--text-muted)">No resume selected yet.</p>
-                    </div>
-                    <div class="col-span-12 lg:col-span-4 rounded-xl border p-3" style="border-color:var(--border);background:rgba(0,0,0,0.2)">
-                      <p class="text-xs mb-2" style="color:var(--text-dim)">Run each step in order:</p>
-                      <div class="grid grid-cols-1 gap-2">
-                        <button id="onboarding-run-lens" class="btn-primary text-xs py-2">1. Run Lens</button>
-                        <button id="onboarding-run-rebound" class="btn-ghost text-xs py-2">2. Run Rebound</button>
-                        <button id="onboarding-run-narrative" class="btn-ghost text-xs py-2">3. Run Narrative</button>
-                        <button id="onboarding-open-workspace" class="btn-ghost text-xs py-2">4. Open Workspace</button>
-                      </div>
-                    </div>
-                    <div class="col-span-12 rounded-xl border p-3" style="border-color:var(--border);background:rgba(0,0,0,0.2)">
-                      <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-semibold" style="color:rgba(255,255,255,0.9)">Live Activity</h3>
-                        <span class="text-xs" style="color:var(--text-muted)">Real-time</span>
-                      </div>
-                      <div id="dashboard-activity" class="space-y-1 max-h-20 overflow-y-auto custom-scroll text-xs" style="color:rgba(255,255,255,0.6)"></div>
-                    </div>
-                  </div>
-                </section>
-              </div>
-            </section>
-
-
-            <!-- ── COMMAND CENTER VIEW ── -->
-            <section id="command-center-view" class="h-full workspace-shell">
-              <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
-                <div>
-                  <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Resume Upload</h1>
-                  <p class="text-sm mt-1" style="color:var(--text-dim)">Upload your resume PDF and run the Lens analysis to get started.</p>
-                </div>
-                <div class="command-actions">
-                  <button id="analyze-feature1" class="btn-primary">Analyze Resume</button>
-                  <button id="simulate-upload" class="btn-ghost">Simulate Upload</button>
-                  <button id="rerender-heatmap" class="btn-ghost">Render Heatmap</button>
-                </div>
-              </header>
-              <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
-                <section id="zone-engine" class="reactive-card card-live col-span-12 lg:col-span-7 row-span-6 glass-card rounded-2xl p-4 md:p-5 relative overflow-hidden custom-scroll">
-                  <div class="absolute inset-0 gradient-accent opacity-60 pointer-events-none"></div>
-                  <div class="relative">
-                    <div class="flex items-center justify-between mb-3">
-                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Resume Upload</h2>
-                      <span id="upload-status" class="text-xs px-3 py-1 rounded-full" style="border:1px solid var(--border);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6)" role="status" aria-live="polite">Awaiting Resume.pdf</span>
-                    </div>
-                    <div id="upload-zone" class="relative rounded-2xl h-[280px] md:h-[310px] flex items-center justify-center text-center spring-gentle" style="border:1px dashed rgba(255,255,255,0.15);background:rgba(0,0,0,0.2)">
-                      <input id="pdf-input" type="file" accept="application/pdf" class="hidden" />
-                      <div class="space-y-3 px-4">
-                        <div class="mx-auto w-20 h-24 rounded-xl relative overflow-hidden" style="background:rgba(255,255,255,0.03);border:1px solid var(--border)">
-                          <div class="absolute inset-0 flex items-center justify-center"><i data-lucide="file-text" class="w-9 h-9" style="color:rgba(255,255,255,0.5)"></i></div>
-                          <div id="scanner-line" class="scanner-line"></div>
-                        </div>
-                        <p style="color:rgba(255,255,255,0.75)" class="font-medium">Drop resume or click to upload PDF</p>
-                        <p class="text-sm" style="color:rgba(255,255,255,0.4)">Maps visual hierarchy, ATS structure, and semantic salience.</p>
-                      </div>
-                      <div id="resume-canvas" class="absolute inset-5 rounded-xl pointer-events-none opacity-0 spring-gentle"></div>
-                    </div>
-                    <div class="mt-3 grid grid-cols-12 gap-2">
-                      <input id="candidate-id" type="text" value="candidate-001" class="col-span-12 md:col-span-4 rounded-lg px-3 py-2 text-sm text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)" placeholder="Candidate ID" />
-                      <select id="job-category" class="col-span-12 md:col-span-3 rounded-lg px-3 py-2 text-sm text-white outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border)">
-                        <option value="frontend">Frontend</option><option value="backend">Backend</option><option value="fullstack">Fullstack</option><option value="data">Data</option>
-                      </select>
-                      <button id="fetch-versions" class="col-span-12 md:col-span-5 btn-ghost text-sm">Load Version History</button>
-                      <textarea id="job-description" class="col-span-12 rounded-lg px-3 py-2 text-sm h-24 custom-scroll outline-none" style="background:rgba(0,0,0,0.3);border:1px solid var(--border);color:rgba(255,255,255,0.9)" placeholder="Paste job description here..."></textarea>
-                    </div>
-                  </div>
-                </section>
-                <section id="zone-system" class="reactive-card card-live col-span-12 lg:col-span-5 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.03em">Analysis Output</h2>
-                    <button id="fetch-versions-output" class="btn-ghost text-xs">Load Versions</button>
-                  </div>
-                  <div class="h-[calc(100%-36px)] overflow-y-auto custom-scroll pr-1 space-y-3">
-                    <div id="analysis-summary-cards" class="space-y-2">
-                      <div class="state-card">Hiring Lens API: Awaiting analysis run.</div>
-                      <div class="state-card">Version tracker: Not loaded.</div>
-                    </div>
-                    <div class="rounded-xl p-3 text-xs" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
-                      <p class="font-semibold mb-2" style="color:rgba(255,255,255,0.85)">Version History</p>
-                      <div id="version-list" class="space-y-1 max-h-28 overflow-y-auto custom-scroll" style="color:rgba(255,255,255,0.6)"></div>
-                    </div>
-                    <div class="rounded-xl p-3 text-xs" style="border:1px solid var(--border);background:rgba(0,0,0,0.2)">
-                      <div class="flex items-center justify-between mb-2">
-                        <p class="font-semibold" style="color:rgba(255,255,255,0.85)">Daily Plan</p>
-                        <button id="core-load-plan" class="btn-ghost text-xs py-0.5 px-2">Refresh</button>
-                      </div>
-                      <div id="core-daily-plan" class="space-y-1 max-h-28 overflow-y-auto custom-scroll" style="color:rgba(255,255,255,0.6)" role="status" aria-live="polite"><p>Core plan not loaded.</p></div>
-                    </div>
-                  </div>
-                </section>
-              </div>
-            </section>
-
-
-            <!-- ── JOB TRACKER VIEW ── -->
-            <section id="job-tracker-view" class="h-full hidden workspace-shell">
-              <header class="mb-3 md:mb-4 workspace-header flex items-center justify-between">
-                <div>
-                  <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Job Tracker</h1>
-                  <p class="text-sm mt-1" style="color:var(--text-dim)">Your personal Kanban pipeline — track every application from wishlist to offer.</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button id="jt-add-btn" class="btn-primary flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Add Job</button>
-                  <button id="jt-refresh-btn" class="btn-ghost px-3"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
-                </div>
-              </header>
-              <div id="jt-board" class="jt-board">
-                <div class="jt-column" data-status="Wishlist">
-                  <div class="jt-col-header"><span class="jt-col-dot" style="background:#6366f1"></span><span class="jt-col-title">Wishlist</span><span class="jt-col-count" id="jt-count-Wishlist">0</span></div>
-                  <div class="jt-cards" id="jt-col-Wishlist"></div>
-                </div>
-                <div class="jt-column" data-status="Applied">
-                  <div class="jt-col-header"><span class="jt-col-dot" style="background:#f59e0b"></span><span class="jt-col-title">Applied</span><span class="jt-col-count" id="jt-count-Applied">0</span></div>
-                  <div class="jt-cards" id="jt-col-Applied"></div>
-                </div>
-                <div class="jt-column" data-status="Interviewing">
-                  <div class="jt-col-header"><span class="jt-col-dot" style="background:#06b6d4"></span><span class="jt-col-title">Interviewing</span><span class="jt-col-count" id="jt-count-Interviewing">0</span></div>
-                  <div class="jt-cards" id="jt-col-Interviewing"></div>
-                </div>
-                <div class="jt-column" data-status="Offered">
-                  <div class="jt-col-header"><span class="jt-col-dot" style="background:#10b981"></span><span class="jt-col-title">Offered</span><span class="jt-col-count" id="jt-count-Offered">0</span></div>
-                  <div class="jt-cards" id="jt-col-Offered"></div>
-                </div>
-              </div>
-              <div class="jt-rejected-strip">
-                <div class="jt-col-header mb-2"><span class="jt-col-dot" style="background:#ef4444"></span><span class="jt-col-title" style="color:rgba(255,255,255,0.45)">Rejected</span><span class="jt-col-count" id="jt-count-Rejected">0</span></div>
-                <div class="jt-cards jt-cards-row" id="jt-col-Rejected"></div>
-              </div>
-            </section>
-
-            <!-- ── LENS WORKSPACE ── -->
-            <section id="lens-workspace" class="h-full hidden workspace-shell">
-              <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
-                <div><h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Lens Engine</h1><p class="text-sm mt-1" style="color:var(--text-dim)">ATS integrity, semantic score, and version evolution.</p></div>
-                <div class="flex items-center gap-2">
-                  <button id="lens-run-feature1" class="btn-primary">Run Lens Analysis</button>
-                  <button id="lens-load-versions" class="btn-ghost">Load Versions</button>
-                </div>
-              </header>
-              <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
-                <!-- Input Panel -->
-                <section class="reactive-card card-live col-span-12 lg:col-span-4 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Configuration</h2>
-                    <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
-                  </div>
-                  <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
-                    <div>
-                      <label class="jt-label" for="lens-candidate-id">Candidate ID</label>
-                      <input id="lens-candidate-id" type="text" class="jt-input" placeholder="e.g. candidate-001" value="candidate-001" />
-                    </div>
-                    <div>
-                      <label class="jt-label" for="lens-job-category">Job Category</label>
-                      <select id="lens-job-category" class="jt-input">
-                        <option value="frontend">Frontend</option>
-                        <option value="backend">Backend</option>
-                        <option value="fullstack" selected>Fullstack</option>
-                        <option value="data">Data</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="jt-label" for="lens-upload-btn">Resume PDF *</label>
-                      <button id="lens-upload-btn" class="btn-ghost w-full justify-center text-sm">
-                        <i data-lucide="upload" class="w-4 h-4"></i> Upload Resume PDF
-                      </button>
-                      <p id="lens-resume-name" class="text-xs mt-1" style="color:var(--text-muted)">No resume selected.</p>
-                    </div>
-                    <div>
-                      <label class="jt-label" for="lens-job-description">Job Description</label>
-                      <textarea id="lens-job-description" class="jt-input jt-textarea" placeholder="Paste the target job description here..."></textarea>
-                    </div>
-                    <div class="pt-1">
-                      <button id="lens-run-feature1-panel" class="btn-primary w-full justify-center">Run Lens Analysis</button>
-                    </div>
-                  </div>
-                </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-4 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Lens Scoreboard</h2><span class="text-xs" style="color:var(--text-muted)">Hiring Lens core</span></div>
-                  <div id="lens-summary-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-2 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Version Timeline</h2><span class="text-xs" style="color:var(--text-muted)">History</span></div>
-                  <div id="lens-versions-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                </section>
-              </div>
-            </section>
-
-            <!-- ── SKILL ARBITRAGE WORKSPACE ── -->
-            <section id="feature3-workspace" class="h-full hidden workspace-shell">
-              <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
-                <div><h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Skill Arbitrage</h1><p class="text-sm mt-1" style="color:var(--text-dim)">Market intelligence, gap mapping, sprint execution, and ROI command deck.</p></div>
-                <div class="flex items-center gap-2">
-                  <button id="feature3-workspace-run" class="btn-primary">Run Full Arbitrage</button>
-                  <button id="feature3-workspace-history" class="btn-ghost">Load History</button>
-                  <button id="feature3-workspace-export" class="btn-ghost">Export</button>
-                </div>
-              </header>
-              <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
-                <!-- Input Panel -->
-                <section class="reactive-card card-live col-span-12 lg:col-span-4 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Configuration</h2>
-                    <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
-                  </div>
-                  <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
-                    <div>
-                      <label class="jt-label" for="feature3-target-role">Target Role</label>
-                      <input id="feature3-target-role" type="text" class="jt-input" placeholder="e.g. Fullstack Engineer" value="Fullstack Engineer" />
-                    </div>
-                    <div>
-                      <label class="jt-label" for="feature3-region">Region</label>
-                      <input id="feature3-region" type="text" class="jt-input" placeholder="e.g. US, PK, EU" value="PK" />
-                    </div>
-                    <div>
-                      <label class="jt-label" for="feature3-current-skills">Current Skills</label>
-                      <textarea id="feature3-current-skills" class="jt-input jt-textarea" placeholder="e.g. react, javascript, python, sql">react, javascript, python, sql</textarea>
-                    </div>
-                    <div>
-                      <label class="jt-label" for="feature3-salary">Current Salary (USD/yr)</label>
-                      <input id="feature3-salary" type="number" class="jt-input" placeholder="e.g. 60000" value="10000" />
-                    </div>
-                    <label class="flex items-center gap-2 text-xs cursor-pointer" style="color:rgba(255,255,255,0.6)">
-                      <input id="feature3-remote-only" type="checkbox" class="accent-indigo-400" />
-                      Remote only roles
-                    </label>
-                    <div class="pt-1">
-                      <button id="feature3-workspace-run-panel" class="btn-primary w-full justify-center">Run Full Arbitrage</button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 pt-1">
-                      <button id="feature3-load-history" class="btn-ghost text-xs py-2">Load History</button>
-                      <button id="feature3-run-quiz" class="btn-ghost text-xs py-2">Sprint Quiz</button>
-                      <button id="feature3-resume-inject" class="btn-ghost text-xs py-2">Resume Inject</button>
-                      <button id="feature3-export" class="btn-ghost text-xs py-2">Export</button>
-                    </div>
-                  </div>
-                </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Market Board</h2><span class="text-xs" style="color:var(--text-muted)">Live snapshot</span></div>
-                  <div id="feature3-market-table" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Gap Radar + ROI</h2><span class="text-xs" style="color:var(--text-muted)">Top-decile pursuit</span></div>
-                  <canvas class="radar-canvas" id="feature3-radar-workspace"></canvas>
-                  <div id="feature3-roi-bars-workspace" class="space-y-2 mt-3"></div>
-                </section>
-              </div>
-            </section>
-
-            <!-- ── PERSONA COACH WORKSPACE ── -->
-            <section id="feature4-workspace" class="h-full hidden workspace-shell">
-              <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
-                <div><h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Persona Coach</h1><p class="text-sm mt-1" style="color:var(--text-dim)">Adversarial mock interviews with realtime coaching and shareable review artifacts.</p></div>
-                <div class="flex items-center gap-2">
-                  <button id="feature4-workspace-run" class="btn-primary">Run Persona Session</button>
-                  <button id="feature4-workspace-finalize" class="btn-ghost">Finalize Coach</button>
-                  <button id="feature4-workspace-share" class="btn-ghost">Share</button>
-                  <button id="feature4-workspace-history" class="btn-ghost">History</button>
-                </div>
-              </header>
-              <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
-                <!-- Input Panel -->
-                <section class="reactive-card card-live col-span-12 lg:col-span-4 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Session Setup</h2>
-                    <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
-                  </div>
-                  <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
-                    <div>
-                      <label class="jt-label" for="feature4-workspace-persona-mode">Persona Mode</label>
-                      <select id="feature4-workspace-persona-mode" class="jt-input">
-                        <option value="blind" selected>Blind Mode</option>
-                        <option value="stone_faced">Stone Faced</option>
-                        <option value="rushed_founder">Rushed Founder</option>
-                        <option value="non_tech_hr">Non-Tech HR</option>
-                        <option value="deep_diver">Deep Diver</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="jt-label" for="feature4-workspace-language">Language</label>
-                      <select id="feature4-workspace-language" class="jt-input">
-                        <option value="english" selected>English</option>
-                        <option value="hinglish">Hinglish</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="jt-label" for="feature4-workspace-topic">Interview Topic</label>
-                      <input id="feature4-workspace-topic" type="text" class="jt-input" placeholder="e.g. System Design, React, Behavioral" />
-                    </div>
-                    <div>
-                      <label class="jt-label" for="feature4-workspace-candidate-id">Candidate ID</label>
-                      <input id="feature4-workspace-candidate-id" type="text" class="jt-input" placeholder="e.g. candidate-001" value="candidate-001" />
-                    </div>
-                    <div class="pt-1">
-                      <button id="feature4-workspace-run-panel" class="btn-primary w-full justify-center">Run Persona Session</button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 pt-1">
-                      <button id="feature4-finalize" class="btn-ghost text-xs py-2">Finalize Coach</button>
-                      <button id="feature4-share" class="btn-ghost text-xs py-2">Share Session</button>
-                    </div>
-                  </div>
-                </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Realtime Signal Timeline</h2><span class="text-xs" style="color:var(--text-muted)">Filler, confidence, freeze</span></div>
-                  <div id="feature4-interviewer-prompt" class="workspace-list-card interviewer-prompt text-sm mb-2" style="color:rgba(255,255,255,0.8)">Interviewer prompt will appear here during multi-turn run.</div>
-                  <canvas id="feature4-signal-chart" class="radar-canvas"></canvas>
-                  <div id="feature4-live-hints" class="mt-2 space-y-2"></div>
-                </section>
-                <section class="reactive-card card-live col-span-12 lg:col-span-8 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-2"><h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Coach + Badges</h2><span class="text-xs" style="color:var(--text-muted)">Scorecard</span></div>
-                  <div id="feature4-coach-board" class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)"></div>
-                </section>
-              </div>
-            </section>
-
-            <!-- ── NARRATIVE ARCHITECT WORKSPACE ── -->
-            <section id="feature5-workspace" class="hidden workspace-shell" style="height:100%;display:none;flex-direction:column">
-              <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header" style="flex-shrink:0">
-                <div>
-                  <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">Narrative Architect</h1>
-                  <p class="text-sm mt-1" style="color:var(--text-dim)">Deep codebase analysis, STAR storytelling, talk-track prep, and export-sync bundle.</p>
-                </div>
-                <div class="flex items-center gap-2 flex-wrap">
-                  <button id="feature5-workspace-run" class="btn-primary"><i data-lucide="play" class="w-4 h-4"></i> Run Analysis</button>
-                  <button id="feature5-workspace-export" class="btn-ghost"><i data-lucide="package" class="w-4 h-4"></i> Export Bundle</button>
-                  <button id="feature5-workspace-download" class="btn-ghost"><i data-lucide="file-text" class="w-4 h-4"></i> .md</button>
-                  <button id="feature5-workspace-download-pdf" class="btn-ghost"><i data-lucide="file" class="w-4 h-4"></i> PDF</button>
-                  <button id="feature5-workspace-download-site" class="btn-ghost"><i data-lucide="globe" class="w-4 h-4"></i> .zip</button>
-                  <button id="feature5-workspace-history" class="btn-ghost"><i data-lucide="history" class="w-4 h-4"></i> History</button>
-                </div>
-              </header>
-
-              <!-- Two-column layout: inputs left, results right -->
-              <div style="flex:1;min-height:0;display:grid;grid-template-columns:340px 1fr;gap:16px;overflow:hidden">
-
-                <!-- LEFT: Input Panel (fixed width, scrollable) -->
-                <div class="glass-card rounded-2xl p-5 overflow-y-auto custom-scroll" style="display:flex;flex-direction:column;gap:16px">
-                  <div>
-                    <p class="text-xs font-bold mb-3" style="color:var(--accent-l);letter-spacing:0.08em;text-transform:uppercase">Configuration</p>
-                    <div style="display:flex;flex-direction:column;gap:12px">
-                      <div>
-                        <label class="jt-label" for="feature5-workspace-github-url">
-                          <i data-lucide="github" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px"></i>
-                          GitHub Repository URL *
-                        </label>
-                        <input id="feature5-workspace-github-url" type="url" class="jt-input" placeholder="https://github.com/username/repo" />
-                        <p class="text-xs mt-1" style="color:var(--text-muted)">Full URL of the repo to analyze</p>
-                      </div>
-                      <div>
-                        <label class="jt-label" for="feature5-workspace-target-role">
-                          <i data-lucide="briefcase" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px"></i>
-                          Target Role
-                        </label>
-                        <input id="feature5-workspace-target-role" type="text" class="jt-input" placeholder="e.g. Senior Backend Engineer" />
-                      </div>
-                      <div>
-                        <label class="jt-label" for="feature5-workspace-tone">Narrative Tone</label>
-                        <select id="feature5-workspace-tone" class="jt-input">
-                          <option value="technical">Technical</option>
-                          <option value="balanced" selected>Balanced</option>
-                          <option value="business">Business-Focused</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label class="jt-label" for="feature5-workspace-projects">Selected Projects</label>
-                        <input id="feature5-workspace-projects" type="text" class="jt-input" placeholder="Backend, Frontend, API" value="Backend, Frontend" />
-                        <p class="text-xs mt-1" style="color:var(--text-muted)">Comma-separated project names</p>
-                      </div>
-                      <div>
-                        <label class="jt-label" for="feature5-workspace-jd">Job Description (Optional)</label>
-                        <textarea id="feature5-workspace-jd" class="jt-input" style="min-height:100px;resize:vertical" placeholder="Paste target JD to tailor narratives..."></textarea>
-                      </div>
-                      <button id="feature5-workspace-run-2" class="btn-primary w-full justify-center" style="margin-top:4px">
-                        <i data-lucide="zap" class="w-4 h-4"></i> Run Narrative Architect
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- RIGHT: Results (scrollable, tabbed) -->
-                <div style="display:flex;flex-direction:column;gap:12px;overflow-y:auto;min-height:0" class="custom-scroll">
-
-                  <!-- Deep Analysis Card -->
-                  <div class="glass-card rounded-2xl p-5" id="f5-analysis-card">
-                    <div class="flex items-center gap-2 mb-4">
-                      <div style="width:32px;height:32px;border-radius:8px;background:rgba(99,102,241,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <i data-lucide="scan-search" style="width:16px;height:16px;color:#818cf8"></i>
-                      </div>
-                      <div>
-                        <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Deep Analysis</h2>
-                        <p class="text-xs" style="color:var(--text-muted)">Architecture · Sophistication · Code quality</p>
-                      </div>
-                    </div>
-                    <div id="feature5-analysis-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
-                      <div class="state-card">Run Narrative Architect to generate architecture and sophistication insights.</div>
-                    </div>
-                  </div>
-
-                  <!-- Narrative Constructor Card -->
-                  <div class="glass-card rounded-2xl p-5" id="f5-narrative-card">
-                    <div class="flex items-center gap-2 mb-4">
-                      <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <i data-lucide="book-open-text" style="width:16px;height:16px;color:#34d399"></i>
-                      </div>
-                      <div>
-                        <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">STAR Narratives</h2>
-                        <p class="text-xs" style="color:var(--text-muted)">Problem → Solution → Impact stories</p>
-                      </div>
-                    </div>
-                    <div id="feature5-narrative-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
-                      <div class="state-card">Problem-solution narrative and STAR bullets appear after run.</div>
-                    </div>
-                  </div>
-
-                  <!-- Talk Track Card -->
-                  <div class="glass-card rounded-2xl p-5" id="f5-talk-card">
-                    <div class="flex items-center gap-2 mb-4">
-                      <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <i data-lucide="mic" style="width:16px;height:16px;color:#fbbf24"></i>
-                      </div>
-                      <div>
-                        <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Talk Track Assistant</h2>
-                        <p class="text-xs" style="color:var(--text-muted)">Code walkthrough scripts · Interview Q&amp;A prep</p>
-                      </div>
-                    </div>
-                    <div id="feature5-talk-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
-                      <div class="state-card">Talk-track script appears after run.</div>
-                    </div>
-                  </div>
-
-                  <!-- Skill Gaps Card -->
-                  <div class="glass-card rounded-2xl p-5" id="f5-gap-card">
-                    <div class="flex items-center gap-2 mb-4">
-                      <div style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <i data-lucide="alert-triangle" style="width:16px;height:16px;color:#f87171"></i>
-                      </div>
-                      <div>
-                        <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Skill Gaps Identified</h2>
-                        <p class="text-xs" style="color:var(--text-muted)">Documentation · Coverage · Senior add-ons</p>
-                      </div>
-                    </div>
-                    <div id="feature5-gap-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
-                      <div class="state-card">Portfolio gap analysis appears after run.</div>
-                    </div>
-                  </div>
-
-                  <!-- Export & History Card -->
-                  <div class="glass-card rounded-2xl p-5" id="f5-export-card">
-                    <div class="flex items-center gap-2 mb-4">
-                      <div style="width:32px;height:32px;border-radius:8px;background:rgba(139,92,246,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <i data-lucide="download" style="width:16px;height:16px;color:#a78bfa"></i>
-                      </div>
-                      <div>
-                        <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">Export &amp; Session History</h2>
-                        <p class="text-xs" style="color:var(--text-muted)">Top projects · Consistency warnings · Past sessions</p>
-                      </div>
-                    </div>
-                    <div id="feature5-export-board" class="space-y-2 text-sm" style="color:rgba(255,255,255,0.8)">
-                      <div class="state-card">Export sync bundle appears after run/export.</div>
-                    </div>
-                    <div class="flex gap-2 mt-3 flex-wrap">
-                      <button id="feature5-workspace-export-2" class="btn-ghost text-xs"><i data-lucide="package" class="w-3 h-3"></i> Export Bundle</button>
-                      <button id="feature5-workspace-download-2" class="btn-ghost text-xs"><i data-lucide="file-text" class="w-3 h-3"></i> Download .md</button>
-                      <button id="feature5-workspace-download-pdf-2" class="btn-ghost text-xs"><i data-lucide="file" class="w-3 h-3"></i> Case Study PDF</button>
-                      <button id="feature5-workspace-download-site-2" class="btn-ghost text-xs"><i data-lucide="globe" class="w-3 h-3"></i> Portfolio .zip</button>
-                    </div>
-                  </div>
-
-                  <!-- LinkedIn Post Card -->
-                  <div class="glass-card rounded-2xl p-5" id="f5-linkedin-card">
-                    <div class="flex items-center justify-between mb-4">
-                      <div class="flex items-center gap-2">
-                        <div style="width:32px;height:32px;border-radius:8px;background:rgba(10,102,194,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                          <i data-lucide="linkedin" style="width:16px;height:16px;color:#60a5fa"></i>
-                        </div>
-                        <div>
-                          <h2 class="text-base font-bold text-hero" style="letter-spacing:-0.02em">LinkedIn Post</h2>
-                          <p class="text-xs" style="color:var(--text-muted)">AI-generated, ready to paste · under 1300 chars</p>
-                        </div>
-                      </div>
-                      <div class="flex gap-2">
-                        <button id="feature5-generate-linkedin" class="btn-ghost text-xs">
-                          <i data-lucide="sparkles" class="w-3 h-3"></i> Generate Post
-                        </button>
-                        <button id="feature5-copy-linkedin" class="btn-ghost text-xs" style="display:none">
-                          <i data-lucide="copy" class="w-3 h-3"></i> Copy
-                        </button>
-                      </div>
-                    </div>
-                    <div id="feature5-linkedin-board">
-                      <div class="state-card" style="text-align:center;padding:20px;color:rgba(255,255,255,0.4)">
-                        Run analysis first, then click <strong style="color:rgba(255,255,255,0.7)">Generate Post</strong> to create your LinkedIn post.
-                      </div>
-                    </div>
-                  </div>
-
-                </div><!-- /right column -->
-              </div><!-- /two-column -->
-            </section>
-
-            <!-- ── REBOUND WORKSPACE (Feature 2 - Post-Interview Autopsy) ── -->
-            <section id="rebound-workspace" class="h-full hidden workspace-shell">
-              <header class="mb-3 md:mb-4 flex items-center justify-between workspace-header">
-                <div>
-                  <h1 class="text-2xl md:text-3xl font-bold text-hero" style="letter-spacing:-0.04em">The Rebound</h1>
-                  <p class="text-sm mt-1" style="color:var(--text-dim)">Post-interview autopsy — technical accuracy, behavioral critique, and strategic recovery actions.</p>
-                </div>
-                <div class="flex items-center gap-2 flex-wrap">
-                  <button id="rebound-workspace-run" class="btn-primary">Run Full Autopsy</button>
-                  <button id="rebound-workspace-quick-debrief" class="btn-ghost">Quick Debrief</button>
-                  <button id="rebound-workspace-load-trend" class="btn-ghost">Load Trend</button>
-                </div>
-              </header>
-              <div class="workspace-body h-[calc(100%-72px)] grid grid-cols-12 grid-rows-6 gap-3 md:gap-4">
-
-                <!-- Input Panel -->
-                <section class="reactive-card card-live col-span-12 lg:col-span-5 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Interview Details</h2>
-                    <span class="text-xs" style="color:var(--text-muted)">Required fields</span>
-                  </div>
-                  <div class="h-[calc(100%-28px)] overflow-y-auto custom-scroll space-y-3">
-                    <div class="grid grid-cols-2 gap-3">
-                      <div>
-                        <label class="jt-label" for="rebound-workspace-company">Company *</label>
-                        <input id="rebound-workspace-company" type="text" class="jt-input" placeholder="e.g. Google" value="Acme" />
-                      </div>
-                      <div>
-                        <label class="jt-label" for="rebound-workspace-role">Role *</label>
-                        <input id="rebound-workspace-role" type="text" class="jt-input" placeholder="e.g. Backend Engineer" value="Frontend Engineer" />
-                      </div>
-                      <div>
-                        <label class="jt-label" for="rebound-workspace-round">Interview Round</label>
-                        <select id="rebound-workspace-round" class="jt-input">
-                          <option value="screening">Screening</option>
-                          <option value="tech" selected>Technical</option>
-                          <option value="hr">HR</option>
-                          <option value="manager">Manager</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label class="jt-label" for="rebound-workspace-vibe">Interviewer Vibe</label>
-                        <select id="rebound-workspace-vibe" class="jt-input">
-                          <option value="friendly">Friendly</option>
-                          <option value="neutral" selected>Neutral</option>
-                          <option value="cold">Cold</option>
-                          <option value="hostile">Hostile</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div>
-                      <label class="jt-label" for="rebound-workspace-notes">Voice Notes / Debrief</label>
-                      <textarea id="rebound-workspace-notes" class="jt-input jt-textarea" placeholder="Write your post-interview thoughts, what went well, what didn't..."></textarea>
-                    </div>
-                    <div>
-                      <label class="jt-label" for="rebound-workspace-transcript">Transcript / VTT</label>
-                      <textarea id="rebound-workspace-transcript" class="jt-input" style="min-height:80px" placeholder="Paste interview transcript or VTT file content..."></textarea>
-                    </div>
-                    <div>
-                      <label class="jt-label" for="rebound-workspace-audio-url">Audio URL (Optional)</label>
-                      <input id="rebound-workspace-audio-url" type="url" class="jt-input" placeholder="https://... public audio URL" />
-                    </div>
-                    <label class="flex items-center gap-2 text-xs cursor-pointer" style="color:rgba(255,255,255,0.6)">
-                      <input id="rebound-workspace-use-assembly" type="checkbox" class="accent-indigo-400" />
-                      Use AssemblyAI for transcription
-                    </label>
-                  </div>
-                </section>
-
-                <!-- Autopsy Output -->
-                <section class="reactive-card card-live col-span-12 lg:col-span-7 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Autopsy Results</h2>
-                    <span class="text-xs" style="color:var(--text-muted)">Technical + Behavioral</span>
-                  </div>
-                  <div id="rebound-output-board" class="h-[calc(100%-28px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)">
-                    <div class="state-card">Run Full Autopsy to see technical accuracy, behavioral critique, and recovery actions.</div>
-                  </div>
-                </section>
-
-                <!-- Trend & Forecast -->
-                <section class="reactive-card card-live col-span-12 md:col-span-6 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Growth Trend</h2>
-                    <span class="text-xs" style="color:var(--text-muted)">Across interviews</span>
-                  </div>
-                  <div id="rebound-trend-board" class="h-[calc(100%-28px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)">
-                    <div class="state-card">Load Trend to see your interview performance over time.</div>
-                  </div>
-                </section>
-
-                <!-- Recovery Actions -->
-                <section class="reactive-card card-live col-span-12 md:col-span-6 row-span-3 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
-                  <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Recovery Actions</h2>
-                    <span class="text-xs" style="color:var(--text-muted)">Emails, scripts, patches</span>
-                  </div>
-                  <div id="rebound-actions-board" class="h-[calc(100%-28px)] overflow-y-auto custom-scroll text-sm space-y-2" style="color:rgba(255,255,255,0.75)">
-                    <div class="state-card">Recovery actions (clarification email, follow-up cadence, negotiation scripts) appear after autopsy.</div>
-                  </div>
-                </section>
-
-              </div>
-            </section>
-
-          </section><!-- /view-root -->
-        </main>
-      </div>
-    </div>
-  </div>
-</div><!-- /app-shell -->
-
-
-<!-- ═══════════════════════════════════════════════════════
-     AUTH MODAL
-     ═══════════════════════════════════════════════════════ -->
-<div id="auth-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(16px);z-index:999;align-items:center;justify-content:center;">
-  <div class="auth-box">
-    <div style="text-align:center;margin-bottom:8px">
-      <div class="landing-logo-dot" style="width:12px;height:12px;margin:0 auto 12px"></div>
-      <h2 style="font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-0.04em;margin-bottom:6px">Welcome to Career OS</h2>
-      <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:20px">Sign in to save your progress across sessions.</p>
-    </div>
-    <div class="auth-tab-bar">
-      <button onclick="switchAuthTab('login')" id="tab-login" class="auth-tab active">Sign In</button>
-      <button onclick="switchAuthTab('register')" id="tab-register" class="auth-tab">Register</button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <input id="auth-email" type="email" placeholder="Email address" class="auth-input" />
-      <input id="auth-password" type="password" placeholder="Password" class="auth-input" />
-      <input id="auth-fullname" type="text" placeholder="Full name (register only)" class="auth-input" style="display:none" />
-    </div>
-    <p id="auth-error" style="font-size:12px;color:#f87171;margin-top:8px;display:none"></p>
-    <button onclick="submitAuth()" style="margin-top:16px;width:100%;padding:12px;border-radius:var(--r-md);background:var(--accent-grad);color:#fff;font-size:0.9rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;box-shadow:0 0 24px rgba(99,102,241,0.4),inset 0 1px 0 rgba(255,255,255,0.15);transition:transform 0.2s var(--ease-spring),box-shadow 0.2s ease,filter 0.2s ease" onmouseover="this.style.transform='scale(1.02)';this.style.filter='brightness(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='brightness(1)'">Continue</button>
-    <p style="text-align:center;margin-top:12px;font-size:0.75rem;color:var(--text-muted)">
-      <button onclick="skipAuth()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-family:inherit;font-size:0.75rem;text-decoration:underline">Continue without account →</button>
-    </p>
-  </div>
-</div>
-
-<!-- ── JOB TRACKER MODAL ── -->
-<div id="jt-modal" class="jt-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="jt-modal-title">
-  <div class="jt-modal-box">
-    <div class="flex items-center justify-between mb-4">
-      <h2 id="jt-modal-title" style="font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:-0.03em">Add Job</h2>
-      <button id="jt-modal-close" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:4px;border-radius:8px;transition:color 0.15s ease" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'" aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
-    </div>
-    <input type="hidden" id="jt-edit-id" value="" />
-    <div style="display:flex;flex-direction:column;gap:14px">
-      <div><label class="jt-label" for="jt-company">Company *</label><input id="jt-company" type="text" class="jt-input" placeholder="e.g. Stripe" /></div>
-      <div><label class="jt-label" for="jt-position">Position *</label><input id="jt-position" type="text" class="jt-input" placeholder="e.g. Senior Frontend Engineer" /></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div><label class="jt-label" for="jt-status">Status</label><select id="jt-status" class="jt-input"><option value="Wishlist">Wishlist</option><option value="Applied">Applied</option><option value="Interviewing">Interviewing</option><option value="Offered">Offered</option><option value="Rejected">Rejected</option></select></div>
-        <div><label class="jt-label" for="jt-date">Date Applied</label><input id="jt-date" type="date" class="jt-input" /></div>
-      </div>
-      <div><label class="jt-label" for="jt-salary">Salary Range</label><input id="jt-salary" type="text" class="jt-input" placeholder="e.g. $120k–$150k" /></div>
-      <div><label class="jt-label" for="jt-notes">Notes</label><textarea id="jt-notes" class="jt-input jt-textarea" placeholder="Recruiter name, referral, next steps…"></textarea></div>
-    </div>
-    <p id="jt-modal-error" style="font-size:12px;color:#f87171;margin-top:8px;display:none"></p>
-    <div style="display:flex;gap:10px;margin-top:20px">
-      <button id="jt-modal-save" class="btn-primary" style="flex:1;justify-content:center;padding:11px">Save</button>
-      <button id="jt-modal-cancel" class="btn-ghost" style="flex:1;justify-content:center;padding:11px">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Mobile nav -->
-<nav id="mobile-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(5,5,5,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);z-index:100;padding:8px 0 env(safe-area-inset-bottom)">
-  <div style="display:flex;justify-content:space-around;align-items:center">
-    <button onclick="navigateTo('dashboard')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="layout-dashboard" style="width:18px;height:18px"></i>Home</button>
-    <button onclick="navigateTo('job-tracker')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="kanban" style="width:18px;height:18px"></i>Jobs</button>
-    <button onclick="navigateTo('lens-engine')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="scan-search" style="width:18px;height:18px"></i>Lens</button>
-    <button onclick="navigateTo('rebound')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="mic" style="width:18px;height:18px"></i>Rebound</button>
-    <button onclick="navigateTo('persona-play')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="audio-lines" style="width:18px;height:18px"></i>Coach</button>
-    <button onclick="navigateTo('narrative')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="book-open-text" style="width:18px;height:18px"></i>Portfo</button>
-  </div>
-</nav>
-
-<script>
-// Landing ↔ App toggle
-function showApp() {
-  document.getElementById('landing-page').style.display = 'none';
-  document.getElementById('app-shell').style.display = 'block';
-  if (!sessionStorage.getItem('cos_token')) {
-    document.getElementById('auth-modal').style.display = 'flex';
-  }
-}
-function skipAuth() {
-  document.getElementById('auth-modal').style.display = 'none';
-}
-// Show landing on load
-window.addEventListener('DOMContentLoaded', function() {
-  // If already authenticated, go straight to app
-  if (sessionStorage.getItem('cos_token')) {
-    document.getElementById('landing-page').style.display = 'none';
-    document.getElementById('app-shell').style.display = 'block';
-  }
-  lucide.createIcons();
-});
-</script>
-<script src="app.js"></script>
+  <script>
+    // Landing ↔ App toggle
+    function showApp() {
+      document.getElementById('landing-page').style.display = 'none';
+      document.getElementById('app-shell').style.display = 'block';
+      if (!sessionStorage.getItem('cos_token')) {
+        document.getElementById('auth-modal').style.display = 'flex';
+      }
+    }
+    function skipAuth() {
+      document.getElementById('auth-modal').style.display = 'none';
+    }
+    // Show landing on load
+    window.addEventListener('DOMContentLoaded', function () {
+      // If already authenticated, go straight to app
+      if (sessionStorage.getItem('cos_token')) {
+        document.getElementById('landing-page').style.display = 'none';
+        document.getElementById('app-shell').style.display = 'block';
+      }
+      lucide.createIcons();
+    });
+  </script>
+  <script src="app.js"></script>
 </body>
+
 </html>

@@ -100,8 +100,8 @@ let _authMode = "login";
 
 function handleApiError(error, featureName) {
   const msg = String(error?.message ?? "");
-  if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
-    return `${featureName}: Cannot reach the server. Make sure the backend is running.`;
+  if (msg.includes("Failed to fetch") || msg.includes("NetworkError") || msg.includes("Network error during upload")) {
+    return `${featureName}: Cannot reach the backend server (ensure it is running on port 8000).`;
   }
   if (msg.includes("401") || msg.includes("Unauthorized")) {
     return `${featureName}: Your session expired - please refresh the page.`;
@@ -293,7 +293,7 @@ window.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ access_token: token })
-      }).catch(() => {});
+      }).catch(() => { });
     }
     sessionStorage.removeItem("cos_token");
     sessionStorage.removeItem("cos_candidate");
@@ -481,11 +481,12 @@ const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 
 function setStatus(text) {
   if (nodes.uploadStatus) nodes.uploadStatus.textContent = text;
+  if (nodes.onboardingStatus) nodes.onboardingStatus.textContent = text;
   const stamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const history = [`${stamp} - ${text}`, ...(AppState.ui?.activity || [])].slice(0, 8);
   AppState.setState({
     ui: {
-      ...AppState.ui,   
+      ...AppState.ui,
       activity: history
     }
   });
@@ -493,9 +494,9 @@ function setStatus(text) {
 
 function syncOnboardingToCoreInputs() {
   if (!nodes.onboardingCandidateId || !nodes.onboardingJobCategory || !nodes.onboardingJobDescription) return;
-  nodes.candidateId.value = nodes.onboardingCandidateId.value.trim() || "candidate-001";
-  nodes.jobCategory.value = nodes.onboardingJobCategory.value || "frontend";
-  nodes.jobDescription.value = nodes.onboardingJobDescription.value || "";
+  if (nodes.candidateId) nodes.candidateId.value = nodes.onboardingCandidateId.value.trim() || "candidate-001";
+  if (nodes.jobCategory) nodes.jobCategory.value = nodes.onboardingJobCategory.value || "frontend";
+  if (nodes.jobDescription) nodes.jobDescription.value = nodes.onboardingJobDescription.value || "";
 }
 
 function emitEvent(eventName, featureArea, metadata = {}, ids = {}) {
@@ -503,7 +504,7 @@ function emitEvent(eventName, featureArea, metadata = {}, ids = {}) {
     event_name: eventName,
     event_version: "1.0",
     occurred_at_utc: new Date().toISOString(),
-    user_id: nodes.candidateId.value.trim() || "candidate-001",
+    user_id: (nodes.candidateId?.value || "candidate-001").trim(),
     session_id: AppState.analyticsSessionId,
     platform: "web",
     feature_area: featureArea,
@@ -583,7 +584,7 @@ function smartActionMeta() {
   if (!AppState.feature1.analysis) {
     return {
       label: "Next Best Action: Run Lens",
-      run: runFeature1Analysis,
+      run: handleFeature1Upload,
     };
   }
   if (!AppState.feature2.interview) {
@@ -858,14 +859,14 @@ function renderFeature3Workspace() {
     nodes.feature3MarketTable.innerHTML = loading
       ? stateCard("Loading market rows and compensation bands...", "loading")
       : jobs.length
-      ? jobs
+        ? jobs
           .slice(0, 8)
           .map(
             (job) =>
               `<div class="workspace-list-card"><div class="flex justify-between"><span class="text-white/90">${job.title}</span><span class="text-indigo-200">$${Math.round(job.salary_mid || 0)}</span></div><div class="text-white/60 text-xs">${job.company} � ${job.location} � ${job.remote ? "Remote" : "Onsite"}</div></div>`
           )
           .join("")
-      : stateCard("Run full arbitrage to load market rows.");
+        : stateCard("Run full arbitrage to load market rows.");
   }
 
   if (nodes.feature3RoadmapList) {
@@ -873,13 +874,13 @@ function renderFeature3Workspace() {
     nodes.feature3RoadmapList.innerHTML = loading
       ? stateCard("Generating 30/60/90 roadmap phases...", "loading")
       : phases.length
-      ? phases
+        ? phases
           .map(
             (phase) =>
               `<div class="workspace-list-card"><div class="text-white/90 font-semibold">${phase.phase} � ${phase.goal}</div><div class="text-white/65 text-xs mt-1">${(phase.actions || []).slice(0, 2).join(" ")}</div></div>`
           )
           .join("")
-      : stateCard("Roadmap appears after gap analysis.");
+        : stateCard("Roadmap appears after gap analysis.");
   }
 
   if (nodes.feature3FutureList) {
@@ -888,8 +889,8 @@ function renderFeature3Workspace() {
     const ob = (f3.future?.obsolescence_tracker || []).slice(0, 3);
     nodes.feature3FutureList.innerHTML = pivot
       ? `<div class="workspace-list-card">Pivot: ${pivot}</div><div class="workspace-list-card">Freeze alert: ${freeze || "n/a"}</div>${ob
-          .map((x) => `<div class="workspace-list-card text-xs">${x.skill_or_pattern}: risk ${x.risk_score}</div>`)
-          .join("")}`
+        .map((x) => `<div class="workspace-list-card text-xs">${x.skill_or_pattern}: risk ${x.risk_score}</div>`)
+        .join("")}`
       : stateCard("Future insights will appear after full run.");
   }
 
@@ -1141,7 +1142,7 @@ function renderReboundWorkspace() {
         blocks.push(`<div class="workspace-list-card text-xs">Technical Accuracy: ${s.technical_accuracy ?? "n/a"} &nbsp;|&nbsp; Behavioral: ${s.behavioral_quality ?? "n/a"} &nbsp;|&nbsp; Recovery: ${s.strategic_recovery_readiness ?? "n/a"}</div>`);
         const tech = f2.interview.technical_autopsy || {};
         if (tech.false_confidence_zones?.length) {
-          blocks.push(`<div class="workspace-list-card text-xs" style="border-color:rgba(248,113,113,0.3)">⚠ False confidence: ${tech.false_confidence_zones.slice(0,2).join(", ")}</div>`);
+          blocks.push(`<div class="workspace-list-card text-xs" style="border-color:rgba(248,113,113,0.3)">⚠ False confidence: ${tech.false_confidence_zones.slice(0, 2).join(", ")}</div>`);
         }
         const behav = f2.interview.behavioral_critique || {};
         if (behav.filler_word_count) {
@@ -1923,9 +1924,9 @@ function renderLensWorkspace() {
   if (nodes.lensVersionsBoard) {
     nodes.lensVersionsBoard.innerHTML = versions.length
       ? versions
-          .slice(0, 16)
-          .map((v) => `<div class="workspace-list-card text-xs">v${v.version_number} � ${v.job_category} � score ${v.overall_score}</div>`)
-          .join("")
+        .slice(0, 16)
+        .map((v) => `<div class="workspace-list-card text-xs">v${v.version_number} � ${v.job_category} � score ${v.overall_score}</div>`)
+        .join("")
       : stateCard("Load versions to view timeline.");
   }
 
@@ -2113,7 +2114,7 @@ async function generateLinkedInPost() {
           white-space:pre-wrap;
           word-break:break-word;
           font-family:'Plus Jakarta Sans',sans-serif;
-        ">${post.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
+        ">${post.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
         <p style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:10px">💡 Tip: Add real metrics (e.g. "reduced load time by 40%") to make this post stand out even more.</p>
       `;
     }
@@ -2490,121 +2491,7 @@ function renderFeature3Output() {
   nodes.feature3Output.innerHTML = blocks.map((b) => `<div class='thin-glass rounded px-2 py-1'>${b}</div>`).join("");
 }
 
-function processResume(fileName = "Resume.pdf", fileObject = null) {
-  AppState.setState({
-    resumeUploaded: true,
-    scannerActive: false,
-    heatmapActive: false,
-    resumeFile: fileObject || AppState.resumeFile
-  });
-  setStatus(`Loaded ${fileName}`);
-  // Update all resume name indicators
-  if (nodes.onboardingResumeName) {
-    nodes.onboardingResumeName.textContent = `Selected resume: ${fileName}`;
-  }
-  const lensResumeName = document.getElementById("lens-resume-name");
-  if (lensResumeName) lensResumeName.textContent = `Selected: ${fileName}`;
 
-  if (!AppState.analytics.firstResumeUploaded) {
-    AppState.analytics.firstResumeUploaded = true;
-    emitEvent("first_resume_uploaded", "onboarding", { filename: fileName });
-  }
-}
-
-async function runFeature1Analysis() {
-  const errs = validateRequiredFields([
-    { id: "candidate-id", label: "Candidate ID" },
-    { id: "job-description", label: "Job Description" }
-  ]);
-  if (!AppState.resumeFile) errs.push("Please upload a resume PDF.");
-  if (errs.length) {
-    setStatus(errs[0]);
-    return;
-  }
-
-  if (!AppState.analytics.firstJdUploaded) {
-    AppState.analytics.firstJdUploaded = true;
-    emitEvent("first_jd_uploaded", "onboarding", { job_category: nodes.jobCategory.value });
-  }
-
-  const t0 = performance.now();
-  emitEvent("resume_analysis_requested", "feature1", {
-    analysis_mode: "hybrid",
-    job_category: nodes.jobCategory.value
-  });
-
-  AppState.setState({ scannerActive: true, heatmapActive: false });
-  setUiFlag("feature1Loading", true);
-  if (nodes.analyzeFeature1) nodes.analyzeFeature1.disabled = true;
-  if (nodes.lensRunFeature1) nodes.lensRunFeature1.disabled = true;
-  setStatus("Scanning and scoring resume...");
-  const loader = showStepLoader("analysis-summary-cards", [
-    "Uploading and parsing your resume PDF...",
-    "Running visual hierarchy analysis...",
-    "Checking ATS compatibility...",
-    "Scoring keyword match against job description...",
-    "Benchmarking against market percentile..."
-  ]);
-
-  const form = new FormData();
-  form.append("candidate_id", nodes.candidateId.value.trim() || "candidate-001");
-  form.append("job_category", nodes.jobCategory.value);
-  form.append("job_description", nodes.jobDescription.value.trim());
-  form.append("resume_pdf", AppState.resumeFile, AppState.resumeFile.name || "resume.pdf");
-
-  try {
-    const response = await apiFetch(`${API_BASE}/api/feature1/analyze`, {
-      method: "POST",
-      body: form
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || "Hiring Lens analysis failed.");
-    }
-
-    const data = await response.json();
-    AppState.setState({
-      feature1: { ...AppState.feature1, analysis: data },
-      scannerActive: false,
-      heatmapActive: true,
-      resumeUploaded: true
-    });
-    const latencyMs = Math.round(performance.now() - t0);
-    emitEvent("resume_analysis_completed", "feature1", {
-      analysis_mode: "hybrid",
-      score_total: data.score.overall,
-      top_issue_category: data.recommendations?.[0] || "unknown",
-      processing_latency_ms: latencyMs,
-      confidence_distribution: data.metrics?.confidence_tier_distribution || null
-    }, { resumeId: String(data.analysis_id) });
-    emitEvent("resume_version_saved", "feature1", {
-      version_number: data.version_number,
-      score_total: data.score.overall
-    }, { resumeId: String(data.analysis_id) });
-    emitEvent("recommendation_viewed", "feature1", {
-      recommendation_count: (data.recommendations || []).length
-    }, { resumeId: String(data.analysis_id) });
-
-    if (!AppState.analytics.firstAnalysisCompleted) {
-      AppState.analytics.firstAnalysisCompleted = true;
-      emitEvent("first_analysis_completed", "onboarding", {
-        score_total: data.score.overall
-      }, { resumeId: String(data.analysis_id) });
-    }
-
-    setStatus(`Hiring Lens complete - score ${data.score.overall}`);
-    await loadVersions();
-  } catch (error) {
-    AppState.setState({ scannerActive: false, heatmapActive: false });
-    setStatus(handleApiError(error, "Hiring Lens"));
-  } finally {
-    loader?.stop();
-    if (nodes.analyzeFeature1) nodes.analyzeFeature1.disabled = false;
-    if (nodes.lensRunFeature1) nodes.lensRunFeature1.disabled = false;
-    setUiFlag("feature1Loading", false);
-  }
-}
 
 async function loadVersions() {
   const candidateId = nodes.candidateId.value.trim() || "candidate-001";
@@ -2631,9 +2518,9 @@ function buildFeature2Payload() {
 
   // Prefer whichever has content
   const notes = (notesEl?.value?.trim() && notesEl.value.trim()) ||
-                (nodes.feature2Notes?.value?.trim()) || "";
+    (nodes.feature2Notes?.value?.trim()) || "";
   const transcript = (transcriptEl?.value?.trim() && transcriptEl.value.trim()) ||
-                     (nodes.feature2Transcript?.value?.trim()) || "";
+    (nodes.feature2Transcript?.value?.trim()) || "";
   const isVtt = transcript.includes("WEBVTT") || transcript.includes("-->");
 
   return {
@@ -2884,25 +2771,414 @@ async function updateApplicationStatus() {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// FEATURE 1: HIRING LENS — Resume Analyzer
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Store selected resume file from any picker source.
+ * Called from pdfInput change and drop handlers.
+ */
+function processResume(filename, file) {
+  AppState.resumeFile = file;
+  AppState.setState({ resumeUploaded: true, scannerActive: true, heatmapActive: false });
+  setStatus(`Resume loaded: ${filename}`);
+
+  // Update name display in both upload zones and lens panel
+  const nameEls = [
+    document.getElementById("onboarding-resume-name"),
+    document.getElementById("lens-resume-name"),
+    nodes.uploadStatus,
+  ];
+  nameEls.forEach((el) => {
+    if (el) el.textContent = filename;
+  });
+
+  setTimeout(() => AppState.setState({ scannerActive: false }), 2200);
+}
+
+/**
+ * handleFeature1Upload: Specific handler for Feature 1 (Hiring Lens).
+ * Handles file reading, validation, upload progress, and UI updates.
+ */
+async function handleFeature1Upload() {
+  const candidateId = (nodes.lensCandidateId?.value?.trim() || nodes.candidateId?.value?.trim() || "candidate-001");
+  const jobCategory = (nodes.lensJobCategory?.value || nodes.jobCategory?.value || "frontend");
+  const jobDescription = (nodes.lensJobDescription?.value?.trim() || nodes.jobDescription?.value?.trim() || "");
+  const file = AppState.resumeFile;
+
+  // --- 1. Client-side validation ---
+  if (!file) {
+    const msg = "Hiring Lens: please upload a resume PDF first.";
+    setStatus(msg);
+    if (nodes.lensSummaryBoard) nodes.lensSummaryBoard.innerHTML = stateCard(`⚠️ ${msg}`, "idle");
+    return;
+  }
+  if (!file.name.toLowerCase().endsWith(".pdf")) {
+    const msg = "Hiring Lens: only PDF files are supported.";
+    setStatus(msg);
+    if (nodes.lensSummaryBoard) nodes.lensSummaryBoard.innerHTML = stateCard(`⚠️ ${msg}`, "idle");
+    return;
+  }
+  // Max 5MB validation
+  const MAX_5MB = 5 * 1024 * 1024;
+  if (file.size > MAX_5MB) {
+    const msg = `Hiring Lens: file exceeds 5MB limit (${(file.size / 1024 / 1024).toFixed(1)}MB).`;
+    setStatus(msg);
+    if (nodes.lensSummaryBoard) nodes.lensSummaryBoard.innerHTML = stateCard(`⚠️ ${msg}`, "idle");
+    return;
+  }
+  if (!jobDescription) {
+    const msg = "Hiring Lens: paste a job description before analyzing.";
+    setStatus(msg);
+    if (nodes.lensSummaryBoard) nodes.lensSummaryBoard.innerHTML = stateCard(`⚠️ ${msg}`, "idle");
+    return;
+  }
+
+  // --- 2. Loading UI ---
+  setUiFlag("feature1Loading", true);
+  const btns = [nodes.lensRunFeature1, nodes.lensRunFeature1Panel, nodes.analyzeFeature1, nodes.onboardingRunLens];
+  btns.forEach(b => { if (b) b.disabled = true; });
+
+  // Toggle spinners & icons
+  document.querySelectorAll(".btn-icon").forEach(i => i.classList.add("hidden"));
+  document.querySelectorAll(".spinner").forEach(s => s.classList.remove("hidden"));
+
+  const loader = showStepLoader("lens-summary-board", [
+    "Uploading resume to secure candidate cloud...",
+    "Running structural ATS scan...",
+    "Analyzing semantic alignment with job description...",
+    "Computing visual hierarchy scores...",
+    "Finalizing recommendations..."
+  ]);
+
+  // --- 3. Upload with Progress Display ---
+  try {
+    const formData = new FormData();
+    formData.append("candidate_id", candidateId);
+    formData.append("job_category", jobCategory);
+    formData.append("job_description", jobDescription);
+    formData.append("resume_pdf", file, file.name);
+
+    setStatus("Hiring Lens: starting upload...");
+
+    // Wrap XHR in a Promise to support upload progress feedback
+    const responseData = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `${API_BASE}/api/feature1/analyze`);
+
+      const token = sessionStorage.getItem("cos_token");
+      if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          setStatus(`Hiring Lens: uploading ${pct}%...`);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try { resolve(JSON.parse(xhr.responseText)); }
+          catch (e) { reject(new Error("Invalid server response (not JSON).")); }
+        } else {
+          reject(new Error(`Server returned ${xhr.status}: ${xhr.statusText}`));
+        }
+      };
+      xhr.onerror = () => reject(new Error("Network error during upload."));
+      xhr.send(formData);
+    });
+
+    // --- 4. Handle Success ---
+    const analysis = responseData;
+    AppState.setState({
+      feature1: { ...AppState.feature1, analysis },
+      scannerActive: false,
+      heatmapActive: true,
+    });
+
+    sessionStorage.setItem("cos_candidate", candidateId);
+    if (nodes.candidateId) nodes.candidateId.value = candidateId;
+
+    emitEvent("resume_analyzed", "feature1", {
+      overall_score: analysis.score?.overall,
+      job_category: jobCategory,
+    });
+
+    setStatus(`Hiring Lens complete — overall score ${analysis.score?.overall ?? "n/a"}`);
+    await loadVersions();
+
+  } catch (err) {
+    setStatus(handleApiError(err, "Hiring Lens"));
+    if (nodes.lensSummaryBoard) {
+      nodes.lensSummaryBoard.innerHTML = stateCard(`⚠️ ${handleApiError(err, "Hiring Lens")}`, "idle");
+    }
+  } finally {
+    loader?.stop();
+    btns.forEach(b => { if (b) b.disabled = false; });
+    document.querySelectorAll(".btn-icon").forEach(i => i.classList.remove("hidden"));
+    document.querySelectorAll(".spinner").forEach(s => s.classList.add("hidden"));
+    setUiFlag("feature1Loading", false);
+  }
+}
+
+/**
+ * Load version history for the current candidate.
+ * Calls GET /api/feature1/versions/{candidate_id}
+ */
+async function loadVersions() {
+  const candidateId = (
+    nodes.lensCandidateId?.value?.trim() ||
+    nodes.candidateId?.value?.trim() ||
+    sessionStorage.getItem("cos_candidate") ||
+    "candidate-001"
+  );
+
+  if (nodes.lensVersionsBoard) {
+    nodes.lensVersionsBoard.innerHTML = stateCard("Loading version history...", "loading");
+  }
+  if (nodes.versionList) {
+    nodes.versionList.innerHTML = stateCard("Loading...", "loading");
+  }
+
+  try {
+    const res = await apiFetch(
+      `${API_BASE}/api/feature1/versions/${encodeURIComponent(candidateId)}`
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const versions = await res.json();
+
+    AppState.setState({ feature1: { ...AppState.feature1, versions } });
+    setStatus(`Hiring Lens: ${versions.length} version(s) loaded.`);
+  } catch (err) {
+    setStatus(handleApiError(err, "Hiring Lens versions"));
+    if (nodes.lensVersionsBoard) {
+      nodes.lensVersionsBoard.innerHTML = stateCard(
+        `⚠️ Could not load versions: ${handleApiError(err, "Hiring Lens versions")}`,
+        "idle"
+      );
+    }
+  }
+}
+
+/**
+ * Compare two versions (by version number) and display score deltas.
+ */
+async function compareVersions(leftV, rightV) {
+  const candidateId = (
+    nodes.lensCandidateId?.value?.trim() ||
+    nodes.candidateId?.value?.trim() ||
+    sessionStorage.getItem("cos_candidate") ||
+    "candidate-001"
+  );
+
+  try {
+    const res = await apiFetch(
+      `${API_BASE}/api/feature1/compare/${encodeURIComponent(candidateId)}?left_version=${leftV}&right_version=${rightV}`
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const cmp = await res.json();
+
+    // Render comparison in versions board
+    const delta = cmp.score_delta ?? {};
+    const sign = (n) => (n > 0 ? `+${n}` : String(n));
+    const clr = (n) => (n > 0 ? "#34d399" : n < 0 ? "#f87171" : "rgba(255,255,255,0.55)");
+
+    const deltaRows = Object.entries(delta)
+      .map(([k, v]) => {
+        const label = k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        return `<div class="workspace-list-card text-xs">
+          <span style="color:rgba(255,255,255,0.75)">${label}:</span>
+          <span style="color:${clr(v)};font-weight:600;float:right">${sign(v)}</span>
+        </div>`;
+      })
+      .join("");
+
+    const resolved = (cmp.recommendation_delta?.resolved || []).slice(0, 3);
+    const newRecs = (cmp.recommendation_delta?.new || []).slice(0, 3);
+
+    const recSection =
+      `<div class="workspace-list-card text-xs" style="margin-top:6px;font-weight:600;color:rgba(255,255,255,0.85)">v${leftV} → v${rightV} Score Deltas</div>` +
+      deltaRows +
+      (resolved.length ? `<div class="workspace-list-card text-xs" style="color:#34d399">✅ Resolved: ${resolved.join(", ")}</div>` : "") +
+      (newRecs.length ? `<div class="workspace-list-card text-xs" style="color:#fbbf24">🆕 New issues: ${newRecs.join(", ")}</div>` : "");
+
+    if (nodes.lensVersionsBoard) {
+      nodes.lensVersionsBoard.insertAdjacentHTML("afterbegin", recSection);
+    }
+    setStatus(`Compare v${leftV} vs v${rightV}: overall delta ${delta.overall ?? "n/a"}`);
+  } catch (err) {
+    setStatus(handleApiError(err, "Compare versions"));
+  }
+}
+
+/**
+ * Render the full Lens workspace from AppState.feature1.
+ * Called on every state update from the subscriber.
+ */
+function renderLensWorkspace() {
+  const analysis = AppState.feature1.analysis;
+  const versions = AppState.feature1.versions;
+  const loading = Boolean(AppState.ui?.feature1Loading);
+
+  // ── Scores board ──────────────────────────────────────────────────────────
+  if (nodes.lensSummaryBoard) {
+    if (loading) {
+      // loader already injected by showStepLoader; don't overwrite it
+      return;
+    }
+
+    if (!analysis) {
+      nodes.lensSummaryBoard.innerHTML = stateStack([
+        "Hiring Lens: upload a resume PDF and fill in the job description.",
+        "Then click Run Lens Analysis to get your score breakdown."
+      ]);
+    } else {
+      const sc = analysis.score ?? {};
+      const overall = sc.overall ?? 0;
+      const readyBadge = analysis.ready_to_apply
+        ? `<div style="display:inline-block;margin-bottom:12px;padding:6px 14px;border-radius:20px;
+             background:rgba(52,211,153,0.18);border:1px solid rgba(52,211,153,0.5);
+             color:#34d399;font-size:12px;font-weight:700;letter-spacing:0.04em">
+             ✅ Ready to Apply
+           </div>`
+        : "";
+
+      const overallColor = overall >= 75 ? "#34d399" : overall >= 50 ? "#fbbf24" : "#f87171";
+      const overallHero = `
+        <div style="text-align:center;padding:16px 0 12px;">
+          ${readyBadge}
+          <div style="font-size:48px;font-weight:800;color:${overallColor};line-height:1;">${Math.round(overall)}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px;">Overall Score / 100</div>
+        </div>`;
+
+      // 4 sub-score cards
+      const scoreEntries = [
+        ["visual_hierarchy", sc.visual_hierarchy],
+        ["ats_integrity", sc.ats_integrity],
+        ["semantic_match", sc.semantic_match],
+        ["competitive_benchmark", sc.competitive_benchmark],
+      ];
+      const scoreCards = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          ${scoreEntries.map(([k, v]) => renderScoreCard(k, (v ?? 0) / 100)).join("")}
+        </div>`;
+
+      // Heuristic recommendations
+      const recs = analysis.recommendations ?? [];
+      const recsHtml = recs.length
+        ? `<div class="workspace-list-card" style="margin-bottom:4px;font-weight:600;font-size:12px;color:rgba(255,255,255,0.85)">Recommendations</div>` +
+        recs.slice(0, 8).map((r) => `<div class="workspace-list-card text-xs">💡 ${r}</div>`).join("")
+        : "";
+
+      // AI recommendations
+      const aiRecs = analysis.ai_recommendations ?? [];
+      const aiHtml = aiRecs.length
+        ? `<div class="workspace-list-card" style="margin-top:8px;margin-bottom:4px;font-weight:600;font-size:12px;color:rgba(165,180,252,0.95)">AI Coaching</div>` +
+        aiRecs.map((r, i) => `<div class="workspace-list-card text-xs" style="border-color:rgba(99,102,241,0.3)">${i + 1}. ${r}</div>`).join("")
+        : `<div class="workspace-list-card text-xs" style="color:rgba(255,255,255,0.35)">AI recommendations unavailable (Gemini not configured).</div>`;
+
+      nodes.lensSummaryBoard.innerHTML = overallHero + scoreCards + recsHtml + aiHtml;
+    }
+  }
+
+  // ── Versions board ─────────────────────────────────────────────────────────
+  if (nodes.lensVersionsBoard && !loading) {
+    if (!versions || !versions.length) {
+      nodes.lensVersionsBoard.innerHTML = stateCard("No version history yet. Run an analysis then click Load Versions.");
+    } else {
+      // Track selected versions for comparison
+      const selectedVersions = [];
+
+      nodes.lensVersionsBoard.innerHTML =
+        versions.map((v) => {
+          const dt = v.created_at
+            ? new Date(v.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+            : "";
+          const scoreColor = v.overall_score >= 75 ? "#34d399" : v.overall_score >= 50 ? "#fbbf24" : "#f87171";
+          return `<div class="workspace-list-card" style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <span style="font-weight:600;color:rgba(255,255,255,0.9)">v${v.version_number}</span>
+              <span style="margin-left:8px;font-size:11px;color:rgba(255,255,255,0.5)">${v.job_category}</span>
+              ${dt ? `<span style="margin-left:8px;font-size:10px;color:rgba(255,255,255,0.35)">${dt}</span>` : ""}
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="color:${scoreColor};font-weight:700;font-size:15px">${Math.round(v.overall_score)}</span>
+              <button onclick="(function(){
+                const btn = document.querySelectorAll('[data-compare-v]');
+                const checked = Array.from(btn).filter(b=>b.dataset.selected==='1').map(b=>+b.dataset.compareV);
+                if(checked.length===2){compareVersions(checked[0],checked[1]);}
+                else{setStatus('Select exactly 2 versions to compare.');}
+              })()" data-compare-v="${v.version_number}" data-selected="0"
+                style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid rgba(99,102,241,0.5);
+                  background:rgba(99,102,241,0.08);color:rgba(165,180,252,0.9);cursor:pointer;font-family:inherit;"
+                onclick="this.dataset.selected=this.dataset.selected==='1'?'0':'1';
+                  this.style.background=this.dataset.selected==='1'?'rgba(99,102,241,0.3)':'rgba(99,102,241,0.08)';">
+                Select
+              </button>
+            </div>
+          </div>`;
+        }).join("") +
+        `<div style="margin-top:8px;text-align:center">
+           <button onclick="compareSelectedVersions()"
+             style="font-size:11px;padding:5px 16px;border-radius:8px;border:1px solid rgba(99,102,241,0.5);
+               background:rgba(99,102,241,0.12);color:rgba(165,180,252,0.9);cursor:pointer;font-family:inherit;">
+             Compare Selected Versions
+           </button>
+         </div>`;
+    }
+  }
+
+  // Also sync heatmap when analysis loaded
+  if (analysis && analysis.hot_zones && analysis.hot_zones.length) {
+    AppState.setState({ heatmapActive: true });
+  }
+}
+
+/**
+ * Helper called from the Compare button in the versions board.
+ */
+function compareSelectedVersions() {
+  const btns = Array.from(document.querySelectorAll("[data-compare-v]")).filter(
+    (b) => b.dataset.selected === "1"
+  );
+  if (btns.length !== 2) {
+    setStatus("Select exactly 2 versions using their Select button, then click Compare.");
+    return;
+  }
+  const [a, b] = btns.map((btn) => Number(btn.dataset.compareV)).sort((x, y) => x - y);
+  compareVersions(a, b);
+}
+
+// End of Feature 1 block
+// ═══════════════════════════════════════════════════════════════════════════
+
 function attachUploadHandlers() {
-  const triggerUpload = () => nodes.pdfInput.click();
-  nodes.uploadZone.addEventListener("click", triggerUpload);
+  const zone = nodes.uploadStatus?.closest("#upload-zone") || nodes.uploadZone;
 
-  nodes.uploadZone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    nodes.uploadZone.classList.add("border-indigo-300/60", "bg-indigo-500/10");
-  });
+  if (zone) {
+    ["dragenter", "dragover", "dragleave", "drop"].forEach((name) => {
+      zone.addEventListener(name, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
 
-  nodes.uploadZone.addEventListener("dragleave", () => {
-    nodes.uploadZone.classList.remove("border-indigo-300/60", "bg-indigo-500/10");
-  });
+    ["dragenter", "dragover"].forEach((name) => {
+      zone.addEventListener(name, () => zone.classList.add("drag-active"));
+    });
 
-  nodes.uploadZone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    nodes.uploadZone.classList.remove("border-indigo-300/60", "bg-indigo-500/10");
-    const file = e.dataTransfer.files?.[0];
-    if (file) processResume(file.name, file);
-  });
+    ["dragleave", "drop"].forEach((name) => {
+      zone.addEventListener(name, () => zone.classList.remove("drag-active"));
+    });
+
+    zone.addEventListener("drop", (e) => {
+      const file = e.dataTransfer.files?.[0];
+      if (file) processResume(file.name, file);
+    });
+
+    zone.addEventListener("click", () => nodes.pdfInput.click());
+  }
 
   nodes.pdfInput.addEventListener("change", (e) => {
     const file = e.target.files?.[0];
@@ -2953,14 +3229,14 @@ function setupNavigation() {
     AppState.setState({ audioLevel: randomLevel });
   });
 
-  nodes.analyzeFeature1?.addEventListener("click", runFeature1Analysis);
+  nodes.analyzeFeature1?.addEventListener("click", handleFeature1Upload);
   nodes.runSmartAction?.addEventListener("click", runSmartAction);
   nodes.uiModeBeginner?.addEventListener("click", () => setUIMode("beginner"));
   nodes.uiModeExpert?.addEventListener("click", () => setUIMode("expert"));
   nodes.onboardingUploadResume?.addEventListener("click", () => nodes.pdfInput.click());
   nodes.onboardingRunLens?.addEventListener("click", async () => {
     syncOnboardingToCoreInputs();
-    await runFeature1Analysis();
+    await handleFeature1Upload();
   });
   nodes.onboardingRunRebound?.addEventListener("click", async () => {
     syncOnboardingToCoreInputs();
@@ -2974,7 +3250,7 @@ function setupNavigation() {
   nodes.onboardingCandidateId?.addEventListener("input", syncOnboardingToCoreInputs);
   nodes.onboardingJobCategory?.addEventListener("change", syncOnboardingToCoreInputs);
   nodes.onboardingJobDescription?.addEventListener("input", syncOnboardingToCoreInputs);
-  nodes.lensRunFeature1.addEventListener("click", runFeature1Analysis);
+  nodes.lensRunFeature1.addEventListener("click", handleFeature1Upload);
   nodes.fetchVersions.addEventListener("click", loadVersions);
   nodes.lensLoadVersions.addEventListener("click", loadVersions);
   document.getElementById("fetch-versions-output")?.addEventListener("click", loadVersions);
@@ -2984,7 +3260,7 @@ function setupNavigation() {
     if (nodes.lensCandidateId?.value) nodes.candidateId.value = nodes.lensCandidateId.value;
     if (nodes.lensJobCategory?.value) nodes.jobCategory.value = nodes.lensJobCategory.value;
     if (nodes.lensJobDescription?.value) nodes.jobDescription.value = nodes.lensJobDescription.value;
-    runFeature1Analysis();
+    handleFeature1Upload();
   });
   nodes.lensUploadBtn?.addEventListener("click", () => nodes.pdfInput.click());
 
@@ -3205,11 +3481,11 @@ const JT = (() => {
   // ── Rendering ────────────────────────────────────────────────────────────
 
   const STATUS_COLORS = {
-    Wishlist:     { dot: "#6366f1", badge: "rgba(99,102,241,0.18)",  text: "#a5b4fc" },
-    Applied:      { dot: "#f59e0b", badge: "rgba(245,158,11,0.18)",  text: "#fcd34d" },
-    Interviewing: { dot: "#06b6d4", badge: "rgba(6,182,212,0.18)",   text: "#67e8f9" },
-    Offered:      { dot: "#10b981", badge: "rgba(16,185,129,0.18)",  text: "#6ee7b7" },
-    Rejected:     { dot: "#ef4444", badge: "rgba(239,68,68,0.18)",   text: "#fca5a5" },
+    Wishlist: { dot: "#6366f1", badge: "rgba(99,102,241,0.18)", text: "#a5b4fc" },
+    Applied: { dot: "#f59e0b", badge: "rgba(245,158,11,0.18)", text: "#fcd34d" },
+    Interviewing: { dot: "#06b6d4", badge: "rgba(6,182,212,0.18)", text: "#67e8f9" },
+    Offered: { dot: "#10b981", badge: "rgba(16,185,129,0.18)", text: "#6ee7b7" },
+    Rejected: { dot: "#ef4444", badge: "rgba(239,68,68,0.18)", text: "#fca5a5" },
   };
 
   function buildCard(job) {
