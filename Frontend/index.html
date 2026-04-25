@@ -1364,6 +1364,9 @@
 <script>
 // Landing ↔ App toggle
 function skipAuth() {
+  // Set a demo token to bypass authentication for testing
+  sessionStorage.setItem('cos_token', 'demo-token-for-testing');
+  sessionStorage.setItem('cos_candidate', 'demo-user');
   document.getElementById('auth-modal').style.display = 'none';
   startViewSwap('dashboard');
 }
