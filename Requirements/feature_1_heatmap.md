@@ -1,3 +1,4 @@
+<!-- we are good - feature 1 requirements documented -->
 # Feature 1: The "Hiring Manager's Lens" (Visual Heatmap)
 
 ## Epic 1.1: Visual Hierarchy & Eye-Tracking Simulation

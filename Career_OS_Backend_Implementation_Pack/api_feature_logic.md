@@ -1,3 +1,4 @@
+<!-- we are good - API feature logic documented -->
 # Career-OS: API Implementation Details (Feature 1 - 5)
 
 ## Feature 1: The Lens (Resume Scoring)

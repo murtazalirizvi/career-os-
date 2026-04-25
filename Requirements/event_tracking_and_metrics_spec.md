@@ -1,3 +1,4 @@
+<!-- we are good - event tracking spec documented -->
 # Event Tracking and Metrics Spec: Career-OS v1
 
 ## 1. Purpose

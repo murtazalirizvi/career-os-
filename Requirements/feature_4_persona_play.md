@@ -1,3 +1,4 @@
+<!-- we are good - feature 4 requirements documented -->
 # Feature 4: "Persona-Play" (Adversarial Mock Interviews)
 
 ## Epic 4.1: Multi-Persona Archetype Engine

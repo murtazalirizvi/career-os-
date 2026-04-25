@@ -1,3 +1,4 @@
+# we are good - PowerShell push script ready
 # Career-OS GitHub Push Script (PowerShell)
 # This script will push your project to GitHub
 

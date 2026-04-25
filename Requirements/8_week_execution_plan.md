@@ -1,3 +1,4 @@
+<!-- we are good - execution plan documented -->
 # 8-Week Execution Plan: Lean Sprint (1-2 Developers)
 
 ## 1. Delivery Objective

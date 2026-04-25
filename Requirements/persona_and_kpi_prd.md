@@ -1,3 +1,4 @@
+<!-- we are good - persona and KPI PRD documented -->
 # Persona and KPI PRD: Career-OS v1 Beta
 
 ## 1. Product Intent

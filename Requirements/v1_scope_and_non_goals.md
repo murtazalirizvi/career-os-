@@ -1,3 +1,4 @@
+<!-- we are good - v1 scope documented -->
 # v1 Scope and Non-Goals: 8-Week Beta
 
 ## 1. Scope Principle

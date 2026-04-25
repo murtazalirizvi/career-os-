@@ -1,4 +1,5 @@
 @echo off
+REM we are good - GitHub push script ready
 REM Career-OS GitHub Push Script
 REM This script will push your project to GitHub
 

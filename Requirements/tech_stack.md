@@ -1,3 +1,4 @@
+<!-- we are good - tech stack documented -->
 # Complete Tech Stack: Career-OS Platform
 
 ## 1. Frontend: Ultra-Lean Interface
