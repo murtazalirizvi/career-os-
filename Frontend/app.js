@@ -114,6 +114,11 @@ function handleApiError(error, featureName) {
   const msg = String(error?.message ?? "");
   if (msg.includes("Failed to fetch") || msg.includes("NetworkError") || msg.includes("Network error during upload")) {
     return `${featureName}: Cannot reach the backend server (ensure it is running on port 8000).`;
+  if (msg.includes("Only PDF resumes are supported") || msg.includes("Please upload a .pdf file")) {
+    return `${featureName}: Only PDF resumes are supported. Please upload a .pdf file.`;
+  }
+  if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+    return `${featureName}: Cannot reach the server. Make sure the backend is running.`;
   }
   if (msg.includes("401") || msg.includes("Unauthorized")) {
     return `${featureName}: Your session expired - please refresh the page.`;
@@ -230,6 +235,13 @@ async function apiFetch(url, options = {}) {
   }
   if (token) headers.Authorization = `Bearer ${token}`;
   return fetch(url, { ...options, headers });
+}
+
+function isSupportedResumeFile(file) {
+  if (!file) return false;
+  const fileName = String(file.name || "").toLowerCase();
+  const fileType = String(file.type || "").toLowerCase();
+  return fileName.endsWith(".pdf") || fileType === "application/pdf";
 }
 
 function validateRequiredFields(fields) {
@@ -436,11 +448,50 @@ async function loadDashboard(options = {}) {
       }
     });
   } catch (error) {
+    const fallbackDashboard = AppState.dashboard?.data ?? {
+      user: null,
+      readiness_score: null,
+      readiness: {
+        score: null,
+        label: "Awaiting dashboard data",
+        tone: "warning",
+        formula: "Run Feature 1 to generate the first readiness signal.",
+        components: []
+      },
+      latest_analysis: {
+        analysis_id: null,
+        summary: "No resume analysis yet."
+      },
+      interview_analysis: {
+        interview_id: null,
+        summary: "No interview data yet."
+      },
+      market_analysis: {
+        gap_snapshot_id: null,
+        summary: "Market-fit data will appear after Skill Arbitrage runs."
+      },
+      job_pipeline: {},
+      total_jobs: 0,
+      analytics: {
+        chart_data: [],
+        snapshot_chart_data: [],
+        recent_activity: []
+      },
+      next_actions: [],
+      status_indicators: {
+        ready_to_apply: false,
+        resume_ready: false,
+        interview_ready: false,
+        market_ready: false,
+        dashboard_state: "empty"
+      },
+      generated_at: null
+    };
     AppState.setState({
       dashboard: {
         loading: false,
         error: handleApiError(error, "Dashboard"),
-        data: AppState.dashboard?.data ?? null,
+        data: fallbackDashboard,
         lastLoadedAt: AppState.dashboard?.lastLoadedAt ?? null
       }
     });
@@ -4310,6 +4361,22 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function processResume(fileName = "Resume.pdf", fileObject = null) {
+  if (fileObject && !isSupportedResumeFile(fileObject)) {
+    AppState.setState({
+      resumeUploaded: false,
+      scannerActive: false,
+      heatmapActive: false,
+      resumeFile: null
+    });
+    if (nodes.onboardingResumeName) {
+      nodes.onboardingResumeName.textContent = "No resume selected yet.";
+    }
+    const lensResumeName = document.getElementById("lens-resume-name");
+    if (lensResumeName) lensResumeName.textContent = "No resume selected.";
+    setStatus("Only PDF resumes are supported for Feature 1. Please upload a .pdf file.");
+    return false;
+  }
+
   AppState.setState({
     resumeUploaded: true,
     scannerActive: false,
@@ -4328,6 +4395,8 @@ function processResume(fileName = "Resume.pdf", fileObject = null) {
     AppState.analytics.firstResumeUploaded = true;
     emitEvent("first_resume_uploaded", "onboarding", { filename: fileName });
   }
+
+  return true;
 }
 
 async function runFeature1Analysis() {
@@ -4336,6 +4405,7 @@ async function runFeature1Analysis() {
     { id: "job-description", label: "Job Description" }
   ]);
   if (!AppState.resumeFile) errs.push("Please upload a resume PDF.");
+  if (AppState.resumeFile && !isSupportedResumeFile(AppState.resumeFile)) errs.push("Only PDF resumes are supported. Please upload a .pdf file.");
   if (errs.length) {
     setStatus(errs[0]);
     return;
@@ -5153,7 +5223,12 @@ function attachUploadHandlers() {
 
   nodes.pdfInput.addEventListener("change", (e) => {
     const file = e.target.files?.[0];
-    if (file) processResume(file.name, file);
+    if (file) {
+      const accepted = processResume(file.name, file);
+      if (!accepted) {
+        e.target.value = "";
+      }
+    }
   });
 }
 
