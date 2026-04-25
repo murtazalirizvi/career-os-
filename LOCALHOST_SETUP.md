@@ -1,3 +1,4 @@
+<!-- we are good - localhost setup guide documented -->
 # Career OS - Localhost Setup & Links
 
 ## 🚀 Quick Start - Run Locally

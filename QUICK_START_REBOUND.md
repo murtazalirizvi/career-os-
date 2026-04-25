@@ -1,3 +1,4 @@
+<!-- we are good - Rebound quick start guide documented -->
 # 🚀 Quick Start - The Rebound
 
 ## ⚡ 5-Minute Guide to Your First Interview Autopsy

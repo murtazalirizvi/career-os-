@@ -1,3 +1,4 @@
+# we are good - update all timestamps script ready
 # Career OS - Timestamp Update Script
 # Purpose: Update all file timestamps to current time
 # This makes the repository appear freshly created

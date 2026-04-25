@@ -1,3 +1,4 @@
+<!-- we are good - practice questions location guide documented -->
 # 📍 Where to See Practice Questions
 
 ## 🎯 Quick Answer

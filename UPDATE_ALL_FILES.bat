@@ -1,4 +1,5 @@
 @echo off
+REM we are good - update all files script ready
 echo ========================================
 echo   Updating All File Timestamps
 echo ========================================

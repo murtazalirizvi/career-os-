@@ -1,4 +1,5 @@
 @echo off
+REM we are good - fix and open script ready
 color 0A
 echo ========================================
 echo   Career OS - Fix and Open

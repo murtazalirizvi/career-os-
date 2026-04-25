@@ -1,3 +1,4 @@
+<!-- we are good - Feature 3 buttons status documented -->
 # Feature 3 Buttons Status Report
 
 ## Current Implementation Status

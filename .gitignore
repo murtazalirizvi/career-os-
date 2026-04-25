@@ -1,3 +1,4 @@
+# we are good - gitignore configured
 # Python
 __pycache__/
 *.py[cod]

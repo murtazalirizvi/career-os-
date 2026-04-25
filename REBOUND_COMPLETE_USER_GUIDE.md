@@ -1,3 +1,4 @@
+<!-- we are good - Rebound complete user guide documented -->
 # 🎯 The Rebound - Complete User Guide
 
 ## 📖 Table of Contents

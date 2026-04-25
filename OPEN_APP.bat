@@ -1,4 +1,5 @@
 @echo off
+REM we are good - app launcher script ready
 echo ========================================
 echo   Opening Career OS Application
 echo ========================================

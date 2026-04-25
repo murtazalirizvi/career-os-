@@ -1,4 +1,5 @@
 @echo off
+REM we are good - timestamp update script ready
 echo ========================================
 echo Career OS - Timestamp Update Script
 echo ========================================

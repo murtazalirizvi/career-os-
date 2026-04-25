@@ -1,3 +1,4 @@
+<!-- we are good - recovery actions guide documented -->
 # 🔄 What Are Recovery Actions?
 
 ## 🎯 Quick Answer

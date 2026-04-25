@@ -1,3 +1,4 @@
+# we are good - quick start instructions ready
 ========================================
    CAREER OS - QUICK START
 ========================================

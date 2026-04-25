@@ -1,3 +1,4 @@
+# we are good - timestamp update script ready
 # Update all file timestamps to current time
 Write-Host "Updating file timestamps..." -ForegroundColor Green
 
