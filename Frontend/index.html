@@ -1350,25 +1350,19 @@
 
 <!-- Mobile nav -->
 <nav id="mobile-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(5,5,5,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);z-index:100;padding:8px 0 env(safe-area-inset-bottom)">
-  <div style="display:flex;justify-content:space-around;align-items:center">
-    <button onclick="navigateTo('dashboard')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="layout-dashboard" style="width:18px;height:18px"></i>Home</button>
-    <button onclick="navigateTo('job-tracker')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="kanban" style="width:18px;height:18px"></i>Jobs</button>
-    <button onclick="navigateTo('lens-engine')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="scan-search" style="width:18px;height:18px"></i>Lens</button>
-    <button onclick="navigateTo('rebound')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="mic" style="width:18px;height:18px"></i>Rebound</button>
-    <button onclick="navigateTo('persona-play')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="audio-lines" style="width:18px;height:18px"></i>Coach</button>
-    <button onclick="navigateTo('narrative')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:4px 8px;font-family:inherit"><i data-lucide="book-open-text" style="width:18px;height:18px"></i>Portfo</button>
+  <div style="display:flex;justify-content:space-around;align-items:center;overflow-x:auto">
+    <button onclick="navigateTo('dashboard')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:9px;cursor:pointer;padding:4px 6px;font-family:inherit;min-width:50px"><i data-lucide="layout-dashboard" style="width:16px;height:16px"></i>Home</button>
+    <button onclick="navigateTo('job-tracker')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:9px;cursor:pointer;padding:4px 6px;font-family:inherit;min-width:50px"><i data-lucide="kanban" style="width:16px;height:16px"></i>Jobs</button>
+    <button onclick="navigateTo('lens-engine')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:9px;cursor:pointer;padding:4px 6px;font-family:inherit;min-width:50px"><i data-lucide="scan-search" style="width:16px;height:16px"></i>Lens</button>
+    <button onclick="navigateTo('rebound')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:9px;cursor:pointer;padding:4px 6px;font-family:inherit;min-width:50px"><i data-lucide="mic" style="width:16px;height:16px"></i>Rebound</button>
+    <button onclick="navigateTo('arbitrage')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:9px;cursor:pointer;padding:4px 6px;font-family:inherit;min-width:50px"><i data-lucide="candlestick-chart" style="width:16px;height:16px"></i>Arb</button>
+    <button onclick="navigateTo('persona-play')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:9px;cursor:pointer;padding:4px 6px;font-family:inherit;min-width:50px"><i data-lucide="audio-lines" style="width:16px;height:16px"></i>Coach</button>
+    <button onclick="navigateTo('narrative')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:9px;cursor:pointer;padding:4px 6px;font-family:inherit;min-width:50px"><i data-lucide="book-open-text" style="width:16px;height:16px"></i>Port</button>
   </div>
 </nav>
 
 <script>
 // Landing ↔ App toggle
-function showApp() {
-  document.getElementById('landing-page').style.display = 'none';
-  document.getElementById('app-shell').style.display = 'block';
-  if (!sessionStorage.getItem('cos_token')) {
-    document.getElementById('auth-modal').style.display = 'flex';
-  }
-}
 function skipAuth() {
   document.getElementById('auth-modal').style.display = 'none';
 }

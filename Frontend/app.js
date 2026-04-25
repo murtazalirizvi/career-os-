@@ -447,7 +447,18 @@ async function loadDashboard(options = {}) {
   }
 }
 
+function showApp() {
+  document.getElementById('landing-page').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'block';
+  startViewSwap('dashboard');
+}
+
 function navigateTo(viewName) {
+  // Update mobile nav active state
+  document.querySelectorAll('#mobile-nav button').forEach(btn => {
+    const isActive = btn.getAttribute('onclick').includes(`'${viewName}'`);
+    btn.style.color = isActive ? '#ff6b6b' : 'rgba(255,255,255,0.5)';
+  });
   startViewSwap(viewName);
 }
 
@@ -2177,16 +2188,6 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
-}
-
-    // Load history to show this session
-    await loadFeature4History();
-
-  } catch (error) {
-    console.error('Session end error:', error);
-    setStatus(handleApiError(error, "Mock Interview"));
-    setUiFlag("feature4Loading", false);
-  }
 }
 
 /**
@@ -5254,6 +5255,17 @@ function setupNavigation() {
     if (!target) return;
     startViewSwap(target.dataset.view);
   });
+
+  // Navigation button event listeners
+  nodes.navBtns?.forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const viewName = btn.dataset.view;
+      if (viewName) {
+        startViewSwap(viewName);
+      }
+    });
+  });
   nodes.feature2QuickDebrief?.addEventListener("click", runQuickDebrief);
   nodes.feature2LoadTrend?.addEventListener("click", async () => {
     await Promise.all([loadFeature2Trend(), loadFeature2Forecast()]);
@@ -5484,19 +5496,11 @@ const JT = (() => {
   // ── Rendering ────────────────────────────────────────────────────────────
 
   const STATUS_COLORS = {
-<<<<<<< HEAD
     Wishlist:     { dot: "#8B0000", badge: "rgba(139,0,0,0.18)",  text: "#ff6b6b" },
     Applied:      { dot: "#f59e0b", badge: "rgba(245,158,11,0.18)",  text: "#fcd34d" },
     Interviewing: { dot: "#06b6d4", badge: "rgba(6,182,212,0.18)",   text: "#67e8f9" },
     Offered:      { dot: "#10b981", badge: "rgba(16,185,129,0.18)",  text: "#6ee7b7" },
     Rejected:     { dot: "#ef4444", badge: "rgba(239,68,68,0.18)",   text: "#fca5a5" },
-=======
-    Wishlist: { dot: "#6366f1", badge: "rgba(99,102,241,0.18)", text: "#a5b4fc" },
-    Applied: { dot: "#f59e0b", badge: "rgba(245,158,11,0.18)", text: "#fcd34d" },
-    Interviewing: { dot: "#06b6d4", badge: "rgba(6,182,212,0.18)", text: "#67e8f9" },
-    Offered: { dot: "#10b981", badge: "rgba(16,185,129,0.18)", text: "#6ee7b7" },
-    Rejected: { dot: "#ef4444", badge: "rgba(239,68,68,0.18)", text: "#fca5a5" },
->>>>>>> c628aa3a99b7a22902c631ed7fb886cf8d6caebc
   };
 
   function buildCard(job) {

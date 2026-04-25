@@ -619,10 +619,41 @@ textarea:focus-visible,select:focus-visible,a:focus-visible{
   .glass-card{border-radius:var(--r-lg)}
   #command-center-view>div,#dashboard-view>div,#lens-workspace>div,#feature3-workspace>div,#feature4-workspace>div,#feature5-workspace>div{gap:10px;grid-auto-rows:minmax(180px,auto)}
   .workspace-header>div:last-child button,.workspace-header>div:last-child summary{flex:1 1 calc(50% - 6px);min-width:0}
-  .workspace-header>div:last-child{display:grid;grid-template-columns:1fr 1fr;width:100%}
-  .command-more{grid-column:1/-1}
-  #run-smart-action{grid-column:1/-1}
-  .command-more-menu{position:static;min-width:0;margin-top:6px}
+  .landing-nav{padding:16px 20px}
+  .preview-body{grid-template-columns:1fr 1fr}
+  #sidebar{display:none!important}
+  .grid-cols-\[auto_1fr\]{grid-template-columns:1fr!important}
+  #mobile-nav{display:flex!important}
+  
+  /* Touch-friendly improvements */
+  button, .btn-primary, .btn-ghost, .nav-btn {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Mobile specific adjustments */
+  .workspace-body {
+    padding-bottom: 80px; /* Account for mobile nav */
+  }
+  
+  /* Improve text readability on mobile */
+  body {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  /* Better modal handling on mobile */
+  .jt-modal-backdrop {
+    padding: 10px;
+  }
+  
+  .jt-modal-box {
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+  }
+}
+@media(max-width:640px){
   .radar-canvas{height:130px}
   #feature4-signal-chart{height:130px}
   .jt-board{grid-template-columns:1fr}
