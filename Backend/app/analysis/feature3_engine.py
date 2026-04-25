@@ -79,24 +79,120 @@ EMERGING_2027 = {
 
 CURATED_LINKS = {
     "react": [
-        {"title": "React official docs", "url": "https://react.dev/learn"},
-        {"title": "Advanced React patterns", "url": "https://www.youtube.com/watch?v=3XaXKiXtNjw"},
+        {"title": "React official docs — Learn React", "url": "https://react.dev/learn"},
+        {"title": "Advanced React patterns (YouTube)", "url": "https://www.youtube.com/watch?v=3XaXKiXtNjw"},
     ],
     "typescript": [
         {"title": "TypeScript handbook", "url": "https://www.typescriptlang.org/docs/"},
-        {"title": "Type narrowing and generics", "url": "https://www.youtube.com/watch?v=ahCwqrYpIuM"},
+        {"title": "Type narrowing and generics (YouTube)", "url": "https://www.youtube.com/watch?v=ahCwqrYpIuM"},
     ],
     "sql": [
-        {"title": "Use The Index, Luke", "url": "https://use-the-index-luke.com/"},
-        {"title": "SQL tuning fundamentals", "url": "https://www.youtube.com/watch?v=HXV3zeQKqGY"},
+        {"title": "Use The Index, Luke — SQL tuning", "url": "https://use-the-index-luke.com/"},
+        {"title": "SQL fundamentals (YouTube)", "url": "https://www.youtube.com/watch?v=HXV3zeQKqGY"},
     ],
     "kubernetes": [
-        {"title": "Kubernetes basics", "url": "https://kubernetes.io/docs/tutorials/kubernetes-basics/"},
-        {"title": "Production k8s patterns", "url": "https://www.youtube.com/watch?v=2vMEQ5zs1ko"},
+        {"title": "Kubernetes official tutorials", "url": "https://kubernetes.io/docs/tutorials/kubernetes-basics/"},
+        {"title": "Production k8s patterns (YouTube)", "url": "https://www.youtube.com/watch?v=2vMEQ5zs1ko"},
     ],
     "llm": [
-        {"title": "LLM engineering handbook", "url": "https://www.youtube.com/watch?v=dOxUroR57xs"},
-        {"title": "RAG patterns", "url": "https://www.pinecone.io/learn/retrieval-augmented-generation/"},
+        {"title": "LLM engineering handbook (YouTube)", "url": "https://www.youtube.com/watch?v=dOxUroR57xs"},
+        {"title": "RAG patterns — Pinecone guide", "url": "https://www.pinecone.io/learn/retrieval-augmented-generation/"},
+    ],
+    "python": [
+        {"title": "Python official tutorial", "url": "https://docs.python.org/3/tutorial/"},
+        {"title": "Real Python — practical guides", "url": "https://realpython.com/"},
+    ],
+    "fastapi": [
+        {"title": "FastAPI official docs", "url": "https://fastapi.tiangolo.com/"},
+        {"title": "FastAPI full course (YouTube)", "url": "https://www.youtube.com/watch?v=0sOvCWFmrtA"},
+    ],
+    "docker": [
+        {"title": "Docker official get-started guide", "url": "https://docs.docker.com/get-started/"},
+        {"title": "Docker in 100 seconds (YouTube)", "url": "https://www.youtube.com/watch?v=Gjnup-PuquQ"},
+    ],
+    "aws": [
+        {"title": "AWS free tier hands-on labs", "url": "https://aws.amazon.com/getting-started/hands-on/"},
+        {"title": "AWS in plain English", "url": "https://expeditedsecurity.com/aws-in-plain-english/"},
+    ],
+    "terraform": [
+        {"title": "Terraform official tutorials", "url": "https://developer.hashicorp.com/terraform/tutorials"},
+        {"title": "Terraform crash course (YouTube)", "url": "https://www.youtube.com/watch?v=SLB_c_ayRMo"},
+    ],
+    "redis": [
+        {"title": "Redis university — free courses", "url": "https://university.redis.com/"},
+        {"title": "Redis in 100 seconds (YouTube)", "url": "https://www.youtube.com/watch?v=G1rOthIU-uo"},
+    ],
+    "kafka": [
+        {"title": "Apache Kafka quickstart", "url": "https://kafka.apache.org/quickstart"},
+        {"title": "Kafka in 100 seconds (YouTube)", "url": "https://www.youtube.com/watch?v=uvb00oaa3k8"},
+    ],
+    "go": [
+        {"title": "A Tour of Go — official interactive", "url": "https://go.dev/tour/"},
+        {"title": "Go by Example", "url": "https://gobyexample.com/"},
+    ],
+    "rust": [
+        {"title": "The Rust Book — official", "url": "https://doc.rust-lang.org/book/"},
+        {"title": "Rust crash course (YouTube)", "url": "https://www.youtube.com/watch?v=zF34dRivLOw"},
+    ],
+    "nextjs": [
+        {"title": "Next.js official learn course", "url": "https://nextjs.org/learn"},
+        {"title": "Next.js crash course (YouTube)", "url": "https://www.youtube.com/watch?v=mTz0GXj8NN0"},
+    ],
+    "javascript": [
+        {"title": "javascript.info — modern JS tutorial", "url": "https://javascript.info/"},
+        {"title": "JS concepts in 100 seconds (YouTube)", "url": "https://www.youtube.com/watch?v=DHjqpvDnNGE"},
+    ],
+    "pandas": [
+        {"title": "Pandas official getting-started guide", "url": "https://pandas.pydata.org/docs/getting_started/"},
+        {"title": "Pandas tutorial (YouTube)", "url": "https://www.youtube.com/watch?v=vmEHCJofslg"},
+    ],
+    "agents": [
+        {"title": "LangChain agents docs", "url": "https://python.langchain.com/docs/modules/agents/"},
+        {"title": "AI agents explained (YouTube)", "url": "https://www.youtube.com/watch?v=F8NKVhkZZWI"},
+    ],
+    "ci": [
+        {"title": "GitHub Actions quickstart", "url": "https://docs.github.com/en/actions/quickstart"},
+        {"title": "CI/CD explained (YouTube)", "url": "https://www.youtube.com/watch?v=scEDHsr3APg"},
+    ],
+    "cd": [
+        {"title": "GitHub Actions — deploy workflows", "url": "https://docs.github.com/en/actions/deployment"},
+        {"title": "CI/CD pipeline tutorial (YouTube)", "url": "https://www.youtube.com/watch?v=R8_veQiYBjI"},
+    ],
+    "testing": [
+        {"title": "pytest official docs", "url": "https://docs.pytest.org/en/stable/"},
+        {"title": "Testing best practices (YouTube)", "url": "https://www.youtube.com/watch?v=DhUpxWjOhME"},
+    ],
+    "pytest": [
+        {"title": "pytest official docs", "url": "https://docs.pytest.org/en/stable/"},
+        {"title": "pytest crash course (YouTube)", "url": "https://www.youtube.com/watch?v=cHYq1MRoyI0"},
+    ],
+    "graphql": [
+        {"title": "GraphQL official learn guide", "url": "https://graphql.org/learn/"},
+        {"title": "GraphQL crash course (YouTube)", "url": "https://www.youtube.com/watch?v=ed8SzALpx1Q"},
+    ],
+    "gcp": [
+        {"title": "Google Cloud free training", "url": "https://cloud.google.com/training/free-labs"},
+        {"title": "GCP essentials (YouTube)", "url": "https://www.youtube.com/watch?v=IeMYQ-qJeK4"},
+    ],
+    "azure": [
+        {"title": "Microsoft Learn — Azure fundamentals", "url": "https://learn.microsoft.com/en-us/training/paths/azure-fundamentals/"},
+        {"title": "Azure in 100 seconds (YouTube)", "url": "https://www.youtube.com/watch?v=NKEFWyqJ5XA"},
+    ],
+    "spark": [
+        {"title": "Apache Spark quick start", "url": "https://spark.apache.org/docs/latest/quick-start.html"},
+        {"title": "Spark tutorial (YouTube)", "url": "https://www.youtube.com/watch?v=_C8kWso4ne4"},
+    ],
+    "dbt": [
+        {"title": "dbt official learn course", "url": "https://courses.getdbt.com/courses/fundamentals"},
+        {"title": "dbt crash course (YouTube)", "url": "https://www.youtube.com/watch?v=5rNquRnNb4E"},
+    ],
+    "airflow": [
+        {"title": "Apache Airflow official tutorial", "url": "https://airflow.apache.org/docs/apache-airflow/stable/tutorial/"},
+        {"title": "Airflow crash course (YouTube)", "url": "https://www.youtube.com/watch?v=K9AnJ9_ZAXE"},
+    ],
+    "rag": [
+        {"title": "RAG patterns — Pinecone guide", "url": "https://www.pinecone.io/learn/retrieval-augmented-generation/"},
+        {"title": "Build a RAG app (YouTube)", "url": "https://www.youtube.com/watch?v=tcqEUSNCn8I"},
     ],
 }
 
@@ -151,6 +247,11 @@ class MarketIntelligenceEngine:
         remote_only: bool,
         search_terms: Sequence[str],
     ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+        print(f"\n{'='*60}")
+        print(f"📊 FETCHING MARKET DATA")
+        print(f"   Role: {target_role} | Region: {region} | Remote Only: {remote_only}")
+        print(f"{'='*60}")
+        
         terms = [target_role, *search_terms]
         adzuna_jobs = self._fetch_adzuna(terms, region)
         reed_jobs = self._fetch_reed(terms, region)
@@ -158,11 +259,20 @@ class MarketIntelligenceEngine:
         indeed_like = self._fetch_public_feed("indeed", terms, region)
         octoverse_like = self._fetch_octoverse_proxy(terms, region)
 
+        print(f"\n📈 DATA SOURCE SUMMARY:")
+        print(f"   Adzuna API:        {len(adzuna_jobs)} jobs")
+        print(f"   Reed API:          {len(reed_jobs)} jobs")
+        print(f"   LinkedIn Proxy:    {len(linkedin_like)} jobs")
+        print(f"   Indeed Proxy:      {len(indeed_like)} jobs")
+        print(f"   GitHub Octoverse:  {len(octoverse_like)} jobs")
+        print(f"   TOTAL FETCHED:     {len(adzuna_jobs + reed_jobs + linkedin_like + indeed_like + octoverse_like)} jobs")
+
         merged = adzuna_jobs + reed_jobs + linkedin_like + indeed_like + octoverse_like
         if remote_only:
             merged = [j for j in merged if j.get("remote", False)]
 
         if not merged:
+            print(f"⚠️  No jobs found from APIs, using mock data")
             merged = self._mock_jobs(target_role, region, remote_only)
 
         deduped = {}
@@ -172,6 +282,9 @@ class MarketIntelligenceEngine:
 
         jobs = list(deduped.values())
         jobs.sort(key=lambda x: x.get("salary_mid", 0), reverse=True)
+
+        print(f"   After deduplication: {len(jobs)} unique jobs")
+        print(f"{'='*60}\n")
 
         source_meta = {
             "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -243,6 +356,7 @@ class MarketIntelligenceEngine:
         app_id = os.getenv("ADZUNA_APP_ID", "")
         app_key = os.getenv("ADZUNA_APP_KEY", "")
         if not app_id or not app_key:
+            print("⚠️  ADZUNA: No API credentials found")
             return []
 
         query = " ".join(t for t in terms if t).strip()
@@ -258,13 +372,19 @@ class MarketIntelligenceEngine:
             "content-type": "application/json",
         }
 
+        print(f"🌐 ADZUNA API CALL: {url}")
+        print(f"   Query: '{query}' | Region: {region}")
+        
         try:
             with httpx.Client(timeout=self.timeout_seconds) as client:
                 res = client.get(url, params=params)
                 if res.status_code >= 400:
+                    print(f"❌ ADZUNA: API returned status {res.status_code}")
                     return []
                 payload = res.json()
-        except Exception:
+                print(f"✅ ADZUNA: Received {len(payload.get('results', []))} jobs from API")
+        except Exception as e:
+            print(f"❌ ADZUNA: API call failed - {str(e)}")
             return []
 
         rows = []
@@ -347,11 +467,36 @@ class MarketIntelligenceEngine:
             ("Backend Engineer", ["python", "fastapi", "postgres", "redis", "kubernetes"], 42000, 68000, False),
             ("Data Engineer", ["python", "sql", "spark", "airflow", "dbt"], 48000, 76000, True),
             ("AI Platform Engineer", ["python", "llm", "agents", "kubernetes", "aws"], 55000, 92000, True),
+            ("Frontend Engineer", ["react", "typescript", "javascript", "nextjs", "testing"], 38000, 62000, True),
+            ("DevOps Engineer", ["docker", "kubernetes", "terraform", "aws", "ci", "cd"], 50000, 80000, False),
+            ("Data Scientist", ["python", "pandas", "numpy", "sql", "spark"], 46000, 74000, True),
+            ("Software Engineer", ["python", "javascript", "sql", "docker", "testing"], 40000, 65000, False),
         ]
 
         rows = []
+        # Bug 13 fix: use word-level matching so "Backend" matches "Backend Engineer"
+        query_words = {w.lower() for w in query.split() if len(w) > 2}
         for idx, (title, skills, smin, smax, remote) in enumerate(seeds):
-            if any(term.lower() in title.lower() for term in terms if term):
+            title_words = {w.lower() for w in title.split()}
+            # Match if any query word appears in the seed title words
+            if query_words.intersection(title_words):
+                rows.append(
+                    {
+                        "source": source,
+                        "title": title,
+                        "company": f"{source.title()}-Org-{idx + 1}",
+                        "location": region,
+                        "remote": remote,
+                        "salary_min": smin,
+                        "salary_max": smax,
+                        "salary_mid": (smin + smax) / 2,
+                        "skills": skills,
+                        "url": "",
+                    }
+                )
+        # Always return at least 2 seed jobs as market signal even if no match
+        if not rows:
+            for idx, (title, skills, smin, smax, remote) in enumerate(seeds[:2]):
                 rows.append(
                     {
                         "source": source,
@@ -739,27 +884,81 @@ class SkillGapEngine:
 
 
 class SprintEngine:
+
+    # Per-day plan templates: (objective, deliverable_template, resource_type)
+    # resource_type: "docs" | "video" | "practice" | "project" | "review"
+    _DAY_TEMPLATES = [
+        (
+            "Foundations & syntax fluency",
+            "Read the official docs intro and run 3 hello-world examples. Write a cheat-sheet of the 5 most important {skill} concepts.",
+            "docs",
+        ),
+        (
+            "Core patterns & common pitfalls",
+            "Implement 2 canonical {skill} patterns from scratch. Document one gotcha you hit and how you resolved it.",
+            "video",
+        ),
+        (
+            "Checkpoint quiz & gap corrections",
+            "Complete the Day 3 quiz. For each question you missed, write a 2-sentence explanation of the correct answer.",
+            "practice",
+        ),
+        (
+            "Build MVP core feature",
+            "Scaffold the MVP project. Implement the primary {skill} feature with at least one passing test.",
+            "project",
+        ),
+        (
+            "Harden & measure performance",
+            "Add error handling and edge-case tests. Measure one performance metric (latency, throughput, or memory) and log the baseline.",
+            "project",
+        ),
+        (
+            "Production polish & observability",
+            "Add logging, a health-check, and a README with setup steps under 10 minutes. Document one trade-off you made.",
+            "review",
+        ),
+        (
+            "Interview narrative & portfolio push",
+            "Write a 3-sentence STAR story about your MVP. Push to GitHub with a descriptive commit message and update your portfolio link.",
+            "review",
+        ),
+    ]
+
+    # Fallback resource pool by type when CURATED_LINKS has no entry for the skill
+    _RESOURCE_FALLBACKS: Dict[str, Dict[str, str]] = {
+        "docs":     {"title": "MDN Web Docs — reference",        "url": "https://developer.mozilla.org/"},
+        "video":    {"title": "freeCodeCamp YouTube channel",    "url": "https://www.youtube.com/@freecodecamp"},
+        "practice": {"title": "Exercism — coding exercises",     "url": "https://exercism.org/"},
+        "project":  {"title": "GitHub Explore — starter repos",  "url": "https://github.com/explore"},
+        "review":   {"title": "The Pragmatic Engineer newsletter","url": "https://newsletter.pragmaticengineer.com/"},
+    }
+
     def build_sprint(self, primary_skill: str, target_role: str) -> Dict[str, Any]:
         skill = primary_skill.lower().strip()
-        links = CURATED_LINKS.get(skill, [{"title": "Skill docs", "url": "https://developer.mozilla.org/"}])
+        curated = CURATED_LINKS.get(skill, [])
+
+        # Build a resource pool: curated links first, then typed fallbacks
+        # Index 0 → docs link, 1 → video link (if available)
+        docs_link   = curated[0] if len(curated) > 0 else self._RESOURCE_FALLBACKS["docs"]
+        video_link  = curated[1] if len(curated) > 1 else self._RESOURCE_FALLBACKS["video"]
+
+        resource_by_type: Dict[str, Dict[str, str]] = {
+            "docs":     docs_link,
+            "video":    video_link,
+            "practice": self._RESOURCE_FALLBACKS["practice"],
+            "project":  self._RESOURCE_FALLBACKS["project"],
+            "review":   self._RESOURCE_FALLBACKS["review"],
+        }
 
         day_plan = []
-        for day in range(1, 8):
-            if day in (1, 2):
-                objective = "Foundations and syntax fluency"
-            elif day == 3:
-                objective = "Checkpoint quiz and corrections"
-            elif day in (4, 5):
-                objective = "Build and refine MVP core"
-            else:
-                objective = "Production polish and interview narrative"
-
+        for day_idx, (objective, deliverable_tpl, res_type) in enumerate(self._DAY_TEMPLATES, start=1):
             day_plan.append(
                 {
-                    "day": day,
+                    "day": day_idx,
                     "objective": objective,
-                    "resource": links[(day - 1) % len(links)],
-                    "deliverable": f"Artifact for {skill} day {day}: commit, notes, and benchmark evidence.",
+                    "resource": resource_by_type[res_type],
+                    "deliverable": deliverable_tpl.format(skill=skill),
                 }
             )
 
@@ -806,17 +1005,24 @@ class SprintEngine:
         }
 
     def evaluate_quiz(self, quiz: Dict[str, Any], answers: Sequence[str]) -> Dict[str, Any]:
-        target_keywords = {"trade-off", "latency", "reliability", "impact", "constraint", "result", "metric", "test"}
+        # Bug 10 fix: broadened keyword set and relaxed scoring so reasonable answers can pass
+        target_keywords = {
+            "trade-off", "tradeoff", "latency", "reliability", "impact", "constraint",
+            "result", "metric", "test", "performance", "scale", "failure", "error",
+            "improve", "reduce", "increase", "deploy", "monitor", "debug", "optimize"
+        }
 
         feedback = []
         score = 0.0
         for idx, answer in enumerate(answers[: len(quiz.get("questions", []))]):
             low = answer.lower()
             hit = sum(1 for k in target_keywords if k in low)
-            ans_score = min(100.0, hit * 18.0 + min(28.0, len(answer.split()) * 0.7))
+            # Bug 10 fix: lower per-keyword weight (12 vs 18) and higher word-count bonus (1.2 vs 0.7)
+            # so a well-written 50-word answer can pass without needing 5+ exact keywords
+            ans_score = min(100.0, hit * 12.0 + min(40.0, len(answer.split()) * 1.2))
             score += ans_score
-            if hit < 3:
-                feedback.append(f"Answer {idx + 1}: add explicit trade-offs, metrics, and constraints.")
+            if hit < 2:
+                feedback.append(f"Answer {idx + 1}: add explicit trade-offs, metrics, or constraints.")
 
         question_count = max(1, len(quiz.get("questions", [])))
         final = score / question_count
