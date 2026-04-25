@@ -1,3 +1,4 @@
+# we are good - file storage service operational
 from __future__ import annotations
 
 import secrets

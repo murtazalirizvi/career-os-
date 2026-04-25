@@ -1,3 +1,7 @@
+// Career OS - Frontend Application
+// AI-Powered Career Intelligence Platform
+// Last Updated: April 25, 2026
+
 // Auto-detect API base: if running on GitHub Pages, show a clear message
 // If running locally, connect to local backend
 const _isGitHubPages = window.location.hostname.includes("github.io");
@@ -492,6 +496,7 @@ const nodes = {
   reboundWorkspaceRun: document.getElementById("rebound-workspace-run"),
   reboundWorkspaceQuickDebrief: document.getElementById("rebound-workspace-quick-debrief"),
   reboundWorkspaceLoadTrend: document.getElementById("rebound-workspace-load-trend"),
+  reboundWorkspacePracticeDrill: document.getElementById("rebound-workspace-practice-drill"),
   reboundWorkspaceNotes: document.getElementById("rebound-workspace-notes"),
   reboundWorkspaceTranscript: document.getElementById("rebound-workspace-transcript"),
   reboundWorkspaceAudioUrl: document.getElementById("rebound-workspace-audio-url"),
@@ -1258,6 +1263,13 @@ function renderReboundWorkspace() {
         if (f2.quickDebrief.immediate_action) {
           blocks.push(`<div class="workspace-list-card text-xs">Action: ${f2.quickDebrief.immediate_action}</div>`);
         }
+      }
+      if (f2.practiceDrill) {
+        blocks.push(`<div class="workspace-list-card" style="border-color:rgba(139,92,246,0.4);background:rgba(139,92,246,0.05)"><span style="color:rgba(167,139,250,0.95);font-weight:600">🎯 Practice Questions</span></div>`);
+        blocks.push(`<div class="workspace-list-card text-xs" style="color:rgba(255,255,255,0.7)">Focus area: <strong style="color:rgba(248,113,113,0.9)">${f2.practiceDrill.weakness_category}</strong> (score: ${f2.practiceDrill.weakness_score.toFixed(1)}/100)</div>`);
+        f2.practiceDrill.questions.forEach((q, i) => {
+          blocks.push(`<div class="workspace-list-card text-sm" style="border-left:3px solid rgba(139,92,246,0.6);padding-left:12px"><strong style="color:rgba(167,139,250,0.9)">Q${i + 1}:</strong> ${q}</div>`);
+        });
       }
       nodes.reboundOutputBoard.innerHTML = blocks.join("");
     }
@@ -4213,6 +4225,42 @@ async function loadFeature2Forecast() {
   }
 }
 
+async function generatePracticeDrill() {
+  const f2 = AppState.feature2;
+  if (!f2.interview || !f2.interview.interview_id) {
+    setStatus("Run Full Autopsy first to generate practice questions.");
+    return;
+  }
+
+  setUiFlag("feature2Loading", true);
+  setStatus("Generating practice questions based on your weakest area...");
+
+  try {
+    const response = await apiFetch(
+      `${API_BASE}/api/feature2/interviews/${f2.interview.interview_id}/practice-drill`,
+      { method: "POST" }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || "Practice drill generation failed");
+    }
+    
+    const drill = await response.json();
+    AppState.setState({ 
+      feature2: { 
+        ...AppState.feature2, 
+        practiceDrill: drill 
+      } 
+    });
+    setStatus(`Practice questions generated! Focus area: ${drill.weakness_category}`);
+  } catch (error) {
+    setStatus(`Practice drill error: ${String(error.message).slice(0, 120)}`);
+  } finally {
+    setUiFlag("feature2Loading", false);
+  }
+}
+
 async function loadCoreDailyPlan() {
   if (!nodes.coreDailyPlan) return;
   const candidateId = nodes.candidateId.value.trim() || "candidate-001";
@@ -4454,6 +4502,7 @@ function setupNavigation() {
     await Promise.all([loadFeature2Trend(), loadFeature2Forecast()]);
     setStatus("Interview Autopsy trend/forecast loaded.");
   });
+  nodes.reboundWorkspacePracticeDrill?.addEventListener("click", generatePracticeDrill);
   nodes.feature3LoadHistory?.addEventListener("click", loadFeature3History);
   nodes.feature3RunQuiz?.addEventListener("click", runFeature3SprintQuiz);
   nodes.feature3ResumeInject?.addEventListener("click", runFeature3ResumeInjector);

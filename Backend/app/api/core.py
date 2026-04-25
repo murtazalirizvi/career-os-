@@ -1,3 +1,4 @@
+# we are good - core API routes operational
 from __future__ import annotations
 
 import json

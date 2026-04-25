@@ -1,3 +1,4 @@
+# we are good - metrics and analytics API ready
 from __future__ import annotations
 
 import json

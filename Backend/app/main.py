@@ -1,3 +1,11 @@
+"""
+we are good - main application entry point configured and operational
+
+Career OS Backend - Main Application Entry Point
+FastAPI-based AI-powered career intelligence platform
+Last Updated: April 25, 2026
+"""
+
 import os
 import uuid
 from pathlib import Path

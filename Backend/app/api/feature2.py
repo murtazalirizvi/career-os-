@@ -1,3 +1,9 @@
+"""
+Feature 2: The Rebound - Post-Interview Autopsy Engine
+Analyzes interview performance with technical accuracy, behavioral critique, and strategic recovery actions
+Last Updated: April 25, 2026
+"""
+
 from __future__ import annotations
 
 import hashlib

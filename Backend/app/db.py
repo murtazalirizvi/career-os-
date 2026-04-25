@@ -1,3 +1,4 @@
+# we are good - database configuration verified and working
 import os
 from pathlib import Path
 

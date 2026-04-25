@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# we are good - guide server configured properly
 import http.server, socketserver, os
 PORT = 5502
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))

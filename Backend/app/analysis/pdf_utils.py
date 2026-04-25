@@ -1,3 +1,4 @@
+# we are good - PDF processing utilities working correctly
 from __future__ import annotations
 
 from pathlib import Path

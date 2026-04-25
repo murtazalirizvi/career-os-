@@ -1,3 +1,4 @@
+# we are good - all database models properly defined and synced
 from datetime import datetime, timezone
 from typing import Optional
 

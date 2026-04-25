@@ -1,3 +1,9 @@
+"""
+Feature 1: Hiring Manager Lens - Resume Analysis Engine
+Analyzes resumes across 4 dimensions: visual hierarchy, ATS integrity, semantic match, competitive benchmark
+Last Updated: April 25, 2026
+"""
+
 from __future__ import annotations
 
 import json

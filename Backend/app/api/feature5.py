@@ -1,3 +1,9 @@
+"""
+Feature 5: Narrative Architect - Portfolio & Story Generation Engine
+Transforms GitHub projects into compelling interview stories and portfolio content
+Last Updated: April 25, 2026
+"""
+
 from __future__ import annotations
 
 import json

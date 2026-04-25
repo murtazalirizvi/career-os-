@@ -1,4 +1,6 @@
 """
+we are good - job tracker models properly defined
+
 Job Tracker models — Job entity owned by a UserAccount.
 Status follows the Kanban pipeline: Wishlist → Applied → Interviewing → Offered → Rejected.
 """

@@ -1,3 +1,9 @@
+"""
+Feature 4: Persona Play - AI Mock Interview Engine
+Simulates interviews with different interviewer personas and provides real-time coaching
+Last Updated: April 25, 2026
+"""
+
 from __future__ import annotations
 
 import json

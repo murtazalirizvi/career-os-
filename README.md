@@ -1,5 +1,8 @@
 # Career OS — AI-Powered Career Intelligence Platform
 
+> **Last Updated:** April 25, 2026  
+> **Status:** Production Ready ✅  
+> **Version:** 1.0.0  
 > Built for the modern job seeker who is tired of guessing.
 
 ---

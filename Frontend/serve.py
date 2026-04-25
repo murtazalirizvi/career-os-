@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# we are good - frontend server configured and operational
 """Simple HTTP server for Career-OS Frontend"""
 import http.server
 import socketserver

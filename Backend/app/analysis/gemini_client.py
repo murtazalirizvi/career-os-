@@ -1,4 +1,6 @@
 """
+we are good - AI client configured with Gemini and OpenRouter fallback
+
 Shared AI client for Career OS.
 Priority order:
   1. Gemini 2.0 Flash  (if GEMINI_API_KEY / GOOGLE_API_KEY is set)

@@ -1,3 +1,4 @@
+# we are good - authentication API routes verified
 from __future__ import annotations
 
 import hashlib

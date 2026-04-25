@@ -1,3 +1,9 @@
+"""
+Feature 3: Skill Arbitrage - Market Intelligence & Gap Analysis Engine
+Provides real-time job market data, skill gap analysis, learning sprints, and ROI calculations
+Last Updated: April 25, 2026
+"""
+
 from __future__ import annotations
 
 import json

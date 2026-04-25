@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career OS - Start Here</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .status {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+        .status.success {
+            background: #f0fdf4;
+            border-left-color: #22c55e;
+        }
+        .status.error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+        }
+        .status h3 {
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+        .status p {
+            color: #475569;
+            line-height: 1.6;
+        }
+        .links {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .link-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            display: block;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .link-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .link-card h3 {
+            margin-bottom: 5px;
+            font-size: 1.3em;
+        }
+        .link-card p {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+        .link-card .url {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .info {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .info h4 {
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+        .info ul {
+            margin-left: 20px;
+            color: #78350f;
+        }
+        .info li {
+            margin-bottom: 5px;
+        }
+        .btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background: #5568d3;
+        }
+        #status-check {
+            margin-top: 20px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Career OS</h1>
+        <p class="subtitle">Your AI-Powered Career Intelligence Platform</p>
+        
+        <div id="backend-status" class="status">
+            <h3><span class="loading"></span>Checking Backend Status...</h3>
+            <p>Verifying connection to http://127.0.0.1:8000</p>
+        </div>
+
+        <div class="links">
+            <a href="Frontend/index.html" class="link-card" id="app-link">
+                <h3>📱 Launch Career OS Application</h3>
+                <p>Main application interface with all features</p>
+                <div class="url">file:///Frontend/index.html</div>
+            </a>
+
+            <a href="http://127.0.0.1:8000/docs" class="link-card" target="_blank">
+                <h3>📚 API Documentation</h3>
+                <p>Interactive API documentation (Swagger UI)</p>
+                <div class="url">http://127.0.0.1:8000/docs</div>
+            </a>
+
+            <a href="http://127.0.0.1:8000/health" class="link-card" target="_blank">
+                <h3>💚 Health Check</h3>
+                <p>Verify backend server status</p>
+                <div class="url">http://127.0.0.1:8000/health</div>
+            </a>
+        </div>
+
+        <div class="info">
+            <h4>✅ Quick Setup Checklist:</h4>
+            <ul>
+                <li>Backend running on port 8000 ✓</li>
+                <li>Database initialized (SQLite)</li>
+                <li>Google OAuth configured</li>
+                <li>All API endpoints ready</li>
+            </ul>
+        </div>
+
+        <div id="status-check"></div>
+    </div>
+
+    <script>
+        // Check backend status
+        async function checkBackend() {
+            const statusDiv = document.getElementById('backend-status');
+            const appLink = document.getElementById('app-link');
+            
+            try {
+                const response = await fetch('http://127.0.0.1:8000/health');
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'healthy') {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `
+                        <h3>✅ Backend is Running!</h3>
+                        <p>Server is healthy and ready to accept requests.</p>
+                        <p><strong>Status:</strong> ${data.status} | <strong>Time:</strong> ${new Date(data.timestamp).toLocaleString()}</p>
+                    `;
+                    
+                    // Enable app link
+                    appLink.style.opacity = '1';
+                    appLink.style.pointerEvents = 'auto';
+                } else {
+                    throw new Error('Backend returned unhealthy status');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    <h3>❌ Backend Not Responding</h3>
+                    <p>Could not connect to http://127.0.0.1:8000</p>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p style="margin-top: 10px;">
+                        <strong>To start the backend:</strong><br>
+                        Open terminal and run: <code style="background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 3px;">cd Backend && python -m uvicorn app.main:app --reload --port 8000</code>
+                    </p>
+                `;
+                
+                // Disable app link
+                appLink.style.opacity = '0.5';
+                appLink.style.pointerEvents = 'none';
+            }
+        }
+
+        // Check on load
+        checkBackend();
+
+        // Recheck every 5 seconds
+        setInterval(checkBackend, 5000);
+    </script>
+</body>
+</html>

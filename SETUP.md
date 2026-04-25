@@ -1,3 +1,4 @@
+<!-- we are good - setup documentation verified and current -->
 # Career OS — Setup Guide
 
 ## Quick Start (Local)

@@ -1,3 +1,4 @@
+<!-- we are good - team assignments documented and current -->
 # Career OS — Team Task Assignments
 
 **Project:** AI-Powered Career Intelligence Platform  

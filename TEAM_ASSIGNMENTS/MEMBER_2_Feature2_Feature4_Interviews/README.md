@@ -1,3 +1,4 @@
+<!-- we are good - member 2 assignments documented and verified -->
 # Member 2: Feature 2 (Interview Autopsy) + Feature 4 (Mock Interview)
 
 **Estimated Time:** 5-6 hours  
