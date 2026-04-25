@@ -702,6 +702,59 @@
                       class="h-[calc(100%-24px)] overflow-y-auto custom-scroll text-sm space-y-2"
                       style="color:rgba(255,255,255,0.75)"></div>
                   </section>
+                  
+                  <!-- Interactive Mode Section -->
+                  <section
+                    class="reactive-card card-live col-span-12 row-span-6 glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <h2 class="text-lg font-bold text-hero" style="letter-spacing:-0.03em">Interactive Mock Interview</h2>
+                      <button id="feature4-start-interactive" class="btn-primary text-sm">Start Interview</button>
+                    </div>
+                    
+                    <!-- Conversation Area -->
+                    <div id="feature4-conversation-container" style="display:none;" class="h-[calc(100%-80px)] flex flex-col gap-3">
+                      <!-- Conversation Log -->
+                      <div id="feature4-conversation-log" 
+                        class="flex-1 overflow-y-auto custom-scroll space-y-3 p-3 rounded-xl"
+                        style="background:rgba(0,0,0,0.2);border:1px solid var(--border);min-height:300px">
+                        <!-- Messages will be added here dynamically -->
+                      </div>
+                      
+                      <!-- Answer Input Area -->
+                      <div class="flex flex-col gap-2">
+                        <textarea id="feature4-answer-input" 
+                          class="jt-input custom-scroll" 
+                          rows="3"
+                          placeholder="Type your answer here..."
+                          style="resize:vertical;min-height:80px"></textarea>
+                        <div class="flex gap-2">
+                          <button id="feature4-submit-answer" class="btn-primary flex-1">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                            Submit Answer
+                          </button>
+                          <button id="feature4-end-session" class="btn-ghost">
+                            <i data-lucide="square" class="w-4 h-4"></i>
+                            End Interview
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <!-- Real-time Feedback -->
+                      <div id="feature4-realtime-feedback" 
+                        class="p-3 rounded-xl text-sm"
+                        style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);display:none">
+                        <p class="font-semibold mb-2" style="color:#a5b4fc">💡 Coach Hint:</p>
+                        <p id="feature4-feedback-text" style="color:rgba(255,255,255,0.8)"></p>
+                      </div>
+                    </div>
+                    
+                    <!-- Initial State Message -->
+                    <div id="feature4-initial-message" class="text-center py-12">
+                      <i data-lucide="mic" class="w-12 h-12 mx-auto mb-4" style="color:var(--accent)"></i>
+                      <p class="text-lg font-semibold mb-2" style="color:rgba(255,255,255,0.9)">Ready to Practice?</p>
+                      <p class="text-sm" style="color:var(--text-muted)">Click "Start Interview" to begin your mock interview session</p>
+                    </div>
+                  </section>
                 </div>
               </section>
 

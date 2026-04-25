@@ -1844,8 +1844,10 @@ async function startMockInterview() {
   try {
     setStatus("Starting mock interview session...");
     setUiFlag("feature4Loading", true);
-    if (nodes.feature4WorkspaceRun) nodes.feature4WorkspaceRun.disabled = true;
-    if (nodes.feature4WorkspaceRunPanel) nodes.feature4WorkspaceRunPanel.disabled = true;
+    
+    // Disable start button
+    const startBtn = document.getElementById('feature4-start-interactive');
+    if (startBtn) startBtn.disabled = true;
 
     // Create session
     const response = await apiFetch(`${API_BASE}/api/feature4/sessions`, {
@@ -1881,21 +1883,30 @@ async function startMockInterview() {
       }
     });
 
+    // Show conversation UI, hide initial message
+    const initialMsg = document.getElementById('feature4-initial-message');
+    const conversationContainer = document.getElementById('feature4-conversation-container');
+    if (initialMsg) initialMsg.style.display = 'none';
+    if (conversationContainer) conversationContainer.style.display = 'flex';
+
+    // Clear conversation log
+    const conversationLogEl = document.getElementById('feature4-conversation-log');
+    if (conversationLogEl) conversationLogEl.innerHTML = '';
+
     // Display first question
-    const firstQuestion = data.opening_questions?.[0]?.question_text || "Tell me about yourself.";
+    const firstQuestion = data.opening_questions?.[0]?.question || data.opening_questions?.[0]?.question_text || "Tell me about yourself.";
     addToConversationLog('interviewer', firstQuestion);
 
-    setStatus(`Mock interview started - ${data.persona.label}. Type your answer in the Topic field and click Submit Answer.`);
+    setStatus(`Mock interview started - ${data.persona.label}`);
     setUiFlag("feature4Loading", false);
-    if (nodes.feature4WorkspaceRun) nodes.feature4WorkspaceRun.disabled = false;
-    if (nodes.feature4WorkspaceRunPanel) nodes.feature4WorkspaceRunPanel.disabled = false;
+    if (startBtn) startBtn.disabled = false;
 
   } catch (error) {
     console.error('Session start error:', error);
     setStatus(handleApiError(error, "Mock Interview"));
     setUiFlag("feature4Loading", false);
-    if (nodes.feature4WorkspaceRun) nodes.feature4WorkspaceRun.disabled = false;
-    if (nodes.feature4WorkspaceRunPanel) nodes.feature4WorkspaceRunPanel.disabled = false;
+    const startBtn = document.getElementById('feature4-start-interactive');
+    if (startBtn) startBtn.disabled = false;
   }
 }
 
@@ -1909,17 +1920,31 @@ async function submitAnswer() {
     return;
   }
 
-  // Get answer from workspace topic input (reused as answer input during session)
-  const answerText = nodes.feature4WorkspaceTopic?.value?.trim() || "";
+  // Get answer from the answer input textarea
+  const answerInput = document.getElementById('feature4-answer-input');
+  const answerText = answerInput?.value?.trim() || "";
 
   if (!answerText) {
-    alert('Please enter your answer in the Interview Topic field');
+    alert('Please enter your answer');
     return;
   }
 
   try {
     setStatus("Analyzing your answer...");
     setUiFlag("feature4Loading", true);
+    
+    // Disable submit button
+    const submitBtn = document.getElementById('feature4-submit-answer');
+    if (submitBtn) submitBtn.disabled = true;
+
+    // Add answer to conversation immediately
+    addToConversationLog('candidate', answerText);
+    
+    // Clear input
+    if (answerInput) answerInput.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
 
     // Use simplified turn-text endpoint (browser-friendly, no signal params needed)
     const response = await apiFetch(`${API_BASE}/api/feature4/sessions/${currentMockSessionId}/turn-text`, {
@@ -1934,9 +1959,6 @@ async function submitAnswer() {
 
     const data = await response.json();
 
-    // Add answer to conversation
-    addToConversationLog('candidate', answerText);
-
     // Update AppState with turn data
     const updatedTurns = [...(AppState.feature4.turns || []), data];
     AppState.setState({
@@ -1947,27 +1969,33 @@ async function submitAnswer() {
       }
     });
 
+    // Remove typing indicator
+    hideTypingIndicator();
+
     // Show real-time feedback
+    const feedbackEl = document.getElementById('feature4-realtime-feedback');
+    const feedbackText = document.getElementById('feature4-feedback-text');
+    if (feedbackEl && feedbackText && data.whisper_hint) {
+      feedbackText.textContent = data.whisper_hint;
+      feedbackEl.style.display = 'block';
+      
+      // Hide feedback after 5 seconds
+      setTimeout(() => {
+        feedbackEl.style.display = 'none';
+      }, 5000);
+    }
+
+    // Update live hints panel
     if (nodes.feature4LiveHints) {
-      // Calculate depth score from available signals
       const fillerScore = data.realtime_signals?.filler_tracker?.score || 0;
       const confidenceScore = data.realtime_signals?.pitch_analysis?.confidence_score || 0;
       const silenceScore = data.realtime_signals?.silence_detection?.score || 0;
       const gazeScore = data.realtime_signals?.gaze_tracking?.eye_contact_score || 0;
-      
-      // Average of all signal scores as depth indicator
       const depthScore = Math.round((fillerScore + confidenceScore + silenceScore + gazeScore) / 4);
       
-      const whisperHint = data.whisper_hint || "Keep going...";
-      const tradeoffDepth = data.deep_logic?.analysis?.tradeoff_depth || "needs_depth";
-      const hedgeDetected = data.deep_logic?.analysis?.hedge_detected || false;
-      
       nodes.feature4LiveHints.innerHTML = `
-        <div class="workspace-list-card text-xs" style="border-left:3px solid rgba(99,102,241,0.9)">💡 <strong>Whisper Hint:</strong> ${whisperHint}</div>
+        <div class="workspace-list-card text-xs" style="border-left:3px solid rgba(99,102,241,0.9)">💡 <strong>Whisper Hint:</strong> ${data.whisper_hint || "Keep going..."}</div>
         <div class="workspace-list-card text-xs">Depth Score: <strong style="color:${depthScore >= 70 ? '#34d399' : depthScore >= 50 ? '#fbbf24' : '#f87171'}">${depthScore}/100</strong></div>
-        <div class="workspace-list-card text-xs">Filler: ${Math.round(fillerScore)} | Confidence: ${Math.round(confidenceScore)} | Silence: ${Math.round(silenceScore)} | Gaze: ${Math.round(gazeScore)}</div>
-        ${tradeoffDepth === 'needs_depth' ? `<div class="workspace-list-card text-xs" style="color:rgba(248,113,113,0.9)">⚠️ Add explicit tradeoffs and downsides</div>` : ''}
-        ${hedgeDetected ? `<div class="workspace-list-card text-xs" style="color:rgba(251,191,36,0.9)">⚠️ Reduce hedging language</div>` : ''}
         <div class="workspace-list-card text-xs">Turn: ${updatedTurns.length}</div>
       `;
     }
@@ -1975,26 +2003,26 @@ async function submitAnswer() {
     // Add next question after a brief delay
     if (data.next_question) {
       setTimeout(() => {
-        addToConversationLog('interviewer', data.next_question.question_text);
-        // Clear answer input
-        if (nodes.feature4WorkspaceTopic) {
-          nodes.feature4WorkspaceTopic.value = '';
-          nodes.feature4WorkspaceTopic.placeholder = 'Type your answer here...';
-        }
+        const nextQ = data.next_question.question || data.next_question.question_text || "Continue...";
+        addToConversationLog('interviewer', nextQ);
         currentQuestionIndex++;
-      }, 1500);
+      }, 1000);
     } else {
       // No more questions - suggest ending session
-      setStatus(`Turn ${updatedTurns.length} complete. Click "End Session" to get your final report.`);
+      setStatus(`Turn ${updatedTurns.length} complete. Click "End Interview" to get your final report.`);
     }
 
-    setStatus(`Turn ${updatedTurns.length} analyzed - depth score: ${Math.round((data.realtime_signals?.filler_tracker?.score || 0 + data.realtime_signals?.pitch_analysis?.confidence_score || 0 + data.realtime_signals?.silence_detection?.score || 0 + data.realtime_signals?.gaze_tracking?.eye_contact_score || 0) / 4)}`);
+    setStatus(`Turn ${updatedTurns.length} analyzed`);
     setUiFlag("feature4Loading", false);
+    if (submitBtn) submitBtn.disabled = false;
 
   } catch (error) {
     console.error('Answer submission error:', error);
     setStatus(handleApiError(error, "Mock Interview"));
     setUiFlag("feature4Loading", false);
+    hideTypingIndicator();
+    const submitBtn = document.getElementById('feature4-submit-answer');
+    if (submitBtn) submitBtn.disabled = false;
   }
 }
 
@@ -2070,6 +2098,86 @@ async function endSession() {
 
     setStatus("Interview session completed! Check the Coach Board for your final report.");
     setUiFlag("feature4Loading", false);
+    
+    // Hide conversation UI, show initial message
+    const initialMsg = document.getElementById('feature4-initial-message');
+    const conversationContainer = document.getElementById('feature4-conversation-container');
+    if (initialMsg) initialMsg.style.display = 'block';
+    if (conversationContainer) conversationContainer.style.display = 'none';
+
+  } catch (error) {
+    console.error('Session end error:', error);
+    setStatus(handleApiError(error, "Mock Interview"));
+    setUiFlag("feature4Loading", false);
+  }
+}
+
+/**
+ * Add a message to the conversation log
+ */
+function addToConversationLog(speaker, text) {
+  const conversationLogEl = document.getElementById('feature4-conversation-log');
+  if (!conversationLogEl) return;
+
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `conversation-message ${speaker}`;
+  
+  const label = speaker === 'interviewer' ? 'Interviewer' : 'You';
+  const labelColor = speaker === 'interviewer' ? '#a5b4fc' : 'rgba(255,255,255,0.5)';
+  
+  messageDiv.innerHTML = `
+    <div class="message-label">${label}</div>
+    <div class="message-bubble">${escapeHtml(text)}</div>
+  `;
+  
+  conversationLogEl.appendChild(messageDiv);
+  conversationLogEl.scrollTop = conversationLogEl.scrollHeight;
+  
+  // Store in conversation log array
+  conversationLog.push({ speaker, text, timestamp: new Date().toISOString() });
+}
+
+/**
+ * Show typing indicator
+ */
+function showTypingIndicator() {
+  const conversationLogEl = document.getElementById('feature4-conversation-log');
+  if (!conversationLogEl) return;
+
+  const typingDiv = document.createElement('div');
+  typingDiv.id = 'typing-indicator';
+  typingDiv.className = 'conversation-message interviewer';
+  typingDiv.innerHTML = `
+    <div class="message-label">Interviewer</div>
+    <div class="typing-indicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  `;
+  
+  conversationLogEl.appendChild(typingDiv);
+  conversationLogEl.scrollTop = conversationLogEl.scrollHeight;
+}
+
+/**
+ * Hide typing indicator
+ */
+function hideTypingIndicator() {
+  const typingIndicator = document.getElementById('typing-indicator');
+  if (typingIndicator) {
+    typingIndicator.remove();
+  }
+}
+
+/**
+ * Escape HTML to prevent XSS
+ */
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
 
     // Load history to show this session
     await loadFeature4History();
