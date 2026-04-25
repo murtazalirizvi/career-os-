@@ -5200,6 +5200,10 @@ function setupNavigation() {
   nodes.feature3WorkspaceExport?.addEventListener("click", exportFeature3Snapshot);
   nodes.feature3WorkspaceQuiz?.addEventListener("click", runFeature3SprintQuiz);
 
+  // History modal close buttons
+  document.getElementById("history-modal-close")?.addEventListener("click", closeHistoryModal);
+  document.getElementById("history-modal-close-btn")?.addEventListener("click", closeHistoryModal);
+
   // Fix 2: Auto-fill skills from Feature 1 resume
   document.getElementById("feature3-autofill-skills")?.addEventListener("click", async function() {
     const candidateId = nodes.candidateId.value.trim() || "candidate-001";
