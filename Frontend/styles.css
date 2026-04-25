@@ -933,6 +933,7 @@ a:focus-visible {
 }
 
 .auth-box {
+  position: relative;
   background: #111827;
   border: 1px solid rgba(99, 102, 241, 0.3);
   border-radius: var(--r-xl);

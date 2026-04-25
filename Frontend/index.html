@@ -1119,6 +1119,14 @@
   <div id="auth-modal"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(16px);z-index:999;align-items:center;justify-content:center;">
     <div class="auth-box">
+      <!-- Close/Skip button at top right -->
+      <button onclick="skipAuth()"
+        style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);cursor:pointer;padding:8px 16px;border-radius:8px;font-size:0.75rem;font-weight:600;font-family:inherit;transition:all 0.2s ease"
+        onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'"
+        onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.6)'"
+        title="Skip authentication and continue">
+        Skip →
+      </button>
       <div style="text-align:center;margin-bottom:8px">
         <div class="landing-logo-dot" style="width:12px;height:12px;margin:0 auto 12px"></div>
         <h2 style="font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-0.04em;margin-bottom:6px">Welcome to
@@ -1162,10 +1170,11 @@
         </svg>
         Sign in with Google
       </button>
-      <p style="text-align:center;margin-top:12px;font-size:0.75rem;color:var(--text-muted)">
+      <p style="text-align:center;margin-top:16px;font-size:0.8rem">
         <button onclick="skipAuth()"
-          style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-family:inherit;font-size:0.75rem;text-decoration:underline">Continue
-          without account →</button>
+          style="background:none;border:none;color:#a5b4fc;cursor:pointer;font-family:inherit;font-size:0.85rem;text-decoration:underline;padding:8px;font-weight:600"
+          onmouseover="this.style.color='#fff'"
+          onmouseout="this.style.color='#a5b4fc'">Continue without account →</button>
       </p>
     </div>
   </div>
