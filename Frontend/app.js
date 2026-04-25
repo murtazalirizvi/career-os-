@@ -499,9 +499,29 @@ async function loadDashboard(options = {}) {
 }
 
 function showApp() {
-  document.getElementById('landing-page').style.display = 'none';
-  document.getElementById('app-shell').style.display = 'block';
-  startViewSwap('dashboard');
+  console.log('showApp() called');
+  const landingPage = document.getElementById('landing-page');
+  const appShell = document.getElementById('app-shell');
+  const authModal = document.getElementById('auth-modal');
+  
+  console.log('Elements found:', { landingPage: !!landingPage, appShell: !!appShell, authModal: !!authModal });
+  
+  if (landingPage) landingPage.style.display = 'none';
+  if (appShell) appShell.style.display = 'block';
+  
+  // Check if user is authenticated
+  const token = sessionStorage.getItem('cos_token');
+  console.log('Token found:', !!token);
+  
+  if (!token && authModal) {
+    // Show auth modal if not authenticated
+    authModal.style.display = 'flex';
+    console.log('Showing auth modal');
+  } else {
+    // Go straight to dashboard if authenticated
+    console.log('Starting dashboard view');
+    startViewSwap('dashboard');
+  }
 }
 
 function navigateTo(viewName) {
@@ -5336,8 +5356,11 @@ function setupNavigation() {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       const viewName = btn.dataset.view;
+      console.log('Navigation button clicked:', viewName);
       if (viewName) {
         startViewSwap(viewName);
+      } else {
+        console.warn('No view name found on button:', btn);
       }
     });
   });
