@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, delete, select
@@ -137,6 +137,52 @@ def _compute_reliability(events: List[AnalyticsEvent]) -> Dict:
         "event_loss_rate": None,
         "analysis_latency_p50_ms": round(p50, 2) if p50 is not None else None,
         "analysis_latency_p95_ms": round(p95, 2) if p95 is not None else None,
+    }
+
+
+def build_dashboard_metrics(session: Session, user_id: Optional[str], window_days: int = 30) -> Dict[str, Any]:
+    """
+    Build dashboard-friendly analytics for a specific user.
+
+    The dashboard uses both a real activity trend and a snapshot fallback, so
+    it stays useful even when historical event volume is still low.
+    """
+    events = _load_events(session, window_days=window_days, user_id=user_id)
+    counts = _event_counts(events)
+    reliability = _compute_reliability(events)
+
+    now = _utc_now().date()
+    start = now - timedelta(days=max(1, window_days) - 1)
+    per_day: Dict[str, int] = defaultdict(int)
+    for event in events:
+        per_day[event.occurred_at_utc.astimezone(timezone.utc).date().isoformat()] += 1
+
+    activity_trend = []
+    day = start
+    while day <= now:
+        iso_day = day.isoformat()
+        activity_trend.append({"date": iso_day, "events": per_day.get(iso_day, 0)})
+        day += timedelta(days=1)
+
+    feature_usage = Counter(e.feature_area for e in events)
+    recent_activity = [
+        {
+            "event_name": event.event_name,
+            "feature_area": event.feature_area,
+            "application_id": event.application_id,
+            "occurred_at_utc": event.occurred_at_utc.isoformat(),
+        }
+        for event in sorted(events, key=lambda item: item.occurred_at_utc, reverse=True)[:10]
+    ]
+
+    return {
+        "window_days": window_days,
+        "generated_at_utc": _utc_now().isoformat(),
+        "event_counts": dict(counts),
+        "feature_usage": dict(feature_usage),
+        "activity_trend": activity_trend,
+        "recent_activity": recent_activity,
+        "reliability": reliability,
     }
 
 

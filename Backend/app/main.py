@@ -41,7 +41,7 @@ from .api.feature2 import router as feature2_router
 from .api.feature3 import router as feature3_router
 from .api.feature4 import router as feature4_router
 from .api.feature5 import router as feature5_router
-from .api.metrics import router as metrics_router
+from .api.metrics import build_dashboard_metrics, router as metrics_router
 from .api.auth import router as auth_router
 from .api.core import router as core_router
 from .db import create_db_and_tables, engine as db_engine
@@ -149,6 +149,55 @@ def _hash_token(raw: str) -> str:
     return hashlib.sha256(f"{raw}:{secret}".encode()).hexdigest()
 
 
+def _safe_json_dict(raw: Optional[str]) -> Dict[str, Any]:
+    if not raw:
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except Exception:
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _safe_float(value: Any) -> Optional[float]:
+    try:
+        if value is None:
+            return None
+        return round(float(value), 2)
+    except Exception:
+        return None
+
+
+def _safe_json_list(raw: Optional[str]) -> list:
+    if not raw:
+        return []
+    try:
+        parsed = json.loads(raw)
+    except Exception:
+        return []
+    return parsed if isinstance(parsed, list) else []
+
+
+def _readiness_label(score: float) -> str:
+    if score >= 85:
+        return "Ready to Apply"
+    if score >= 70:
+        return "Strong Candidate"
+    if score >= 50:
+        return "Building Momentum"
+    return "Needs More Signal"
+
+
+def _readiness_tone(score: float) -> str:
+    if score >= 85:
+        return "success"
+    if score >= 70:
+        return "info"
+    if score >= 50:
+        return "warning"
+    return "danger"
+
+
 @app.get("/api/me/dashboard")
 def me_dashboard(request: Request) -> Dict[str, Any]:
     """
@@ -156,8 +205,12 @@ def me_dashboard(request: Request) -> Dict[str, Any]:
     Returns: auth user + latest Feature 1 analysis + job pipeline counts + readiness score.
     """
     from .models import (
-        UserAccount, UserSessionToken,
-        Feature1Analysis, Feature2InterviewAutopsy, Feature3GapSnapshot,
+        AnalyticsEvent,
+        Feature1Analysis,
+        Feature2InterviewAutopsy,
+        Feature3GapSnapshot,
+        UserAccount,
+        UserSessionToken,
     )
     from .models_jobs import Job
 
@@ -200,7 +253,8 @@ def me_dashboard(request: Request) -> Dict[str, Any]:
         ).all()
         pipeline: Dict[str, int] = {}
         for job in jobs:
-            pipeline[job.status.value] = pipeline.get(job.status.value, 0) + 1
+            status_key = getattr(job.status, "value", str(job.status))
+            pipeline[status_key] = pipeline.get(status_key, 0) + 1
 
         # Latest interview score
         f2 = session.exec(
@@ -216,35 +270,202 @@ def me_dashboard(request: Request) -> Dict[str, Any]:
             .order_by(Feature3GapSnapshot.created_at.desc())
         ).first()
 
+        # Optional analytics signals that power the dashboard chart and recent activity feed.
+        analytics = build_dashboard_metrics(session, user_id=user.candidate_id, window_days=30)
+
+        interview_score_json = _safe_json_dict(f2.score_json) if f2 else {}
+        latest_f1_metrics = _safe_json_dict(f1.metrics_json) if f1 else {}
+        latest_f1_recommendations = _safe_json_list(f1.recommendations_json if f1 else None)
+        latest_f1_ai_recommendations = _safe_json_list(f1.ai_recommendations_json if f1 else None)
+
+        component_specs = [
+            {
+                "key": "resume",
+                "label": "Resume analysis",
+                "weight": 0.5,
+                "score": _safe_float(f1.overall_score) if f1 else None,
+                "available": f1 is not None,
+                "summary": (
+                    f"ATS {_safe_float(f1.ats_score) or 0}% · Visual {_safe_float(f1.visual_score) or 0}% · Semantic {_safe_float(f1.semantic_score) or 0}%"
+                    if f1
+                    else "Not available yet"
+                ),
+                "source": {
+                    "analysis_id": f1.id if f1 else None,
+                    "version_number": f1.version_number if f1 else None,
+                    "created_at": f1.created_at.isoformat() if f1 else None,
+                },
+            },
+            {
+                "key": "interview",
+                "label": "Interview performance",
+                "weight": 0.3,
+                "score": _safe_float(interview_score_json.get("overall_autopsy_score")),
+                "available": f2 is not None and _safe_float(interview_score_json.get("overall_autopsy_score")) is not None,
+                "summary": (
+                    f"Technical {_safe_float(interview_score_json.get('technical_accuracy')) or 0}% · Behavioral {_safe_float(interview_score_json.get('behavioral_quality')) or 0}%"
+                    if f2
+                    else "Not available yet"
+                ),
+                "source": {
+                    "interview_id": f2.id if f2 else None,
+                    "created_at": f2.created_at.isoformat() if f2 else None,
+                },
+            },
+            {
+                "key": "market",
+                "label": "Skill/market fit",
+                "weight": 0.2,
+                "score": _safe_float(f3.match_score) if f3 else None,
+                "available": f3 is not None,
+                "summary": (
+                    f"Match {_safe_float(f3.match_score) or 0}% · Gap to top 10 {_safe_float(f3.gap_to_top10_score) or 0}%"
+                    if f3
+                    else "Not available yet"
+                ),
+                "source": {
+                    "gap_snapshot_id": f3.id if f3 else None,
+                    "created_at": f3.created_at.isoformat() if f3 else None,
+                },
+            },
+        ]
+
+        available_weight = sum(component["weight"] for component in component_specs if component["available"] and component["score"] is not None)
+        readiness_score = 0.0
+        if available_weight:
+            weighted_total = sum(
+                float(component["score"]) * float(component["weight"])
+                for component in component_specs
+                if component["available"] and component["score"] is not None
+            )
+            readiness_score = round(weighted_total / available_weight, 2)
+
+        readiness_components = []
+        for component in component_specs:
+            normalized_weight = round(component["weight"] / available_weight, 4) if available_weight and component["available"] and component["score"] is not None else 0.0
+            contribution = round(float(component["score"]) * normalized_weight, 2) if component["score"] is not None and normalized_weight else 0.0
+            readiness_components.append({
+                **component,
+                "normalized_weight": normalized_weight,
+                "contribution": contribution,
+            })
+
+        snapshot_chart_data = [
+            {"label": "Resume", "value": _safe_float(f1.overall_score) if f1 else 0.0, "available": bool(f1)},
+            {"label": "Interview", "value": _safe_float(interview_score_json.get("overall_autopsy_score")) or 0.0, "available": bool(f2 and interview_score_json.get("overall_autopsy_score") is not None)},
+            {"label": "Market fit", "value": _safe_float(f3.match_score) if f3 else 0.0, "available": bool(f3)},
+        ]
+
+        latest_analysis = {
+            "analysis_id": f1.id if f1 else None,
+            "version_number": f1.version_number if f1 else None,
+            "candidate_id": user.candidate_id,
+            "job_category": f1.job_category if f1 else None,
+            "overall_score": _safe_float(f1.overall_score) if f1 else None,
+            "ready_to_apply": bool(f1.overall_score >= 90.0) if f1 else False,
+            "status": "Ready to Apply" if f1 and f1.overall_score >= 90.0 else ("In Progress" if f1 else "Not available yet"),
+            "created_at": f1.created_at.isoformat() if f1 else None,
+            "summary": f1.ats_summary if f1 else "No resume analysis yet.",
+            "score_breakdown": {
+                "visual_hierarchy": _safe_float(f1.visual_score) if f1 else None,
+                "ats_integrity": _safe_float(f1.ats_score) if f1 else None,
+                "semantic_match": _safe_float(f1.semantic_score) if f1 else None,
+                "competitive_benchmark": _safe_float(f1.benchmark_score) if f1 else None,
+            },
+            "summaries": {
+                "visual": f1.eye_tracking_summary if f1 else None,
+                "ats": f1.ats_summary if f1 else None,
+                "semantic": f1.semantic_summary if f1 else None,
+                "benchmark": f1.benchmark_summary if f1 else None,
+            },
+            "metrics": latest_f1_metrics,
+            "recommendations": latest_f1_recommendations,
+            "ai_recommendations": latest_f1_ai_recommendations,
+        }
+
+        interview_analysis = {
+            "interview_id": f2.id if f2 else None,
+            "candidate_id": user.candidate_id,
+            "company_name": f2.company_name if f2 else None,
+            "role_name": f2.role_name if f2 else None,
+            "interview_round": f2.interview_round if f2 else None,
+            "created_at": f2.created_at.isoformat() if f2 else None,
+            "overall_score": _safe_float(interview_score_json.get("overall_autopsy_score")),
+            "score_breakdown": {
+                "technical_accuracy": _safe_float(interview_score_json.get("technical_accuracy")),
+                "behavioral_quality": _safe_float(interview_score_json.get("behavioral_quality")),
+                "strategic_recovery_readiness": _safe_float(interview_score_json.get("strategic_recovery_readiness")),
+            },
+            "summary": f2.rejection_reason_hint if f2 else None,
+        }
+
+        market_analysis = {
+            "gap_snapshot_id": f3.id if f3 else None,
+            "candidate_id": user.candidate_id,
+            "match_score": _safe_float(f3.match_score) if f3 else None,
+            "gap_to_top10_score": _safe_float(f3.gap_to_top10_score) if f3 else None,
+            "created_at": f3.created_at.isoformat() if f3 else None,
+            "summary": "Market-fit data will appear after Skill Arbitrage runs." if not f3 else "Market-fit snapshot loaded.",
+        }
+
+        next_actions = []
+        if f1 is None:
+            next_actions.append({"label": "Run Feature 1 resume analysis", "view": "lens-engine", "priority": 1})
+        elif f1.overall_score < 90:
+            next_actions.append({"label": "Review resume recommendations", "view": "lens-engine", "priority": 1})
+        if f2 is None:
+            next_actions.append({"label": "Capture interview debrief", "view": "rebound", "priority": 2})
+        if f3 is None:
+            next_actions.append({"label": "Run skill-gap analysis", "view": "arbitrage", "priority": 3})
+        if not next_actions:
+            next_actions.append({"label": "You are ready to apply - keep the pipeline active", "view": "job-tracker", "priority": 1})
+
+        next_actions = sorted(next_actions, key=lambda item: item["priority"])
+
+        activity_trend = analytics.get("activity_trend", [])
+        dashboard_metrics = {
+            **analytics,
+            "chart_data": activity_trend,
+            "snapshot_chart_data": snapshot_chart_data,
+        }
+
+        if activity_trend and not any(point.get("events", 0) for point in activity_trend):
+            dashboard_metrics["chart_data"] = snapshot_chart_data
+
+        status_indicators = {
+            "ready_to_apply": readiness_score >= 85,
+            "resume_ready": bool(f1),
+            "interview_ready": bool(f2),
+            "market_ready": bool(f3),
+            "dashboard_state": "ready" if readiness_score >= 85 else ("building" if any(component["available"] for component in readiness_components) else "empty"),
+        }
+
         # Readiness score (simple average of available scores)
-        scores = []
-        if f1:
-            scores.append(float(f1.overall_score))
-        if f2:
-            try:
-                s = json.loads(f2.score_json).get("overall_autopsy_score")
-                if s is not None:
-                    scores.append(float(s))
-            except Exception:
-                pass
-        if f3:
-            scores.append(float(f3.match_score))
-        readiness = round(sum(scores) / len(scores), 2) if scores else 0.0
+        readiness = readiness_score
 
         return {
             "user": {
+                "user_id": user.id,
                 "candidate_id": user.candidate_id,
                 "email": user.email,
                 "full_name": user.full_name,
             },
-            "latest_analysis": {
-                "analysis_id": f1.id if f1 else None,
-                "overall_score": float(f1.overall_score) if f1 else None,
-                "created_at": f1.created_at.isoformat() if f1 else None,
+            "readiness_score": readiness,
+            "readiness": {
+                "score": readiness,
+                "label": _readiness_label(readiness),
+                "tone": _readiness_tone(readiness),
+                "formula": "Normalized weighted average: resume 50%, interview 30%, market fit 20%. Missing components are renormalized across available signals.",
+                "components": readiness_components,
             },
+            "latest_analysis": latest_analysis,
+            "interview_analysis": interview_analysis,
+            "market_analysis": market_analysis,
             "job_pipeline": pipeline,
             "total_jobs": len(jobs),
-            "readiness_score": readiness,
+            "analytics": dashboard_metrics,
+            "next_actions": next_actions,
+            "status_indicators": status_indicators,
             "generated_at": now.isoformat(),
         }
 
