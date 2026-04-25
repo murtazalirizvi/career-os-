@@ -21,9 +21,9 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     with socketserver.TCPServer(("", PORT), MyHTTPRequestHandler) as httpd:
-        print(f"✓ Frontend server running at http://localhost:{PORT}")
-        print(f"✓ Serving files from: {DIRECTORY}")
-        print(f"✓ Open http://localhost:{PORT}/index.html in your browser")
+        print(f"Frontend server running at http://localhost:{PORT}")
+        print(f"Serving files from: {DIRECTORY}")
+        print(f"Open http://localhost:{PORT}/index.html in your browser")
         print("\nPress Ctrl+C to stop the server")
         try:
             httpd.serve_forever()

@@ -22,10 +22,10 @@ if (_isGitHubPages) {
     banner.innerHTML = `
       🌐 <strong>GitHub Pages Preview</strong> — UI only. 
       For full features run locally: 
-      <code style="background:rgba(99,102,241,0.3);padding:2px 8px;border-radius:4px">
+      <code style="background:rgba(139,0,0,0.3);padding:2px 8px;border-radius:4px">
         cd Backend &amp;&amp; python -m uvicorn app.main:app --reload --port 8000
       </code>
-      then open <a href="http://localhost:5500" style="color:#a5b4fc">http://localhost:5500</a>
+      then open <a href="http://localhost:5500" style="color:#ff6b6b">http://localhost:5500</a>
     `;
     document.body.prepend(banner);
   });
@@ -259,7 +259,7 @@ function showStepLoader(containerId, steps) {
           <div style="display:flex;align-items:center;gap:10px;opacity:${i <= current ? 1 : 0.35};
             transition:opacity 0.4s;">
             <div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;
-              background:${i < current ? "#34d399" : i === current ? "#818cf8" : "rgba(255,255,255,0.2)"};
+              background:${i < current ? "#34d399" : i === current ? "#ff6b6b" : "rgba(255,255,255,0.2)"};
               ${i === current ? "animation:pulse 1s ease-in-out infinite;" : ""}"></div>
             <span style="font-size:13px;color:rgba(255,255,255,${i <= current ? 0.85 : 0.4});">${s}</span>
           </div>`).join("")}
@@ -1549,7 +1549,7 @@ function renderReboundWorkspace() {
         }
       }
       if (f2.forecast) {
-        blocks.push(`<div class="workspace-list-card">Forecast: <strong style="color:#a5b4fc">${f2.forecast.forecast_label ?? "n/a"}</strong></div>`);
+        blocks.push(`<div class="workspace-list-card">Forecast: <strong style="color:#ff6b6b">${f2.forecast.forecast_label ?? "n/a"}</strong></div>`);
         if (f2.forecast.expected_offer_window_weeks) {
           blocks.push(`<div class="workspace-list-card text-xs">Expected offer window: ${f2.forecast.expected_offer_window_weeks} weeks</div>`);
         }
@@ -1626,7 +1626,7 @@ async function runFeature4PersonaPlay() {
   try {
     // Show loading in the session board (visible on the workspace)
     if (nodes.feature4SessionBoard) {
-      nodes.feature4SessionBoard.innerHTML = `<div class="state-card state-loading" style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#818cf8;animation:pulse 1s ease-in-out infinite;flex-shrink:0"></div>Starting persona session...</div>`;
+      nodes.feature4SessionBoard.innerHTML = `<div class="state-card state-loading" style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#ff6b6b;animation:pulse 1s ease-in-out infinite;flex-shrink:0"></div>Starting persona session...</div>`;
     }
     setUiFlag("feature4Loading", true);
     if (nodes.feature4WorkspaceRun) nodes.feature4WorkspaceRun.disabled = true;
@@ -2105,8 +2105,8 @@ function addToConversationLog(speaker, text) {
     }).join('');
 
     const header = `
-      <div class="workspace-list-card" style="background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.3)">
-        <strong style="color:rgba(99,102,241,0.9)">💬 Interview Conversation</strong>
+      <div class="workspace-list-card" style="background:rgba(139,0,0,0.1);border-color:rgba(139,0,0,0.3)">
+        <strong style="color:rgba(139,0,0,0.9)">💬 Interview Conversation</strong>
         <span style="color:rgba(255,255,255,0.6);font-size:11px;margin-left:8px">${conversationLog.length} messages</span>
       </div>
     `;
@@ -2660,9 +2660,9 @@ function renderFeature5Workspace() {
   const session = f5.session;
   const loading = Boolean(AppState.ui?.feature5Loading);
 
-  const loadingCard = (msg) => `<div class="state-card state-loading" style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#818cf8;animation:pulse 1s ease-in-out infinite;flex-shrink:0"></div>${msg}</div>`;
+  const loadingCard = (msg) => `<div class="state-card state-loading" style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#ff6b6b;animation:pulse 1s ease-in-out infinite;flex-shrink:0"></div>${msg}</div>`;
   const emptyCard = (msg) => `<div class="state-card" style="text-align:center;padding:24px 16px;color:rgba(255,255,255,0.4)">${msg}</div>`;
-  const pill = (label, value, color) => `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 12px;font-size:13px"><span style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:0.05em">${label}</span><span style="color:${color || "#818cf8"};font-weight:600">${value}</span></div>`;
+  const pill = (label, value, color) => `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 12px;font-size:13px"><span style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:0.05em">${label}</span><span style="color:${color || "#ff6b6b"};font-weight:600">${value}</span></div>`;
   const row = (icon, text, sub) => `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;margin-bottom:6px"><span style="font-size:16px;flex-shrink:0;margin-top:1px">${icon}</span><div><div style="font-size:13px;color:rgba(255,255,255,0.9);line-height:1.5">${text}</div>${sub ? `<div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px">${sub}</div>` : ""}</div></div>`;
 
   if (loading) {
@@ -2699,7 +2699,7 @@ function renderFeature5Workspace() {
     const customLogic = deep.logic_identification?.custom_logic_ratio;
     nodes.feature5AnalysisBoard.innerHTML =
       `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">` +
-      pill("Architecture", arch, "#a5b4fc") +
+      pill("Architecture", arch, "#ff6b6b") +
       (score != null ? pill("Sophistication", score + " " + tier, clr) : "") +
       (customLogic != null ? pill("Custom Logic", customLogic + "%", "#34d399") : "") +
       pill("Clone Risk", cloneRisk === 0 ? "None" : cloneRisk, cloneRisk === 0 ? "#34d399" : "#f87171") +
@@ -2714,7 +2714,7 @@ function renderFeature5Workspace() {
     const metrics = nar.impact_metrics || [];
     const tone = nar.narrative_personalization?.selected_tone || "balanced";
     nodes.feature5NarrativeBoard.innerHTML =
-      `<div style="margin-bottom:10px"><span style="font-size:11px;background:rgba(99,102,241,0.2);color:#a5b4fc;padding:3px 10px;border-radius:999px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Tone: ${tone}</span></div>` +
+      `<div style="margin-bottom:10px"><span style="font-size:11px;background:rgba(139,0,0,0.2);color:#ff6b6b;padding:3px 10px;border-radius:999px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Tone: ${tone}</span></div>` +
       lines.map((l) => row("💡", l, "")).join("") +
       stars.slice(0, 3).map((s) => row("⭐", "<strong>" + s.project + "</strong>: " + s.action, s.result || "")).join("") +
       metrics.slice(0, 3).map((m) => row("📈", m, "")).join("");
@@ -2771,7 +2771,7 @@ async function generateLinkedInPost() {
     return;
   }
 
-  if (board) board.innerHTML = `<div class="state-card state-loading" style="display:flex;align-items:center;gap:10px;padding:16px"><div style="width:8px;height:8px;border-radius:50%;background:#818cf8;animation:pulse 1s ease-in-out infinite;flex-shrink:0"></div>Crafting your LinkedIn post — analyzing architecture, STAR stories, and impact metrics...</div>`;
+  if (board) board.innerHTML = `<div class="state-card state-loading" style="display:flex;align-items:center;gap:10px;padding:16px"><div style="width:8px;height:8px;border-radius:50%;background:#ff6b6b;animation:pulse 1s ease-in-out infinite;flex-shrink:0"></div>Crafting your LinkedIn post — analyzing architecture, STAR stories, and impact metrics...</div>`;
   if (genBtn) { genBtn.disabled = true; genBtn.innerHTML = `<i data-lucide="loader" class="w-3 h-3"></i> Generating...`; lucide.createIcons(); }
 
   try {
@@ -3197,7 +3197,7 @@ function showSprintModal() {
     dayPlanContainer.innerHTML = sprint.curated_day_plan.map((day, index) => `
       <div class="p-3" style="background:rgba(255,255,255,0.05);border-radius:10px;border:1px solid rgba(255,255,255,0.1)">
         <div class="flex items-center justify-between mb-2">
-          <h4 style="font-size:0.9rem;font-weight:600;color:#818cf8">Day ${day.day || index + 1}: ${day.objective || day.title || day.topic || 'Learning'}</h4>
+          <h4 style="font-size:0.9rem;font-weight:600;color:#ff6b6b">Day ${day.day || index + 1}: ${day.objective || day.title || day.topic || 'Learning'}</h4>
           <span style="font-size:0.75rem;color:rgba(255,255,255,0.5)">${day.duration || '2-3 hours'}</span>
         </div>
         <p style="font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.5;margin-bottom:8px">${day.deliverable || day.description || day.goal || ''}</p>
@@ -3237,7 +3237,7 @@ function showSprintModal() {
   const peerTagsContainer = document.getElementById('sprint-peer-tags');
   if (sprint.peer_group_tags && Array.isArray(sprint.peer_group_tags)) {
     peerTagsContainer.innerHTML = sprint.peer_group_tags.map(tag => `
-      <span class="px-3 py-1 rounded-full text-xs" style="background:rgba(168,85,247,0.2);color:#c084fc;border:1px solid rgba(168,85,247,0.3)">
+      <span class="px-3 py-1 rounded-full text-xs" style="background:rgba(139,0,0,0.2);color:#ff6b6b;border:1px solid rgba(139,0,0,0.3)">
         ${tag}
       </span>
     `).join('');
@@ -3793,10 +3793,10 @@ function showRoiModal() {
     const gap = AppState.feature3?.gap;
     const niche = gap?.niche_recommendations || [];
     const nicheRows = niche.slice(0, 5).map(rec => [
-      '<div class="p-3" style="background:rgba(168,85,247,0.1);border-radius:8px;border:1px solid rgba(168,85,247,0.3)">',
+      '<div class="p-3" style="background:rgba(139,0,0,0.1);border-radius:8px;border:1px solid rgba(139,0,0,0.3)">',
       '<div class="flex items-center justify-between">',
       '<span style="font-size:0.9rem;font-weight:600;color:#fff">' + (rec.skill || 'Skill') + '</span>',
-      '<span style="font-size:0.85rem;color:#c084fc">Score: ' + Math.round(rec.opportunity_score || 0) + '</span>',
+      '<span style="font-size:0.85rem;color:#ff6b6b">Score: ' + Math.round(rec.opportunity_score || 0) + '</span>',
       '</div>',
       '<p style="font-size:0.8rem;color:rgba(255,255,255,0.6);margin-top:4px">' + (rec.why || 'High-demand skill with strong market value') + '</p>',
       '</div>'
@@ -3945,7 +3945,7 @@ function showHistoryModal() {
             <p style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:2px">${samples} sample${samples !== 1 ? 's' : ''}</p>
           </div>
           <div class="text-right">
-            <p style="font-size:1.2rem;font-weight:700;color:#818cf8">${score}%</p>
+            <p style="font-size:1.2rem;font-weight:700;color:#ff6b6b">${score}%</p>
           </div>
         </div>
       `;
@@ -4011,7 +4011,7 @@ function drawHistoryChart(snapshots) {
   
   // Draw line chart
   if (scores.length > 0) {
-    ctx.strokeStyle = '#818cf8';
+    ctx.strokeStyle = '#ff6b6b';
     ctx.lineWidth = 3;
     ctx.beginPath();
     
@@ -4037,7 +4037,7 @@ function drawHistoryChart(snapshots) {
       const y = padding.top + chartHeight - ((score - minScore) / scoreRange) * chartHeight;
       
       // Point circle
-      ctx.fillStyle = '#818cf8';
+      ctx.fillStyle = '#ff6b6b';
       ctx.beginPath();
       ctx.arc(x, y, 5, 0, 2 * Math.PI);
       ctx.fill();
@@ -4980,7 +4980,7 @@ const JT = (() => {
   // ── Rendering ────────────────────────────────────────────────────────────
 
   const STATUS_COLORS = {
-    Wishlist:     { dot: "#6366f1", badge: "rgba(99,102,241,0.18)",  text: "#a5b4fc" },
+    Wishlist:     { dot: "#8B0000", badge: "rgba(139,0,0,0.18)",  text: "#ff6b6b" },
     Applied:      { dot: "#f59e0b", badge: "rgba(245,158,11,0.18)",  text: "#fcd34d" },
     Interviewing: { dot: "#06b6d4", badge: "rgba(6,182,212,0.18)",   text: "#67e8f9" },
     Offered:      { dot: "#10b981", badge: "rgba(16,185,129,0.18)",  text: "#6ee7b7" },
