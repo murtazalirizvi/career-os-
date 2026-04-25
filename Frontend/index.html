@@ -1365,6 +1365,7 @@
 // Landing ↔ App toggle
 function skipAuth() {
   document.getElementById('auth-modal').style.display = 'none';
+  startViewSwap('dashboard');
 }
 // Show landing on load
 window.addEventListener('DOMContentLoaded', function() {

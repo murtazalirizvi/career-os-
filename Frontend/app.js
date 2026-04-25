@@ -7,7 +7,7 @@
 const _isGitHubPages = window.location.hostname.includes("github.io");
 const _isRailway = window.location.hostname.includes("railway.app") || window.location.hostname.includes("up.railway.app");
 // On Railway the frontend is served by the same FastAPI process — use same origin
-const API_BASE = window.__CAREER_OS_API__ ?? (_isRailway ? window.location.origin : _isGitHubPages ? null : "http://127.0.0.1:8000");
+const API_BASE = window.__CAREER_OS_API__ ?? (_isRailway ? window.location.origin : _isGitHubPages ? null : "http://localhost:8000");
 
 // If on GitHub Pages, patch submitAuth to show a helpful message
 if (_isGitHubPages) {
